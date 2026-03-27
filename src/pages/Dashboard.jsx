@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 import Loader from '../components/common/Loader';
+import DashboardCards from '../components/dashboard/DashboardCards';
+import Sidebar from '../components/dashboard/Sidebar';
 
 export default function Dashboard() {
   const { user, fetchUser } = useAuth();
@@ -29,18 +32,17 @@ export default function Dashboard() {
         transition={{ duration: 0.4 }}
       >
         {error && <div className="dashboard-error">{error}</div>}
-        <h2 className="dashboard-heading">Dashboard</h2>
-        {user && (
-          <div className="user-card">
-            <div className="user-avatar">{user.name?.[0]?.toUpperCase()}</div>
-            <div className="user-info">
-              <h3 className="user-name">{user.name}</h3>
-              <p className="user-detail">📧 {user.email}</p>
-              {user.contact && <p className="user-detail">📞 {user.contact}</p>}
-            </div>
+        <h2 className="dashboard-heading mx-2">Dashboard</h2>
+        <div className="row g-2">
+          <div className="col-md-9">
+            <DashboardCards />
           </div>
-        )}
+          <div className="col-md-3">
+            <Sidebar />
+          </div>
+        </div>
       </motion.main>
+      <Footer />
     </div>
   );
 }
