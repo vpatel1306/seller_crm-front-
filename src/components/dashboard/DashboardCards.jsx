@@ -137,9 +137,9 @@ const cardData = {
 
 function StatCard({ title, bg, text, subtitle, costLabel, cost, value, badge, badgeColor }) {
   return (
-    <div className="h-100">
+    <div className="h-full">
       <div
-        className="stat-card h-100"
+        className="stat-card h-full"
         style={{
           backgroundColor: bg,
           color: text,
@@ -153,10 +153,10 @@ function StatCard({ title, bg, text, subtitle, costLabel, cost, value, badge, ba
             </span>
           )}
         </div>
-        {subtitle && <div className="stat-card-subtitle float-end">{subtitle}</div>}
+        {subtitle && <div className="stat-card-subtitle text-right">{subtitle}</div>}
         <div className="stat-card-content">
           <div className="stat-card-cost-value">
-            <div className="flex-column row ">
+            <div className="flex flex-col">
               <div className="stat-card-cost-label">{costLabel}</div>
               <span className="stat-card-cost">{cost}</span>
             </div>
@@ -170,107 +170,75 @@ function StatCard({ title, bg, text, subtitle, costLabel, cost, value, badge, ba
 
 export default function DashboardCards() {
   return (
-    <div>
-      <div className="container-fluid">
+    <div className="w-full">
+      <div className="px-0">
         {/* Row 1 */}
-        <div className="row g-3 mb-3">
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.allOrders} />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.cancelled} />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.readyToShip} />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.shipped} />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+          <StatCard {...cardData.allOrders} />
+          <StatCard {...cardData.cancelled} />
+          <StatCard {...cardData.readyToShip} />
+          <StatCard {...cardData.shipped} />
         </div>
 
         {/* Row 2 */}
-        <div className="row g-3 mb-3">
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.returnInTransit} />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.outForDelivery} />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.returnReceived} />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.returnScanPending} />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+          <StatCard {...cardData.returnInTransit} />
+          <StatCard {...cardData.outForDelivery} />
+          <StatCard {...cardData.returnReceived} />
+          <StatCard {...cardData.returnScanPending} />
         </div>
 
         {/* Row 3 */}
-        <div className="row g-3 mb-3">
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.returnMismatch} />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.paymentMismatch} />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.receivedPayment} />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.pendingPayment} />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+          <StatCard {...cardData.returnMismatch} />
+          <StatCard {...cardData.paymentMismatch} />
+          <StatCard {...cardData.receivedPayment} />
+          <StatCard {...cardData.pendingPayment} />
         </div>
 
         {/* Row 4 — Unsettled, Cancel, Claim, Smart Tickets */}
-        <div className="row g-3 mb-3">
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.unsettledPickup} />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <StatCard {...cardData.cancelPickup} />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+          <StatCard {...cardData.unsettledPickup} />
+          <StatCard {...cardData.cancelPickup} />
 
           {/* Claim Card */}
-          <div className="col-12 col-sm-6 col-md-3">
-            <div className="h-100">
-              <div className="claim-card h-100">
-                <div className="claim-card-title">Claim</div>
-                <div className="row g-0">
-                  <div className="col-6 text-center">
-                    <div className="claim-approved-label">Approved</div>
-                    <div className="claim-approved-value">91</div>
-                    <div className="claim-approved-amount">18410.98 Rs</div>
-                  </div>
-                  <div className="col-6 text-center">
-                    <div className="claim-pending-label">Pending</div>
-                    <div className="claim-pending-value">150</div>
-                    <div className="claim-pending-amount">21142.00 Rs</div>
-                  </div>
+          <div className="h-full">
+            <div className="claim-card h-full">
+              <div className="claim-card-title text-white">Claim</div>
+              <div className="flex">
+                <div className="w-1/2 text-center border-r border-white/20">
+                  <div className="claim-approved-label">Approved</div>
+                  <div className="claim-approved-value">91</div>
+                  <div className="claim-approved-amount font-bold">18410.98 Rs</div>
+                </div>
+                <div className="w-1/2 text-center p-0">
+                  <div className="claim-pending-label">Pending</div>
+                  <div className="claim-pending-value">150</div>
+                  <div className="claim-pending-amount font-bold">21142.00 Rs</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Smart Tickets Card */}
-          <div className="col-12 col-sm-6 col-md-3">
-            <div className="h-100">
-              <div className="smart-tickets-card h-100">
-                <div className="smart-tickets-title">Smart Tickets</div>
-                <div className="row g-0 text-center">
-                  <div className="col-4">
-                    <div className="smart-tickets-label">New Found</div>
-                    <div className="smart-tickets-value">136</div>
-                    <div className="smart-tickets-amount">19030.00</div>
-                  </div>
-                  <div className="col-4">
-                    <div className="smart-tickets-label">Total Open</div>
-                    <div className="smart-tickets-value">146</div>
-                    <div className="smart-tickets-amount">20461.00</div>
-                  </div>
-                  <div className="col-4">
-                    <div className="smart-tickets-label">Closed</div>
-                    <div className="smart-tickets-value">60</div>
-                    <div className="smart-tickets-amount">10232.00</div>
-                  </div>
+          <div className="h-full">
+            <div className="smart-tickets-card h-full">
+              <div className="smart-tickets-title text-white">Smart Tickets</div>
+              <div className="flex text-center">
+                <div className="w-1/3 border-r border-white/20">
+                  <div className="smart-tickets-label">New Found</div>
+                  <div className="smart-tickets-value">136</div>
+                  <div className="smart-tickets-amount">19030.00</div>
+                </div>
+                <div className="w-1/3 border-r border-white/20">
+                  <div className="smart-tickets-label">Total Open</div>
+                  <div className="smart-tickets-value">146</div>
+                  <div className="smart-tickets-amount">20461.00</div>
+                </div>
+                <div className="w-1/3">
+                  <div className="smart-tickets-label">Closed</div>
+                  <div className="smart-tickets-value">60</div>
+                  <div className="smart-tickets-amount">10232.00</div>
                 </div>
               </div>
             </div>
@@ -278,93 +246,80 @@ export default function DashboardCards() {
         </div>
 
         {/* Row 5 — Advertisement, Bank, Business Insights */}
-        <div className="row g-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
           {/* Advertisement */}
-          <div className="col-12 col-sm-6 col-md-3">
-            <div className="h-100">
-              <div className="advertisement-card h-100">
-                <div className="advertisement-header flex-wrap">
-                  <span className="advertisement-title">Advertisement</span>
-                  <span className="advertisement-per-order">0.55<br />RS. Per Order</span>
+          <div className="h-full">
+            <div className="advertisement-card h-full">
+              <div className="advertisement-header flex-wrap">
+                <span className="advertisement-title text-white">Advertisement</span>
+                <span className="advertisement-per-order">0.55<br />RS. Per Order</span>
+              </div>
+              <div className="flex mt-4 text-center">
+                <div className="w-1/2 border-r border-white/20">
+                  <div className="advertisement-label">Paid</div>
+                  <div className="advertisement-amount">2458.89</div>
                 </div>
-                <div className="row g-0 mt-4 text-center">
-                  <div className="col-6">
-                    <div className="advertisement-label">Paid</div>
-                    <div className="advertisement-amount">2458.89</div>
-                  </div>
-                  <div className="col-6">
-                    <div className="advertisement-label">Used</div>
-                    <div className="advertisement-amount">2458.19</div>
-                  </div>
+                <div className="w-1/2">
+                  <div className="advertisement-label">Used</div>
+                  <div className="advertisement-amount">2458.19</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Received In Bank */}
-          <div className="col-12 col-sm-6 col-md-3">
-            <div className="h-100">
-              <div className="bank-card h-100">
-                <div className="bank-header flex-wrap">
-                  <span className="bank-title">Received In Bank Acc.</span>
-                  <span className="bank-last-payment float-end">Last Payment 12/12/2025</span>
-                </div>
-                <div className="flex-cloumn row mt-4">
-                  <div className="bank-amount-label">Amount</div>
-                  <div className="bank-amount-value">398661.65</div>
-                </div>
+          <div className="h-full">
+            <div className="bank-card h-full">
+              <div className="bank-header flex-wrap">
+                <span className="bank-title text-white">Received In Bank Acc.</span>
+                <span className="bank-last-payment text-right">Last Payment 12/12/2025</span>
+              </div>
+              <div className="flex flex-col mt-4">
+                <div className="bank-amount-label">Amount</div>
+                <div className="bank-amount-value">398661.65</div>
               </div>
             </div>
           </div>
 
           {/* Business Insights */}
-          <div className="col-12 col-sm-6 col-md-6">
-            <div className="h-100">
-              <div className="business-insights-card h-100">
+          <div className="sm:col-span-2 h-full">
+            <div className="business-insights-card h-full">
 
-                {/* Header */}
-                <div className="business-insights-header">
-                  <h6 className="business-insights-title">Business Insights</h6>
-                  <small className="business-insights-link">Click here for more details</small>
-                </div>
+              {/* Header */}
+              <div className="business-insights-header">
+                <h6 className="business-insights-title">Business Insights</h6>
+                <small className="business-insights-link">Click here for more details</small>
+              </div>
 
-                {/* Insights Grid */}
-                <div className="business-insights-grid">
-
-                  {[
-                    { label: "PICKED", value: "3948", sub: null, color: "dark" },
-                    { label: "SHIPPED", value: "270", sub: "6.84 %", color: "dark" },
-                    { label: "RTO", value: "452", sub: "11.45 %", color: "danger" },
-                    { label: "DELIVERED", value: "3226", sub: "81.71 %", color: "dark" },
-                    { label: "RETURN", value: "355", sub: "11.00 %", color: "danger" },
-                    { label: "DELIVERY", value: "2871", sub: "89.00 %", color: "success" },
-                  ].map((item) => (
-                    <div key={item.label} className="business-insights-item">
-
-                      <div className={`business-insight-label text-${item.color}`}>
-                        {item.label}
-                      </div>
-
-                      <div className={`business-insight-value text-${item.color}`}>
-                        {item.value}
-                      </div>
-
-                      {item.sub && (
-                        <div className={`business-insight-sub text-${item.color}`}>
-                          {item.sub}
-                        </div>
-                      )}
-
+              {/* Insights Grid */}
+              <div className="business-insights-grid">
+                {[
+                  { label: "PICKED", value: "3948", sub: null, color: "text-gray-900" },
+                  { label: "SHIPPED", value: "270", sub: "6.84 %", color: "text-gray-900" },
+                  { label: "RTO", value: "452", sub: "11.45 %", color: "text-red-600" },
+                  { label: "DELIVERED", value: "3226", sub: "81.71 %", color: "text-gray-900" },
+                  { label: "RETURN", value: "355", sub: "11.00 %", color: "text-red-600" },
+                  { label: "DELIVERY", value: "2871", sub: "89.00 %", color: "text-green-600" },
+                ].map((item) => (
+                  <div key={item.label} className="business-insight-item">
+                    <div className={`business-insight-label ${item.color}`}>
+                      {item.label}
                     </div>
-                  ))}
-
-                </div>
-
+                    <div className={`business-insight-value ${item.color}`}>
+                      {item.value}
+                    </div>
+                    {item.sub && (
+                      <div className={`business-insight-sub ${item.color}`}>
+                        {item.sub}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
-);
+  );
 }

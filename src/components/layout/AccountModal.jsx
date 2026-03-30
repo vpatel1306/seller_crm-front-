@@ -4,7 +4,6 @@ import {
   FiFileText, FiCalendar, FiHash, FiLock, FiCreditCard,
 } from 'react-icons/fi';
 import api from '../../services/api';
-import '../../styles/AccountModal.css';
 
 const EMPTY = {
   supplier_id: '', account_name: '', gst_no: '', mail_id: '',
@@ -14,28 +13,28 @@ const EMPTY = {
 };
 
 const mainFields = [
-  { key: 'supplier_id',            label: 'Supplier ID',         icon: <FiHash size={13} />,     type: 'text',  required: true  },
-  { key: 'account_name',           label: 'Account Name',        icon: <FiUser size={13} />,     type: 'text',  required: true  },
-  { key: 'gst_no',                 label: 'GST Number',          icon: <FiFileText size={13} />, type: 'text',  required: true  },
-  { key: 'mail_id',                label: 'Email ID',            icon: <FiMail size={13} />,     type: 'email', required: true  },
-  { key: 'mobile_no',              label: 'Mobile No',           icon: <FiPhone size={13} />,    type: 'tel',   required: true  },
-  { key: 'person_name',            label: 'Contact Person',      icon: <FiUser size={13} />,     type: 'text',  required: true  },
-  { key: 'order_data_from',        label: 'Order Data From',     icon: <FiCalendar size={13} />, type: 'date',  required: true  },
-  { key: 'label_text_file_folder', label: 'Label / File Folder', icon: <FiFileText size={13} />, type: 'text',  required: false },
+  { key: 'supplier_id', label: 'Supplier ID', icon: <FiHash size={13} />, type: 'text', required: true },
+  { key: 'account_name', label: 'Account Name', icon: <FiUser size={13} />, type: 'text', required: true },
+  { key: 'gst_no', label: 'GST Number', icon: <FiFileText size={13} />, type: 'text', required: true },
+  { key: 'mail_id', label: 'Email ID', icon: <FiMail size={13} />, type: 'email', required: true },
+  { key: 'mobile_no', label: 'Mobile No', icon: <FiPhone size={13} />, type: 'tel', required: true },
+  { key: 'person_name', label: 'Contact Person', icon: <FiUser size={13} />, type: 'text', required: true },
+  { key: 'order_data_from', label: 'Order Data From', icon: <FiCalendar size={13} />, type: 'date', required: true },
+  { key: 'label_text_file_folder', label: 'Label / File Folder', icon: <FiFileText size={13} />, type: 'text', required: false },
   { key: 'address', label: 'Address', icon: <FiMapPin size={13} />, type: 'text', required: false, textarea: true },
 ];
 
 const optionalFields = [
-  { key: 'username',        label: 'Username',        icon: <FiUser size={13} />,       type: 'text',     required: false },
-  { key: 'password',        label: 'Password',        icon: <FiLock size={13} />,       type: 'password', required: false },
-  { key: 'bank_name',       label: 'Bank Name',       icon: <FiCreditCard size={13} />, type: 'text',     required: false },
-  { key: 'bank_account_no', label: 'Bank Account No', icon: <FiHash size={13} />,       type: 'text',     required: false },
+  { key: 'username', label: 'Username', icon: <FiUser size={13} />, type: 'text', required: false },
+  { key: 'password', label: 'Password', icon: <FiLock size={13} />, type: 'password', required: false },
+  { key: 'bank_name', label: 'Bank Name', icon: <FiCreditCard size={13} />, type: 'text', required: false },
+  { key: 'bank_account_no', label: 'Bank Account No', icon: <FiHash size={13} />, type: 'text', required: false },
 ];
 
 export default function AccountModal({ mode = 'add', initialData = null, onClose, onSuccess }) {
-  const [form, setForm]       = useState(mode === 'edit' && initialData ? { ...EMPTY, ...initialData } : EMPTY);
+  const [form, setForm] = useState(mode === 'edit' && initialData ? { ...EMPTY, ...initialData } : EMPTY);
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose(); };
@@ -69,15 +68,15 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
   };
 
   const renderField = ({ key, label, icon, type, required, textarea }) => (
-    <div key={key} className={`col-${textarea ? '12' : '6'}`}>
-      <label className="form-label am-label d-flex align-items-center gap-1 mb-2">
-        <span className="text-primary ms-1">{icon}</span>
+    <div key={key} className={textarea ? 'col-span-2' : 'col-span-1'}>
+      <label className="text-[0.875rem] font-medium text-gray-700 flex items-center gap-1 mb-2">
+        <span className="text-primary">{icon}</span>
         {label}
-        {required && <span className="text-danger ms-1">*</span>}
+        {required && <span className="text-red-500 ml-1">*</span>}
       </label>
       {textarea ? (
         <textarea
-          className="form-control form-control-sm"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors bg-white"
           name={key}
           value={form[key]}
           onChange={handleChange}
@@ -87,7 +86,7 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
         />
       ) : (
         <input
-          className="form-control form-control-sm"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors bg-white"
           type={type}
           name={key}
           value={form[key]}
@@ -101,55 +100,54 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
   );
 
   return (
-    <div className="am-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="am-modal-wrap d-flex flex-column">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[1050] p-4 animate-fade-in" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="bg-white rounded-xl shadow-2xl max-w-[95%] w-[800px] max-h-[90vh] overflow-hidden flex flex-col animate-slide-up">
 
         {/* Header */}
-        <div className="d-flex align-items-center justify-content-between px-4 py-3 border-bottom bg-light flex-shrink-0">
-          <div className="d-flex align-items-center gap-3">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
+          <div className="flex items-center gap-3">
             <div>
-              <h5 className="fw-bold mb-0 fs-6">
+              <h5 className="font-bold text-base text-gray-900 leading-tight">
                 {mode === 'edit' ? 'Edit Account' : 'Add New Account'}
               </h5>
-              <small className="text-muted">
+              <p className="text-gray-500 text-xs mt-0.5">
                 {mode === 'edit' ? 'Update the account information below' : 'Fill in the details to create a new account'}
-              </small>
+              </p>
             </div>
           </div>
-          <button className="btn btn-sm btn-outline-secondary d-flex align-items-center" onClick={onClose}>
+          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" onClick={onClose}>
             <FiX size={18} />
           </button>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="alert alert-danger alert-sm mx-4 mt-3 mb-0 py-2 px-3 flex-shrink-0" role="alert">
+          <div className="bg-red-50 border border-red-200 text-red-600 text-sm mx-6 mt-4 mb-0 py-2 px-4 rounded-lg flex-shrink-0" role="alert">
             {error}
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="d-flex flex-column flex-grow-1 overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-grow overflow-hidden">
 
           {/* Two Panels */}
-          <div className="am-panels flex-grow-1 overflow-hidden">
+          <div className="flex flex-col md:flex-row flex-grow overflow-hidden">
 
             {/* LEFT — Account Details */}
-            <div className="d-flex flex-column overflow-hidden border-end">
-              <div className="p-4 overflow-y-auto flex-grow-1">
-                <div className="row g-3">
+            <div className="flex-1 flex flex-col overflow-hidden border-r border-gray-100">
+              <div className="p-6 overflow-y-auto flex-grow">
+                <div className="grid grid-cols-2 gap-4">
                   {mainFields.map(renderField)}
                 </div>
               </div>
             </div>
 
             {/* RIGHT — Optional Details */}
-            <div className="d-flex flex-column overflow-hidden px-3">
-              <div className="custom-box mb-2">
-                    <span className="title fw-bold">Optional Details</span>
-
-                    <div className="p-4 overflow-y-auto flex-grow-1">
-                  <div className="row g-3">
+            <div className="flex-1 flex flex-col overflow-hidden bg-gray-50/50">
+              <div className="p-6 overflow-y-auto flex-grow">
+                <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm mb-4">
+                  <span className="block text-sm font-bold text-gray-900 mb-4 pb-2 border-b border-gray-50">Optional Details</span>
+                  <div className="grid grid-cols-1 gap-4">
                     {optionalFields.map(renderField)}
                   </div>
                 </div>
@@ -157,15 +155,15 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
             </div>
           </div>
 
-         
+
           {/* Footer */}
-          <div className="d-flex justify-content-end align-items-center gap-2 px-4 py-3 border-top bg-light flex-shrink-0">
-            <button type="button" className="btn btn-outline-secondary px-4" onClick={onClose}>
+          <div className="flex justify-end items-center gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+            <button type="button" className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-white transition-colors" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary px-4 d-flex align-items-center gap-2" disabled={loading}>
+            <button type="submit" className="px-6 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-hover shadow-lg shadow-primary/20 disabled:opacity-60 transition-all flex items-center gap-2" disabled={loading}>
               {loading
-                ? <span className="spinner-border spinner-border-sm" role="status" />
+                ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 : <FiSave size={14} />
               }
               {loading ? 'Saving...' : mode === 'edit' ? 'Update Account' : 'Add Account'}

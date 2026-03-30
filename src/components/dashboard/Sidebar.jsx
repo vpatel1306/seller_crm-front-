@@ -1,23 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   FiX, FiRefreshCw, FiEdit2, FiPlusCircle,
   FiChevronDown, FiUser, FiCheck, FiSearch,
   FiTrash2, FiDatabase, FiAlertTriangle, FiFolder, FiMonitor,
 } from 'react-icons/fi';
-import { FaMoneyBill, FaChartBar, FaClipboardList, FaCog, FaSearch, FaMoneyCheck, FaMoneyBillAlt } from 'react-icons/fa';
+import { FaChartBar, FaClipboardList, FaCog } from 'react-icons/fa';
+import { FaMoneyBillTrendUp } from 'react-icons/fa6';
 import api from '../../services/api';
 import AccountModal from '../layout/AccountModal';
 import { useNavigate } from "react-router-dom";
-import CommonModal from '../common/CommonModal';
 import ReportModal from '../layout/ReportModal';
-import { FaMoneyBillTransfer, FaMoneyBillTrendUp } from 'react-icons/fa6';
 import SearchButton from '../layout/SearchButton';
 import { useAuth } from '../../context/AuthContext';
 import DateSectionModal from '../layout/DateSectionModal';
 import ReturnModal from '../layout/ReturnModal';
-import PickUpEntry from '../layout/PickUpEntry';
- 
+
 // ── helpers ────────────────────────────────────────────────────
 const fmtDate = (d) => {
   if (!d) return null;
@@ -36,14 +34,14 @@ const fmtNum = (val) => {
   const n = num(val);
   return n === null ? '—' : n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
- 
+
 // ── Account Select Table Modal ──────────────────────────────────
 function AccountSelectModal({ accounts, active, onSelect, onClose, onDelete, onRefresh }) {
   const [search, setSearch] = useState('');
   const [checked, setChecked] = useState(new Set());   // selected row IDs
   const [deleting, setDeleting] = useState(false);
   const [confirm, setConfirm] = useState(false);       // confirm delete dialog
- 
+
   // search filter
   const filtered = accounts.filter((acc) => {
     const q = search.toLowerCase();
@@ -55,38 +53,35 @@ function AccountSelectModal({ accounts, active, onSelect, onClose, onDelete, onR
       (acc.marketplace || '').toLowerCase().includes(q)
     );
   });
- 
+
   // totals row
   const totalOrders = filtered.reduce((s, a) => s + (num(a.orders) ?? 0), 0);
   const totalPL = filtered.reduce((s, a) => s + (num(a.profit_loss) ?? 0), 0);
   const totalAds = filtered.reduce((s, a) => s + (num(a.advertisement) ?? 0), 0);
- 
+
   // Escape key
   useEffect(() => {
     const h = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', h);
     return () => document.removeEventListener('keydown', h);
   }, [onClose]);
- 
-  // ── Single-select checkbox (radio style — max 1 at a time) ──
+
   const toggleCheck = (id, e) => {
     e.stopPropagation();
-    // If already selected → deselect; else select only this one
     setChecked((prev) => {
       if (prev.has(id)) return new Set();
       return new Set([id]);
     });
-    setConfirm(false); // reset confirm if selection changes
+    setConfirm(false);
   };
- 
+
   const handleOpen = (acc) => {
     onSelect(acc);
     onClose();
   };
- 
-  // Delete — single account only (API supports single delete)
+
   const handleDelete = async () => {
-    if (checked.size !== 1) return; // guard: exactly 1
+    if (checked.size !== 1) return;
     const [id] = [...checked];
     setDeleting(true);
     try {
@@ -99,36 +94,35 @@ function AccountSelectModal({ accounts, active, onSelect, onClose, onDelete, onR
       setDeleting(false);
     }
   };
- 
-  // The single currently checked account
+
   const selectedAcc = checked.size === 1
     ? accounts.find((a) => checked.has(a.id))
     : null;
- 
+
   return createPortal(
     <div
-      className="asm-backdrop"
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[1100] p-4 animate-fade-in"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="asm-modal" onClick={(e) => e.stopPropagation()}>
- 
-        {/* ── Header ── */}
-        <div className="asm-header">
-          <div className="d-flex align-items-center gap-2">
-            <FiUser size={16} className="text-primary" />
-            <span className="fw-bold fs-6">Change Account</span>
-            <span className="badge bg-primary-subtle text-primary ms-1">{accounts.length}</span>
+      <div className="bg-white rounded-xl shadow-2xl max-w-[95%] w-[1200px] max-h-[90vh] overflow-hidden flex flex-col animate-slide-up" onClick={(e) => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="bg-gradient-to-r from-primary to-violet-600 text-white p-4 flex justify-between items-center flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <FiUser size={18} />
+            <span className="font-bold text-lg">Change Account</span>
+            <span className="px-2 py-0.5 rounded bg-white/20 text-white text-xs ml-2 font-bold">{accounts.length}</span>
           </div>
-          <button className="asm-close-btn" onClick={onClose} title="Close">
+          <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" onClick={onClose} title="Close">
             <FiX size={18} />
           </button>
         </div>
- 
-        {/* ── Search ── */}
-        <div className="asm-search-wrap">
-          <FiSearch size={14} className="asm-search-icon" />
+
+        {/* Search */}
+        <div className="p-4 border-b border-gray-100 flex items-center gap-2 relative flex-shrink-0">
+          <FiSearch size={16} className="absolute left-7 text-gray-400" />
           <input
-            className="asm-search-input"
+            className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all bg-gray-50/50"
             type="text"
             placeholder="Search by name, marketplace, mobile, GST…"
             value={search}
@@ -136,35 +130,35 @@ function AccountSelectModal({ accounts, active, onSelect, onClose, onDelete, onR
             autoFocus
           />
           {search && (
-            <button className="asm-search-clear" onClick={() => setSearch('')}>
-              <FiX size={12} />
+            <button className="absolute right-7 text-gray-400 hover:text-gray-600 p-1" onClick={() => setSearch('')}>
+              <FiX size={14} />
             </button>
           )}
         </div>
- 
-        {/* ── Table ── */}
-        <div className="asm-table-wrap">
-          <table className="asm-table">
-            <thead>
-              <tr>
-                <th style={{ width: 40, textAlign: 'center' }}>#</th>
-                <th style={{ width: 36, textAlign: 'center' }} title="Select one account">☑</th>
-                <th>Account Name</th>
-                <th>Marketplace</th>
-                <th>Expiry Date</th>
-                <th>First Order Date</th>
-                <th>Last Order Date</th>
-                <th style={{ textAlign: 'right' }}>Orders</th>
-                <th style={{ textAlign: 'right' }}>Account P/L</th>
-                <th style={{ textAlign: 'right' }}>Advertisement</th>
-                <th>Last Update</th>
-                <th>Open PC Name</th>
+
+        {/* Table */}
+        <div className="flex-1 overflow-auto p-4 pt-0">
+          <table className="w-full text-xs text-left border-collapse">
+            <thead className="sticky top-0 bg-white z-10">
+              <tr className="border-b-2 border-gray-100 text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 font-bold text-center w-12">#</th>
+                <th className="px-3 py-3 font-bold text-center w-10 text-lg">☑</th>
+                <th className="px-3 py-3 font-bold">Account Name</th>
+                <th className="px-3 py-3 font-bold">Marketplace</th>
+                <th className="px-3 py-3 font-bold">Expiry Date</th>
+                <th className="px-3 py-3 font-bold">First Order</th>
+                <th className="px-3 py-3 font-bold">Last Order</th>
+                <th className="px-3 py-3 font-bold text-right">Orders</th>
+                <th className="px-3 py-3 font-bold text-right">Account P/L</th>
+                <th className="px-3 py-3 font-bold text-right">Ad Spend</th>
+                <th className="px-3 py-3 font-bold">Last Update</th>
+                <th className="px-3 py-3 font-bold">Open PC</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="asm-empty">No accounts found</td>
+                  <td colSpan={12} className="px-4 py-20 text-center text-gray-400 font-medium text-sm">No accounts found matching your search</td>
                 </tr>
               ) : (
                 <>
@@ -175,76 +169,75 @@ function AccountSelectModal({ accounts, active, onSelect, onClose, onDelete, onR
                     return (
                       <tr
                         key={acc.id}
-                        className={`asm-row${isActive ? ' asm-row-active' : ''}${isChecked ? ' asm-row-checked' : ''}`}
-                        onClick={(e) => toggleCheck(acc.id, e)}  // row click = single select (highlight)
-                        onDoubleClick={() => handleOpen(acc)}     // double-click = open account
+                        className={`group hover:bg-gray-50 cursor-pointer transition-colors ${isActive ? 'bg-indigo-50/40' : ''} ${isChecked ? 'bg-indigo-50/60' : ''}`}
+                        onClick={(e) => toggleCheck(acc.id, e)}
+                        onDoubleClick={() => handleOpen(acc)}
                       >
-                        <td className="asm-td-num">{idx + 1}</td>
-                        <td className="asm-td-check">
-                          {/* radio-style: click anywhere on row selects it */}
+                        <td className="px-3 py-3 text-center text-gray-400 font-medium">{idx + 1}</td>
+                        <td className="px-3 py-3 text-center">
                           <input
                             type="radio"
                             name="acc-select"
                             checked={isChecked}
                             onChange={() => toggleCheck(acc.id, { stopPropagation: () => { } })}
-                            className="asm-checkbox"
+                            className="w-4 h-4 accent-primary"
                           />
                         </td>
-                        <td>
-                          <div className="asm-acc-name">{acc.account_name || '—'}</div>
-                          {isActive && (
-                            <span className="asm-badge-active ms-1">
-                              <FiCheck size={9} /> Active
-                            </span>
-                          )}
+                        <td className="px-3 py-3">
+                          <div className="font-bold text-gray-900 flex items-center gap-2">
+                            {acc.account_name || '—'}
+                            {isActive && (
+                              <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[0.65rem] font-bold flex items-center gap-0.5">
+                                <FiCheck size={10} /> ACTIVE
+                              </span>
+                            )}
+                          </div>
                         </td>
-                        <td>
+                        <td className="px-3 py-3">
                           {acc.marketplace
-                            ? <span className="asm-marketplace">{acc.marketplace}</span>
+                            ? <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-[0.7rem] font-bold">{acc.marketplace}</span>
                             : '—'}
                         </td>
-                        <td>{fmtDate(acc.expiry_date) ?? '—'}</td>
-                        <td>{fmtDate(acc.first_order_date ?? acc.order_data_from) ?? '—'}</td>
-                        <td>{fmtDate(acc.last_order_date) ?? '—'}</td>
-                        <td style={{ textAlign: 'right', fontWeight: 600 }}>
+                        <td className="px-3 py-3 text-gray-600 font-medium">{fmtDate(acc.expiry_date) ?? '—'}</td>
+                        <td className="px-3 py-3 text-gray-600 font-medium">{fmtDate(acc.first_order_date ?? acc.order_data_from) ?? '—'}</td>
+                        <td className="px-3 py-3 text-gray-600 font-medium">{fmtDate(acc.last_order_date) ?? '—'}</td>
+                        <td className="px-3 py-3 text-right font-bold text-gray-900">
                           {num(acc.orders) !== null ? num(acc.orders).toLocaleString('en-IN') : '—'}
                         </td>
-                        <td style={{ textAlign: 'right' }}>
+                        <td className="px-3 py-3 text-right font-bold">
                           {pl !== null
-                            ? <span className={pl >= 0 ? 'asm-pos' : 'asm-neg'}>{fmtNum(pl)}</span>
+                            ? <span className={pl >= 0 ? 'text-green-600' : 'text-red-600'}>{fmtNum(pl)}</span>
                             : '—'}
                         </td>
-                        <td style={{ textAlign: 'right' }}>
+                        <td className="px-3 py-3 text-right font-bold">
                           {num(acc.advertisement) !== null
-                            ? <span className="asm-neg">{fmtNum(acc.advertisement)}</span>
+                            ? <span className="text-red-500">-{fmtNum(acc.advertisement)}</span>
                             : '—'}
                         </td>
-                        <td className="asm-datetime">{fmtDateTime(acc.updated_at) ?? '—'}</td>
-                        <td>
+                        <td className="px-3 py-3 text-[0.7rem] text-gray-400 whitespace-nowrap">{fmtDateTime(acc.updated_at) ?? '—'}</td>
+                        <td className="px-3 py-3">
                           {acc.open_pc_name
-                            ? <span className="asm-pc-name"><FiMonitor size={11} /> {acc.open_pc_name}</span>
+                            ? <span className="font-mono text-[0.7rem] px-2 py-0.5 bg-gray-100 text-gray-500 rounded flex items-center gap-1 w-fit border border-gray-200"><FiMonitor size={10} /> {acc.open_pc_name}</span>
                             : '—'}
                         </td>
                       </tr>
                     );
                   })}
- 
-                  {/* ── Totals Row ── */}
-                  <tr className="asm-totals-row">
-                    <td colSpan={2} style={{ textAlign: 'right', fontWeight: 700, paddingRight: '0.5rem' }}>
-                      TOTAL
-                    </td>
+
+                  {/* Totals Row */}
+                  <tr className="bg-gray-50/80 font-bold border-t-2 border-gray-100 sticky bottom-0 z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+                    <td colSpan={2} className="px-3 py-3 text-right text-gray-500 text-[0.7rem] uppercase tracking-wider">TOTAL</td>
                     <td colSpan={5} />
-                    <td style={{ textAlign: 'right' }}>
-                      <strong>{totalOrders.toLocaleString('en-IN')}</strong>
+                    <td className="px-3 py-3 text-right text-gray-900 text-sm">
+                      {totalOrders.toLocaleString('en-IN')}
                     </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <strong className={totalPL >= 0 ? 'asm-pos' : 'asm-neg'}>
+                    <td className="px-3 py-3 text-right text-sm">
+                      <span className={totalPL >= 0 ? 'text-green-600' : 'text-red-600'}>
                         {fmtNum(totalPL)}
-                      </strong>
+                      </span>
                     </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <strong className="asm-neg">{fmtNum(totalAds)}</strong>
+                    <td className="px-3 py-3 text-right text-sm text-red-500">
+                      -{fmtNum(totalAds)}
                     </td>
                     <td colSpan={2} />
                   </tr>
@@ -253,416 +246,303 @@ function AccountSelectModal({ accounts, active, onSelect, onClose, onDelete, onR
             </tbody>
           </table>
         </div>
- 
-        {/* ── Delete Confirm Bar (shows when 1 account selected) ── */}
+
+        {/* Delete Confirm Bar */}
         {selectedAcc && (
-          <div className="asm-confirm-bar">
-            <FiAlertTriangle size={14} className="text-danger" />
-            <span className="text-danger fw-semibold">
-              Delete: <strong>{selectedAcc.account_name || 'this account'}</strong>?
+          <div className="px-4 py-3 bg-red-50 border-t border-red-100 flex items-center gap-4 flex-shrink-0">
+            <FiAlertTriangle size={16} className="text-red-600 animate-pulse" />
+            <span className="text-red-700 font-bold text-sm">
+              Confirm Deletion: <span className="underline decoration-2 underline-offset-2">{selectedAcc.account_name || 'this account'}</span>
             </span>
             {confirm ? (
-              <div className="d-flex gap-2 ms-auto">
-                <span className="text-danger fw-bold small align-self-center">Sure? This cannot be undone.</span>
+              <div className="flex gap-2 ml-auto">
+                <span className="text-red-600 font-bold text-xs self-center">Permanently remove all data?</span>
                 <button
-                  className="btn btn-sm btn-danger"
+                  className="px-4 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition-all flex items-center gap-2 active:scale-95 shadow-md shadow-red-600/20"
                   disabled={deleting}
                   onClick={handleDelete}
                 >
                   {deleting
-                    ? <span className="spinner-border spinner-border-sm" />
-                    : <><FiTrash2 size={12} /> Yes, Delete</>}
+                    ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    : <><FiTrash2 size={13} /> YES, DELETE</>}
                 </button>
                 <button
-                  className="btn btn-sm btn-outline-secondary"
+                  className="px-4 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 text-xs font-bold hover:bg-gray-100 transition-all active:scale-95"
                   onClick={() => setConfirm(false)}
                 >
-                  No
+                  NO
                 </button>
               </div>
             ) : (
-              <div className="d-flex gap-2 ms-auto">
+              <div className="flex gap-2 ml-auto">
                 <button
-                  className="btn btn-sm btn-outline-secondary"
+                  className="px-4 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 text-xs font-bold hover:bg-gray-100 transition-all"
                   onClick={() => setChecked(new Set())}
                 >
-                  Deselect
+                  DESELECT
                 </button>
               </div>
             )}
           </div>
         )}
- 
-        {/* ── Footer Action Buttons ── */}
-        <div className="asm-footer">
-          <span className="text-muted small">
+
+        {/* Footer */}
+        <div className="p-5 bg-gray-50 border-t border-gray-200 flex justify-between items-center flex-wrap gap-4 flex-shrink-0">
+          <span className="text-gray-500 text-xs font-medium">
             Showing {filtered.length} of {accounts.length} accounts
-            {checked.size > 0 && ` · ${checked.size} selected`}
+            {checked.size > 0 && <span className="ml-2 px-2 py-0.5 bg-primary/10 text-primary rounded-full font-bold ml-3">{checked.size} selected</span>}
           </span>
- 
-          <div className="asm-footer-actions">
-            {/* Open Account — enabled only when 1 account selected via checkbox */}
+
+          <div className="flex flex-wrap gap-2 justify-end">
             <button
-              className="asm-foot-btn asm-foot-open"
+              className={`px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all active:scale-95 shadow-lg ${selectedAcc ? 'bg-primary text-white shadow-primary/30 hover:bg-primary-hover hover:-translate-y-0.5' : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'}`}
               title={selectedAcc ? `Open: ${selectedAcc.account_name}` : 'Select one account first'}
               disabled={!selectedAcc}
               onClick={() => selectedAcc && handleOpen(selectedAcc)}
             >
-              <FiFolder size={13} />
-              <span>Open Account</span>
+              <FiFolder size={14} />
+              <span>OPEN ACCOUNT</span>
             </button>
- 
-            {/* Open Account with Fixing Error — single selection required */}
+
             <button
-              className="asm-foot-btn asm-foot-fix"
-              title={selectedAcc ? 'Open with fixing error mode' : 'Select one account first'}
+              className={`px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all active:scale-95 shadow-lg ${selectedAcc ? 'bg-amber-500 text-white shadow-amber-500/30 hover:bg-amber-600 hover:-translate-y-0.5' : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'}`}
               disabled={!selectedAcc}
-              onClick={() => {
-                if (selectedAcc) handleOpen(selectedAcc);
-              }}
+              onClick={() => { if (selectedAcc) handleOpen(selectedAcc); }}
             >
-              <FiAlertTriangle size={13} />
-              <span>Open with Fixing Error</span>
+              <FiAlertTriangle size={14} />
+              <span>ERROR MODE</span>
             </button>
- 
-            {/* Backup & Repair Database */}
+
             <button
-              className="asm-foot-btn asm-foot-backup"
-              title="Backup & Repair Database"
-              onClick={() => alert('Backup & Repair Database — coming soon')}
+              className="px-4 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-lg shadow-purple-600/30 hover:bg-purple-700 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center gap-2"
+              onClick={() => alert('Coming soon')}
             >
-              <FiDatabase size={13} />
-              <span>Backup &amp; Repair DB</span>
+              <FiDatabase size={14} />
+              <span>BACKUP DB</span>
             </button>
- 
-            {/* Delete Account — single account only, API supports 1 at a time */}
+
             <button
-              className="asm-foot-btn asm-foot-delete"
-              title={selectedAcc ? `Delete: ${selectedAcc.account_name}` : 'Select one account to delete'}
+              className={`px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all active:scale-95 shadow-lg ${selectedAcc ? 'bg-red-600 text-white shadow-red-600/30 hover:bg-red-700 hover:-translate-y-0.5' : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'}`}
               disabled={!selectedAcc}
               onClick={() => setConfirm(true)}
             >
-              <FiTrash2 size={13} />
-              <span>Delete Account</span>
+              <FiTrash2 size={14} />
+              <span>DELETE</span>
             </button>
- 
-            {/* Close */}
+
             <button
-              className="asm-foot-btn asm-foot-close"
+              className="px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 text-xs font-bold hover:bg-gray-100 hover:border-gray-400 transition-all active:scale-95"
               onClick={onClose}
             >
-              <FiX size={13} />
-              <span>Close</span>
+              CLOSE
             </button>
           </div>
         </div>
- 
       </div>
     </div>,
     document.body
   );
 }
- 
+
 
 // ── Main Component ──────────────────────────────────────────────
 export default function Sidebar() {
   const { activeAccount, setActiveAccount } = useAuth();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null);    // null | 'add' | 'edit'
-  const [selectOpen, setSelectOpen] = useState(false);   // account select modal
+  const [modal, setModal] = useState(null);
+  const [selectOpen, setSelectOpen] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showDateModal, setShowDateModal] = useState(false);
   const [selectedDateRange, setSelectedDateRange] = useState({ from: null, to: null });
   const navigate = useNavigate();
-  // ── API: fetch accounts ────────────────────────────────────
+
   const fetchAccounts = async (preserveActive = false) => {
     setLoading(true);
     try {
       const res = await api.get('/accounts-list/?skip=0&limit=100');
       const list = res.data?.data || [];
       setAccounts(list);
- 
-      // Only set active account if it's null or if preserveActive is false
-      if (!preserveActive) {
-        if (!activeAccount) {
-          setActiveAccount(list[0] || null);
-        }
-      } else {
-        // When preserving active, check if the current active account still exists in the list
-        if (activeAccount) {
-          const stillExists = list.find(acc => acc.id === activeAccount.id);
-          if (!stillExists) {
-            setActiveAccount(list[0] || null);
-          }
-        }
+      if (!preserveActive && !activeAccount) setActiveAccount(list[0] || null);
+      else if (activeAccount) {
+        if (!list.find(acc => acc.id === activeAccount.id)) setActiveAccount(list[0] || null);
       }
     } catch {
-      // silent fail
     } finally {
       setLoading(false);
     }
   };
- 
- 
+
   useEffect(() => { fetchAccounts(); }, []);
- 
-  // ── account select handler ─────────────────────────────────
+
   const handleSelect = (acc) => {
     setActiveAccount(acc);
-    // Refresh accounts data but preserve the newly selected active account
     fetchAccounts(true);
   };
- 
-  // ── date change handler ─────────────────────────────────────
+
   const handleDateChange = () => {
-    // Set default to current month
     const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
- 
-    // Format as YYYY-MM-DD for input fields
-    const startDate = firstDay.toISOString().split('T')[0];
-    const endDate = lastDay.toISOString().split('T')[0];
- 
-    // Pre-populate the date range state
-    setSelectedDateRange({
-      from: startDate,
-      to: endDate
-    });
- 
+    const startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+    const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+    setSelectedDateRange({ from: startDate, to: endDate });
     setShowDateModal(true);
   };
- 
-  const handleDateSelect = (dateRange) => {
+
+  const handleDateSelect = (dr) => {
     setShowDateModal(false);
-    // Update the selected date range state
-    setSelectedDateRange({
-      from: dateRange.startDate,
-      to: dateRange.endDate
-    });
-    console.log('Selected date range:', dateRange);
-    // You might want to update to activeAccount with new date range
-    // or navigate to a date-wise report page
+    setSelectedDateRange({ from: dr.startDate, to: dr.endDate });
   };
- 
+
   return (
     <>
-      <div className="acd-panel">
- 
-        {/* ── Header ── */}
-        <div className="acd-header">
- 
-          {/* Select Account Button → opens table modal */}
+      <div className="bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col h-full overflow-hidden">
+
+        {/* Header */}
+        <div className="p-3 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
           <button
-            className="btn btn-info d-flex align-items-center gap-1"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500 text-white rounded-lg text-xs font-bold hover:bg-cyan-600 shadow-md shadow-cyan-500/20 active:scale-95 transition-all"
             onClick={() => setSelectOpen(true)}
           >
-            <FiUser size={11} />
-            <span className="mx-1">
-              {'Account Change'}
-            </span>
+            <FiUser size={13} />
+            <span>ACCOUNT CHANGE</span>
             <FiChevronDown size={11} />
           </button>
- 
-          {/* Refresh */}
-          <button className="btn btn-success" onClick={() => fetchAccounts(true)}>
-            <FiRefreshCw size={12} />
-            <span className="ms-1">Refresh (F5)</span>
+
+          <button className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-600 shadow-md shadow-green-500/20 active:scale-95 transition-all" onClick={() => fetchAccounts(true)}>
+            <FiRefreshCw size={13} />
+            <span>REFRESH (F5)</span>
           </button>
- 
         </div>
- 
-        {/* ── Body ── */}
- 
-          {/* Loading spinner */}
+
+        <div className="flex-1 overflow-auto">
           {loading && (
-            <div className="d-flex justify-content-center py-5">
-              <span className="spinner-border spinner-border-sm text-primary" />
+            <div className="flex justify-center py-10">
+              <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
             </div>
           )}
- 
-          {/* No account */}
+
           {!loading && !activeAccount && (
-            <p className="text-center text-muted small py-4 mb-0">No account selected</p>
+            <p className="text-center text-gray-400 text-xs py-10 italic">No account selected</p>
           )}
- 
-          {/* ── Active account content ── */}
+
           {!loading && activeAccount && (
-            <>
- 
-              {/* ── Account Info Row ── */}
-              <div className="acd-section">
-                <div className="d-flex align-items-start justify-content-between gap-2">
-                  <div>
-                    <div className="fw-bold">{fmt(activeAccount.account_name)}</div>
-                    <div className="text-muted">GST: {fmt(activeAccount.gst_no)}</div>
-                  </div>
-                  <div className="d-flex flex-column align-items-end gap-1">
-                    <div className="d-flex align-items-center gap-1 mt-1">
-                      <button className="acd-row-link" onClick={() => setModal('edit')}>
-                        <FiEdit2 size={11} /> Edit
-                      </button>
-                      <span className="text-muted">|</span>
-                      <button className="acd-row-link" onClick={() => setModal('add')}>
-                        <FiPlusCircle size={11} /> Add New
-                      </button>
-                    </div>
-                  </div>
+            <div className="p-4 space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="font-bold text-gray-900 leading-tight truncate max-w-[150px]">{fmt(activeAccount.account_name)}</div>
+                  <div className="text-gray-500 text-[0.7rem] uppercase tracking-wider font-semibold">GST: {fmt(activeAccount.gst_no)}</div>
                 </div>
-              </div>
- 
-              <div className="acd-divider" />
- 
-              <div className="acd-section">
-                <div className="d-flex align-items-center justify-content-between gap-2">
-                  <span className="text-muted">
-                    Fulfilment by <br />
-                    <span className="text-danger">SELLER (Change)</span>
-                  </span>
-                  <span className="acd-platform">meesho</span>
-                </div>
-              </div>
- 
-              
-              <div className="acd-divider" />
-
-              <div className="d-flex align-items-center justify-content-center gap-3 p-2 bg-dark flex-wrap">
-                <div className="d-flex flex-column flex-sm-row gap-2 gap-sm-3 text-center">
-                  <div className="text-white small">
-                    From - {selectedDateRange.from ? fmtDate(selectedDateRange.from) : '—'}
-                  </div>
-                  <div className="text-white small">
-                    To - {selectedDateRange.to ? fmtDate(selectedDateRange.to) : todayStr()}
-                  </div>
-                </div>
-                <button className="btn btn-danger btn-sm" onClick={handleDateChange}>Change Date</button>
-              </div>
-
-              <div className="acd-divider"></div>
-
-              {/* ── account details ── */}
-
-              <div className="px-2 mb-2">
-                <div className="custom-box mb-2">
-                  <span className="title fw-bold">Account Status</span>
-
-                  <div className="d-flex justify-content-between">
-                    <h5 className="text-success">Sales Profits</h5>
-                    <h5 className="text-success fw-bold">55000.9</h5>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <span className='text-small'>Advertisement</span>
-                    <span className="text-danger fw-bold">-2000.5</span>
-                  </div>
-                  <div className="acd-divider"></div>
-
-                  {/* ── Gross profit ── */}
-                  <div className="py-2">
-                    <div className="d-flex justify-content-between">
-                      <h5 className="text-success">Gross Profits</h5>
-                      <h5 className="text-success fw-bold">52300.9</h5>
-                    </div>
-                    <div className="d-flex justify-content-between">
-                      <span className="text-small">Wrong / Damage / Missing Returns</span>
-                      <span className="text-danger fw-bold">-2000.5</span>
-                    </div>
-                    <div className="d-flex justify-content-between">
-                      <span className="text-small">Return Not Received Loss</span>
-                      <span className="text-danger fw-bold">-2000.5</span>
-                    </div>
-                    <div className="d-flex justify-content-between">
-                      <span className="text-small">Payment Loss</span>
-                      <span className="text-danger fw-bold">-2000.5</span>
-                    </div>
-                    <div className="d-flex justify-content-between">
-                      <span className="text-small">RTO Return Packaging Loss</span>
-                      <span className="text-danger fw-bold">-2000.5</span>
-                    </div>
-                    <div className="d-flex justify-content-between">
-                      <span className="text-small">Customer Return Charge Pending</span>
-                      <span className="text-danger fw-bold">-2000.5</span>
-                    </div>
-                  </div>
-                  <div className="acd-divider"></div>
-
-                  <div className="px-2 pb-0">
-                    <div className="d-flex justify-content-between">
-                      <h5 className="text-success">Net Profits (4.8 %)</h5>
-                      <h5 className="text-success fw-bold">52300.9</h5>
-                    </div>
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  <div className="flex items-center gap-2 text-[0.7rem] font-bold">
+                    <button className="text-primary hover:underline hover:text-primary-hover transition-colors" onClick={() => setModal('edit')}>
+                      <FiEdit2 size={11} className="inline mr-1" /> EDIT
+                    </button>
+                    <span className="text-gray-300">|</span>
+                    <button className="text-primary hover:underline hover:text-primary-hover transition-colors" onClick={() => setModal('add')}>
+                      <FiPlusCircle size={11} className="inline mr-1" /> ADD NEW
+                    </button>
                   </div>
                 </div>
               </div>
 
-              {/* ── SKU Row ── */}
-              <div className="px-2 pt-0">
-                <div className="d-grid">
-                 <button className="bg-success text-center text-white px-3 py-2 rounded text-sm font-medium" 
-                  onClick={() => {
-                    navigate("/sku-list");
-                  }}>
-                    Total SKU - 334 / Without Cost - 0
-                  </button>
+              <div className="h-px bg-gray-100" />
+
+              <div className="flex items-center justify-between text-xs font-medium">
+                <span className="text-gray-500 leading-relaxed italic">
+                  Fulfilment by <br />
+                  <span className="text-red-500 font-bold not-italic">SELLER</span>
+                </span>
+                <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-[0.7rem] font-bold rounded-md italic">meesho</span>
+              </div>
+
+              <div className="h-px bg-gray-100" />
+
+              <div className="flex flex-col gap-2 p-3 bg-gray-900 rounded-xl">
+                <div className="flex justify-center gap-4 text-white text-[0.7rem] font-bold">
+                  <span className="opacity-70">FROM - {selectedDateRange.from ? fmtDate(selectedDateRange.from) : '—'}</span>
+                  <span className="opacity-70">TO - {selectedDateRange.to ? fmtDate(selectedDateRange.to) : todayStr()}</span>
+                </div>
+                <button className="w-full py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-all active:scale-95 shadow-md shadow-red-600/20" onClick={handleDateChange}>CHANGE DATE</button>
+              </div>
+
+              <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 space-y-4 shadow-inner">
+                <span className="block text-xs font-bold text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">Account Status</span>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-end">
+                    <h5 className="text-green-600 font-bold text-sm">Sales Profits</h5>
+                    <h5 className="text-green-700 font-extrabold text-lg leading-none">55000.9</h5>
+                  </div>
+                  <div className="flex justify-between items-center text-xs font-bold">
+                    <span className="text-gray-500">Advertisement</span>
+                    <span className="text-red-500">-2000.5</span>
+                  </div>
+                </div>
+
+                <div className="h-px bg-gray-200/50" />
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-end">
+                    <h5 className="text-green-600 font-bold text-sm">Gross Profits</h5>
+                    <h5 className="text-green-700 font-extrabold text-base leading-none">52300.9</h5>
+                  </div>
+                  <div className="space-y-1.5 pt-1">
+                    {[
+                      { l: "Wrong / Damage / Missing Returns", v: "-2000.5" },
+                      { l: "Return Not Received Loss", v: "-2000.5" },
+                      { l: "Payment Loss", v: "-2000.5" },
+                      { l: "RTO Packaging Loss", v: "-2000.5" },
+                      { l: "Customer Return Pending", v: "-2000.5" },
+                    ].map((row, i) => (
+                      <div key={i} className="flex justify-between text-[10px] uppercase font-bold text-gray-400">
+                        <span>{row.l}</span>
+                        <span className="text-red-400">{row.v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="h-px bg-gray-200/50" />
+
+                <div className="flex justify-between items-center bg-green-50 p-2 rounded-lg border border-green-100">
+                  <h5 className="text-green-700 font-bold text-sm">Net Profits (4.8 %)</h5>
+                  <h5 className="text-green-800 font-extrabold text-lg">52300.9</h5>
                 </div>
               </div>
 
-              <div className="d-grid gap-1 pt-2 py-2">
-                <div className="d-flex justify-content-around flex-wrap gap-y-2">
-                  <SearchButton 
-                  onSearch={(searchData) => {
-                  }}
-                  onClear={() => {
-                  }}
-                />
+              <div className="pt-2">
+                <button className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg shadow-green-600/20 active:scale-95" onClick={() => navigate("/sku-list")}>
+                  Total SKU - 334 / Without Cost - 0
+                </button>
+              </div>
 
-                  <div className="text-center">
-                    <div className="border rounded p-2 "><FaMoneyBillTrendUp size={24} /></div>
-                  </div>
-                  <div className="text-center">
-                    <div className="border rounded p-2 cursor-pointer hover:bg-gray-200 transition-colors" onClick={() => setShowReportModal(true)}>
-                      <FaChartBar size={24} />
-                    </div>
-                    <ReportModal 
-                      isOpen={showReportModal} 
-                      onClose={() => setShowReportModal(false)} 
-                    />
-                  </div>
-                  <div className="text-center">
-                    <div className="border rounded p-2"><FaClipboardList size={24} /></div>
-                  </div>
-                  <div className="text-center">
-                    <div className="border rounded p-2"><FaCog size={24} /></div>
-                  </div>
-                  <div className="text-center">
-                    <div className="border rounded p-2 text-red-600 text-sm">Clear All Search</div>
-                  </div>
+              <div className="space-y-3 pt-2">
+                <div className="flex justify-between items-center gap-1.5 flex-wrap">
+                  <SearchButton onSearch={() => { }} onClear={() => { }} />
+                  <div className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"><FaMoneyBillTrendUp size={20} className="text-green-600" /></div>
+                  <div className="p-2 border border-gray-100 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors shadow-sm" onClick={() => setShowReportModal(true)}><FaChartBar size={20} className="text-gray-600" /></div>
+                  <div className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"><FaClipboardList size={20} className="text-gray-600" /></div>
+                  <div className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"><FaCog size={20} className="text-gray-600" /></div>
                 </div>
 
-                <div className="custom-box m-2">
-                  <span className="title fw-bold">Daily Task</span>
-                  <div className="d-flex gap-2 mb-3">
-                    <button className="btn bg-warning-subtle w-100 px-3 py-2 rounded text-sm" onClick={() => navigate('/pick-up-entry')}>Pick-up Entry</button>
-                    <button className="btn bg-warning-subtle w-100 px-3 py-2 rounded text-sm" onClick={() => setShowReturnModal(true)}>Return Entry</button>
+                <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 space-y-4 shadow-inner">
+                  <span className="block text-xs font-bold text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">Daily Task</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button className="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200" onClick={() => navigate('/pick-up-entry')}>PICK-UP ENTRY</button>
+                    <button className="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200" onClick={() => setShowReturnModal(true)}>RETURN ENTRY</button>
                   </div>
-                  
-                  <ReturnModal 
-                    isOpen={showReturnModal} 
-                    onClose={() => setShowReturnModal(false)} 
-                  />
-                  <div className="d-flex align-items-center">
-                    <button className="btn bg-warning-subtle w-100 px-3 py-2 rounded text-sm">Import Data</button>
-                    <div className="ms-2 px-3 py-2 bg-warning-subtle">⋮⋮</div>
+                  <div className="flex gap-2">
+                    <button className="flex-1 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200">IMPORT DATA</button>
+                    <button className="p-2 bg-amber-100 text-amber-700 rounded-lg border border-amber-200 font-bold">⋮</button>
                   </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
-      {/* </div> */}
+      </div>
 
-      {/* ── Account Select Table Modal ── */}
       {selectOpen && (
         <AccountSelectModal
           accounts={accounts}
@@ -674,7 +554,6 @@ export default function Sidebar() {
         />
       )}
 
-      {/* ── Account Modal (Add / Edit) ── */}
       {modal && (
         <AccountModal
           mode={modal}
@@ -684,7 +563,20 @@ export default function Sidebar() {
         />
       )}
 
-      {/* ── Date Section Modal ── */}
+      {showReportModal && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+        />
+      )}
+
+      {showReturnModal && (
+        <ReturnModal
+          isOpen={showReturnModal}
+          onClose={() => setShowReturnModal(false)}
+        />
+      )}
+
       {showDateModal && (
         <DateSectionModal
           isOpen={showDateModal}
@@ -695,5 +587,3 @@ export default function Sidebar() {
     </>
   );
 }
-
-

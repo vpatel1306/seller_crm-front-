@@ -23,21 +23,21 @@ export default function Dashboard() {
   if (loading) return <Loader />;
 
   return (
-    <div className="dashboard-layout">
+    <div className="flex flex-col min-h-screen bg-bg">
       <Navbar />
       <motion.main
-        className="dashboard-main"
+        className="flex-1 p-8 max-md:p-4"
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4 }}
       >
-        {error && <div className="dashboard-error">{error}</div>}
-        <h2 className="dashboard-heading mx-2">Dashboard</h2>
-        <div className="row g-2">
-          <div className="col-md-9">
+        {error && <div className="bg-[#fef2f2] text-error border border-[#fecaca] rounded-inner px-4 py-2.5 mb-4 text-[0.875rem]">{error}</div>}
+        <h2 className="text-[1.5rem] font-bold mb-6 text-text mx-2">Dashboard</h2>
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="w-full lg:w-3/4">
             <DashboardCards />
           </div>
-          <div className="col-md-3">
+          <div className="w-full lg:w-1/4">
             <Sidebar />
           </div>
         </div>

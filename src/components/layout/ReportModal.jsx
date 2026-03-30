@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import CommonModal from '../common/CommonModal';
 import { useNavigate } from 'react-router-dom';
+import { FiCheck, FiArrowRight } from 'react-icons/fi';
 
 const ReportModal = ({ isOpen, onClose }) => {
   const [selectedReport, setSelectedReport] = useState('sku');
@@ -28,13 +29,13 @@ const ReportModal = ({ isOpen, onClose }) => {
 
   const handleReportSelect = (reportId) => {
     setSelectedReport(reportId);
-    
+
     if (reportId === 'exit') {
       navigate('/dashboard');
       onClose();
       return;
     }
-    
+
     const path = reportRoutes[reportId];
     if (path) {
       navigate(path);
@@ -44,9 +45,9 @@ const ReportModal = ({ isOpen, onClose }) => {
 
   const footerButtons = [
     { label: 'Cancel', type: 'secondary', onClick: onClose },
-    { 
-      label: 'Generate Report', 
-      type: 'primary', 
+    {
+      label: 'Generate Report',
+      type: 'primary',
       onClick: () => {
         if (selectedReport === 'exit') {
           navigate('/dashboard');
@@ -63,58 +64,41 @@ const ReportModal = ({ isOpen, onClose }) => {
   ];
 
   return (
-    <>
-      <CommonModal
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Report Selection"
-        size="md"
-        footerButtons={footerButtons}
-        headerStyle="gradient"
-      >
-        <div className="report-list">
-          {reports.map(report => (
+    <CommonModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Report Selection"
+      size="md"
+      footerButtons={footerButtons}
+      headerStyle="gradient"
+    >
+      <div className="space-y-2 p-1">
+        {reports.map(report => {
+          const isActive = selectedReport === report.id;
+          return (
             <div
               key={report.id}
-              className={`report-item ${selectedReport === report.id ? 'active' : ''}`}
+              className={`group flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all border-2 ${isActive ? 'bg-primary/5 border-primary shadow-sm shadow-primary/10' : 'bg-white border-gray-100 hover:bg-gray-50 hover:border-gray-200'}`}
               onClick={() => handleReportSelect(report.id)}
-              style={{
-                cursor: 'pointer',
-                padding: '12px 16px',
-                marginBottom: '8px',
-                borderRadius: '8px',
-                transition: 'all 0.3s ease',
-                backgroundColor: selectedReport === report.id ? '#e7f1ff' : '#fff',
-                border: selectedReport === report.id ? '1px solid #0d6efd' : '1px solid #e0e0e0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}
-              onMouseEnter={(e) => {
-                if (selectedReport !== report.id) {
-                  e.currentTarget.style.backgroundColor = '#f8f9fa';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedReport !== report.id) {
-                  e.currentTarget.style.backgroundColor = '#fff';
-                }
-              }}
             >
-              <div className="d-flex align-items-center gap-3">
-                <span style={{ fontSize: '20px' }}>{report.icon}</span>
-                <span className="report-name fw-medium">{report.name}</span>
+              <div className="flex items-center gap-4">
+                <span className={`text-2xl transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`}>{report.icon}</span>
+                <span className={`text-sm font-bold tracking-tight ${isActive ? 'text-primary' : 'text-gray-600'}`}>{report.name}</span>
               </div>
-              {selectedReport === report.id && (
-                <span className="text-primary" style={{ fontSize: '18px' }}>✓</span>
-              )}
+              <div className="flex items-center">
+                {isActive ? (
+                  <div className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                    <FiCheck size={14} />
+                  </div>
+                ) : (
+                  <FiArrowRight size={16} className="text-gray-200 group-hover:text-gray-400 group-hover:translate-x-1 transition-all" />
+                )}
+              </div>
             </div>
-          ))}
-        </div>
-
-      </CommonModal>
-
-    </>
+          );
+        })}
+      </div>
+    </CommonModal>
   );
 };
 

@@ -1,10 +1,9 @@
 import React from "react";
 import { BsArrowLeftCircleFill } from "react-icons/bs";
-import { FaTimes } from "react-icons/fa";
+import { FiX, FiCornerDownLeft, FiRefreshCcw, FiCheckCircle, FiSearch } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
 const ReturnEntryAccountWise = () => {
-
   const navigate = useNavigate();
 
   const handleClose = () => {
@@ -12,163 +11,166 @@ const ReturnEntryAccountWise = () => {
   };
 
   return (
-    <div className="container-fluid py-2">
+    <div className="min-h-screen bg-bg p-4 flex flex-col gap-6 font-sans max-w-[1700px] mx-auto overflow-x-hidden">
 
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center bg-danger text-white p-2 rounded mb-2">
-        <div className="fw-bold small small-md fs-6">
-          venus times store - Return Entry (Account Wise)
+      <div className="bg-gradient-to-r from-red-600 to-red-800 text-white px-6 py-4 rounded-2xl flex justify-between items-center shadow-lg shadow-red-600/20">
+        <div className="flex items-center gap-3">
+          <FiCornerDownLeft size={20} className="text-white/80" />
+          <h1 className="font-black tracking-tight text-lg uppercase flex items-center gap-3">
+            <span>venus times store</span>
+            <span className="opacity-20 text-xl font-thin">|</span>
+            <span className="text-white/80 font-medium">Return Entry (Account Wise)</span>
+          </h1>
         </div>
-
-        <button className="btn btn-sm btn-light" onClick={handleClose}>
-          <FaTimes />
+        <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 transition-all active:scale-90" onClick={handleClose}>
+          <FiX size={20} />
         </button>
       </div>
 
-      <div className="row g-2">
-
-        {/* LEFT SIDE */}
-        <div className="col-12 col-lg-7">
-
-          <div className="border p-2 h-100">
-
-            <small className="fw-bold d-block mb-2">
-              Accepted Return AWB Or Order Numbers
-            </small>
-
-            <div className="table-responsive">
-              <table className="table table-bordered table-sm">
-                <thead className="table-light">
-                  <tr>
-                    <th>Order Number</th>
-                    <th>AWB Number</th>
-                    <th>Order Date</th>
-                    <th>Return Create</th>
-                    <th>Qty</th>
-                    <th>Issue</th>
-                    <th>Scan Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td colSpan="7" className="text-center text-muted">
-                      No Data
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 flex-1">
+        {/* LEFT SIDE - Accepted Table */}
+        <div className="lg:col-span-7 flex flex-col bg-white rounded-3xl border border-gray-100 shadow-sm p-6 overflow-hidden">
+          <div className="flex items-center justify-between mb-4 border-b border-gray-50 pb-3">
+            <div className="flex items-center gap-2">
+              <FiCheckCircle className="text-green-500" />
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Accepted Returns</span>
             </div>
-
           </div>
 
-        </div>
-
-        {/* CENTER ARROW */}
-        <div className="col-12 col-lg-1 d-flex align-items-center justify-content-center">
-
-          <div className="text-center">
-            <BsArrowLeftCircleFill size={40} className="text-danger" />
-            <div className="text-danger fw-bold fs-5 mt-1">0</div>
-            <small className="fw-bold">Accepted</small>
+          <div className="overflow-auto flex-1 rounded-2xl border border-gray-50 shadow-inner bg-gray-50/20">
+            <table className="w-full text-left text-[0.7rem] border-collapse min-w-[600px]">
+              <thead className="sticky top-0 bg-gray-100 text-gray-600 font-bold uppercase tracking-tighter">
+                <tr>
+                  <th className="px-3 py-3 border-b border-gray-200">Order/AWB</th>
+                  <th className="px-3 py-3 border-b border-gray-200">Date</th>
+                  <th className="px-3 py-3 border-b border-gray-200">Return</th>
+                  <th className="px-3 py-3 border-b border-gray-200">Qty</th>
+                  <th className="px-3 py-3 border-b border-gray-200">Issue</th>
+                  <th className="px-3 py-3 border-b border-gray-200">Scan Time</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                <tr>
+                  <td colSpan="6" className="px-3 py-24 text-center text-gray-300 font-bold uppercase tracking-widest italic opacity-50">
+                    Waiting for scans...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-
         </div>
 
-        {/* RIGHT SIDE */}
-        <div className="col-12 col-lg-4">
+        {/* CENTER INDICATOR (Visible on LG) */}
+        <div className="hidden lg:col-span-1 lg:flex flex-col items-center justify-center">
+          <div className="text-center group">
+            <div className="relative">
+              <div className="absolute inset-0 bg-red-500 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
+              <BsArrowLeftCircleFill size={56} className="text-red-600 relative z-10 animate-pulse" />
+            </div>
+            <div className="text-red-600 font-black text-4xl mt-3 tracking-tighter">0</div>
+            <div className="text-[0.6rem] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Accepted</div>
+          </div>
+        </div>
 
-          <div className="border p-3 h-100">
+        {/* RIGHT SIDE - Inputs */}
+        <div className="lg:col-span-4 flex flex-col gap-6">
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8 flex flex-col relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
 
-            <small className="fw-bold d-block text-center mb-3">
-              Fetch Scan Mode
-            </small>
-
-            {/* Inputs */}
-            <div className="mb-2">
-              <label className="form-label">AWB / Pack QR</label>
-              <input type="text" className="form-control form-control-sm" />
+            <div className="flex items-center gap-2 mb-8">
+              <FiSearch size={16} className="text-primary" />
+              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Scan Terminals</h2>
             </div>
 
-            <div className="mb-2">
-              <label className="form-label">Order No.</label>
-              <input type="text" className="form-control form-control-sm" />
-            </div>
+            <div className="space-y-5 relative z-10">
+              <div className="space-y-1.5">
+                <label className="text-[0.7rem] font-bold text-gray-500 uppercase tracking-wide px-1">AWB / Pack QR</label>
+                <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-mono outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all shadow-inner" placeholder="Scan here..." />
+              </div>
 
-            <div className="mb-2">
-              <label className="form-label">Rec. Condition</label>
-              <select className="form-select form-select-sm">
-                <option>No Issue In Return</option>
-                <option>I have received wrong return</option>
-                <option>Item/s are missing in my return</option>
-              </select>
-            </div>
+              <div className="space-y-1.5">
+                <label className="text-[0.7rem] font-bold text-gray-500 uppercase tracking-wide px-1">Order No.</label>
+                <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-mono outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all shadow-inner" placeholder="0000000..." />
+              </div>
 
-            {/* Info Fields */}
-            <div className="small text-muted mb-3">
-              <div className="row">
-                <div className="col-6">
-                  <div>Order Number</div>
-                  <div>Order Date</div>
+              <div className="space-y-1.5">
+                <label className="text-[0.7rem] font-bold text-gray-500 uppercase tracking-wide px-1">Received Condition</label>
+                <select className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold text-gray-700 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary bg-white transition-all shadow-sm">
+                  <option>No Issue In Return</option>
+                  <option>I have received wrong return</option>
+                  <option>Item/s are missing in my return</option>
+                </select>
+              </div>
+
+              <div className="bg-gray-50/50 p-4 rounded-2xl border border-dashed border-gray-200 grid grid-cols-2 gap-y-4">
+                <div className="space-y-1">
+                  <span className="text-[0.6rem] font-bold text-gray-300 uppercase block">Order#</span>
+                  <span className="text-[0.7rem] font-mono text-gray-400 italic">Pending...</span>
                 </div>
-                <div className="col-6">
-                  <div>AWB Number</div>
-                  <div>Courier</div>
+                <div className="space-y-1">
+                  <span className="text-[0.6rem] font-bold text-gray-300 uppercase block">Date</span>
+                  <span className="text-[0.7rem] font-mono text-gray-400 italic">Pending...</span>
                 </div>
-                <div className="col-12 mt-2">
-                  <div>Current Position</div>
+                <div className="space-y-1">
+                  <span className="text-[0.6rem] font-bold text-gray-300 uppercase block">AWB#</span>
+                  <span className="text-[0.7rem] font-mono text-gray-400 italic">Pending...</span>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[0.6rem] font-bold text-gray-300 uppercase block">Courier</span>
+                  <span className="text-[0.7rem] font-mono text-gray-400 italic">Pending...</span>
                 </div>
               </div>
-            </div>
 
-            {/* Buttons */}
-            <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-              <button className="btn btn-success btn-sm w-100 w-md-auto">
-                Accept Return
-              </button>
-              <button className="btn btn-secondary btn-sm w-100 w-md-auto">
-                Close
-              </button>
+              <div className="flex flex-col gap-3 pt-4">
+                <button className="w-full py-3.5 bg-green-500 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-green-600 shadow-lg shadow-green-500/30 transition-all active:scale-95 flex items-center justify-center gap-2">
+                  <FiCheckCircle size={14} />
+                  Accept Return
+                </button>
+                <button className="w-full py-3 bg-gray-100 text-gray-500 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95" onClick={handleClose}>
+                  Close
+                </button>
+              </div>
             </div>
-
           </div>
-
         </div>
-
       </div>
 
-      {/* BOTTOM TABLE */}
-      <div className="border p-2 mt-3">
+      {/* BOTTOM AREA - Search Results */}
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-col">
+        <div className="flex items-center justify-between mb-4 border-b border-gray-50 pb-3">
+          <div className="flex items-center gap-2">
+            <FiRefreshCcw className="text-indigo-400" />
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Search Results (0)</span>
+          </div>
+        </div>
 
-        <small className="fw-bold">Search Result - 0</small>
-
-        <div className="table-responsive">
-          <table className="table table-bordered table-sm mt-2">
-            <thead className="table-light">
+        <div className="overflow-auto rounded-2xl border border-gray-50 shadow-inner bg-gray-50/20">
+          <table className="w-full text-left text-[0.7rem] border-collapse min-w-[1000px]">
+            <thead className="sticky top-0 bg-gray-100 text-gray-600 font-bold uppercase tracking-tighter">
               <tr>
-                <th>Order Date</th>
-                <th>Order Number</th>
-                <th>Return AWB</th>
-                <th>Return Courier</th>
-                <th>Pickup AWB</th>
-                <th>Pickup Courier</th>
-                <th>Return Create</th>
-                <th>Qty</th>
-                <th>SKU ID</th>
-                <th>Position</th>
+                <th className="px-3 py-3 border-b border-gray-200">Date</th>
+                <th className="px-3 py-3 border-b border-gray-200">Order#</th>
+                <th className="px-3 py-3 border-b border-gray-200">Return AWB</th>
+                <th className="px-3 py-3 border-b border-gray-200">R-Courier</th>
+                <th className="px-3 py-3 border-b border-gray-200">Pickup AWB</th>
+                <th className="px-3 py-3 border-b border-gray-200">P-Courier</th>
+                <th className="px-3 py-3 border-b border-gray-200">Return Create</th>
+                <th className="px-3 py-3 border-b border-gray-200">Qty</th>
+                <th className="px-3 py-3 border-b border-gray-200">SKU ID</th>
+                <th className="px-3 py-3 border-b border-gray-200">Position</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               <tr>
-                <td colSpan="10" className="text-center text-muted">
-                  No Data
+                <td colSpan="10" className="px-3 py-24 text-center text-gray-300 font-bold uppercase tracking-widest italic opacity-50">
+                  Search for records to display data
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-
       </div>
-
     </div>
   );
 };
