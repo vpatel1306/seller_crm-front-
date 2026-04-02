@@ -2,38 +2,41 @@ import React, { useState } from 'react';
 import CommonModal from '../common/CommonModal';
 import { useNavigate } from 'react-router-dom';
 import { FiCalendar, FiRefreshCw, FiArrowRight } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
+
+const getCurrentMonthRange = () => {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const formatInputDate = (date) => date.toISOString().split('T')[0];
+
+  return {
+    startDate: formatInputDate(start),
+    endDate: formatInputDate(now),
+  };
+};
 
 const DateSectionModal = ({ isOpen, onClose, onDateSelect }) => {
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const { selectedDateRange, setSelectedDateRange } = useAuth();
+  const [startDate, setStartDate] = useState(() => selectedDateRange?.from || getCurrentMonthRange().startDate);
+  const [endDate, setEndDate] = useState(() => selectedDateRange?.to || getCurrentMonthRange().endDate);
   const navigate = useNavigate();
-
-  // Format date to DD/MM/YYYY
-  const formatDate = (date) => {
-    if (!date) return '';
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
 
   // Apply
   const handleApply = () => {
     if (startDate && endDate) {
-      onDateSelect({
-        startDate: formatDate(startDate),
-        endDate: formatDate(endDate),
-      });
-      navigate('/date-wise-report', { state: { startDate, endDate } });
+      const nextRange = { from: startDate, to: endDate };
+      setSelectedDateRange(nextRange);
+      onDateSelect?.(nextRange);
+      navigate('/dashboard');
       onClose();
     }
   };
 
   // Clear
   const handleClear = () => {
-    setStartDate('');
-    setEndDate('');
+    const currentMonthRange = getCurrentMonthRange();
+    setStartDate(currentMonthRange.startDate);
+    setEndDate(currentMonthRange.endDate);
   };
 
   // Set Month (example logic)

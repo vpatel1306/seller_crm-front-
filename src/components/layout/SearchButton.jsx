@@ -20,7 +20,7 @@ const SearchButton = ({ onSearch, onClear }) => {
     <>
       <div className="flex justify-center group">
         <button
-          className="w-14 h-14 flex items-center justify-center bg-white border-2 border-primary/20 rounded-2xl text-primary hover:bg-primary hover:text-white hover:border-primary hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 active:scale-90 group-hover:-translate-y-1 shadow-sm"
+          className="w-10 h-10 flex items-center justify-center bg-white border-2 border-primary/20 rounded-2xl text-primary hover:bg-primary hover:text-white hover:border-primary hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 active:scale-90 group-hover:-translate-y-1 shadow-sm"
           onClick={handleOpenModal}
           title="Smart Search"
         >

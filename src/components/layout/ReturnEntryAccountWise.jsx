@@ -2,9 +2,12 @@ import React from "react";
 import { BsArrowLeftCircleFill } from "react-icons/bs";
 import { FiX, FiCornerDownLeft, FiRefreshCcw, FiCheckCircle, FiSearch } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const ReturnEntryAccountWise = () => {
   const navigate = useNavigate();
+  const { activeAccount } = useAuth();
+  const accountName = activeAccount?.account_name || "No account selected";
 
   const handleClose = () => {
     navigate("/dashboard");
@@ -18,7 +21,7 @@ const ReturnEntryAccountWise = () => {
         <div className="flex items-center gap-3">
           <FiCornerDownLeft size={20} className="text-white/80" />
           <h1 className="font-black tracking-tight text-lg uppercase flex items-center gap-3">
-            <span>venus times store</span>
+            <span>{accountName}</span>
             <span className="opacity-20 text-xl font-thin">|</span>
             <span className="text-white/80 font-medium">Return Entry (Account Wise)</span>
           </h1>

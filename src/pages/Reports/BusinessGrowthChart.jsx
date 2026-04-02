@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -11,6 +11,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { FiX, FiInfo, FiTrendingUp, FiTrendingDown, FiPieChart, FiBarChart2 } from "react-icons/fi";
+import { useAuth } from "../../context/AuthContext";
 
 const MONTHLY_DATA = [
   {
@@ -147,6 +148,8 @@ function CustomTooltip({ active, payload, label }) {
 
 export default function BusinessGrowthChart() {
   const navigate = useNavigate();
+  const { activeAccount } = useAuth();
+  const accountName = activeAccount?.account_name || "No account selected";
   const [visible, setVisible] = useState(Object.fromEntries(BARS.map((b) => [b.key, true])));
   const toggle = useCallback((key) => setVisible((prev) => ({ ...prev, [key]: !prev[key] })), []);
 
@@ -163,7 +166,7 @@ export default function BusinessGrowthChart() {
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight leading-tight">Business Growth Tracker</h1>
-            <p className="text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.4em]">Analytics Module — Dev E-Com</p>
+            <p className="text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.4em]">Analytics Module - {accountName}</p>
           </div>
         </div>
 
@@ -207,8 +210,8 @@ export default function BusinessGrowthChart() {
 
           {/* Chart Core */}
           <div className="flex-1 min-w-0">
-            <div className="h-full w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-full min-h-[450px] w-full min-w-0">
+              <ResponsiveContainer width="100%" height={450} minWidth={0}>
                 <BarChart
                   data={MONTHLY_DATA}
                   margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
@@ -294,3 +297,6 @@ export default function BusinessGrowthChart() {
     </div>
   );
 }
+
+
+

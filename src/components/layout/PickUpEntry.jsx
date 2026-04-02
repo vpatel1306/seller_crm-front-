@@ -1,17 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiX, FiFileText, FiFolder, FiSave, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
+import { useAuth } from "../../context/AuthContext";
 
 const PickUpEntry = () => {
   const navigate = useNavigate();
+  const { activeAccount } = useAuth();
   const [selectedFile, setSelectedFile] = useState(null);
-  const [pendingLabels, setPendingLabels] = useState([
+  const accountName = activeAccount?.account_name || "No account selected";
+  const [pendingLabels] = useState([
     { seller: "CHAITANYA_ENTERPRISE", orderNo: "15207610943726400_1", awb: "1490813056188363" },
     { seller: "CHAITANYA_ENTERPRISE", orderNo: "153818098695217792_1", awb: "VL0081121968696" },
     { seller: "DIGITECHIFIED B-333", orderNo: "OD334873404344674100", awb: "FMPQ4977103874" },
   ]);
 
-  const [labelFiles, setLabelFiles] = useState([
+  const [labelFiles] = useState([
     { time: "10/07/2025 03:44:22 PM", name: "Sub_Order_Labels_7eeeab79-fb5-4cc4-bee2-53c05e3..." }
   ]);
 
@@ -26,7 +29,7 @@ const PickUpEntry = () => {
         <div className="flex items-center gap-3">
           <FiFileText size={20} className="text-white/80" />
           <h1 className="font-black tracking-tight text-lg uppercase">
-            Import Label File (Pick-Up) <span className="text-white/60 font-medium">— venus times store</span>
+            Import Label File (Pick-Up) <span className="text-white/60 font-medium">— {accountName}</span>
           </h1>
         </div>
         <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 transition-all active:scale-90" onClick={() => navigate("/dashboard")}>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   FiX, FiRefreshCw, FiEdit2, FiPlusCircle,
@@ -15,6 +15,7 @@ import SearchButton from '../layout/SearchButton';
 import { useAuth } from '../../context/AuthContext';
 import DateSectionModal from '../layout/DateSectionModal';
 import ReturnModal from '../layout/ReturnModal';
+import ImportDataModal from '../layout/ImportDataModal';
 
 // ── helpers ────────────────────────────────────────────────────
 const fmtDate = (d) => {
@@ -36,11 +37,16 @@ const fmtNum = (val) => {
 };
 
 // ── Account Select Table Modal ──────────────────────────────────
-function AccountSelectModal({ accounts, active, onSelect, onClose, onDelete, onRefresh }) {
+function AccountSelectModal({ accounts, active, onSelect, onClose, onRefresh }) {
   const [search, setSearch] = useState('');
-  const [checked, setChecked] = useState(new Set());   // selected row IDs
+  const [checked, setChecked] = useState(() => new Set(active ? [active.id] : []));   // selected row IDs
   const [deleting, setDeleting] = useState(false);
   const [confirm, setConfirm] = useState(false);       // confirm delete dialog
+
+  useEffect(() => {
+    setChecked(new Set(active ? [active.id] : []));
+    setConfirm(false);
+  }, [active]);
 
   // search filter
   const filtered = accounts.filter((acc) => {
@@ -90,6 +96,7 @@ function AccountSelectModal({ accounts, active, onSelect, onClose, onDelete, onR
       setConfirm(false);
       onRefresh();
     } catch {
+      // Keep the current modal state when delete fails.
     } finally {
       setDeleting(false);
     }
@@ -347,34 +354,47 @@ function AccountSelectModal({ accounts, active, onSelect, onClose, onDelete, onR
 
 // ── Main Component ──────────────────────────────────────────────
 export default function Sidebar() {
-  const { activeAccount, setActiveAccount } = useAuth();
+  const { activeAccount, setActiveAccount, selectedDateRange } = useAuth();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
   const [selectOpen, setSelectOpen] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [showDateModal, setShowDateModal] = useState(false);
-  const [selectedDateRange, setSelectedDateRange] = useState({ from: null, to: null });
   const navigate = useNavigate();
+  const activeAccountRef = useRef(activeAccount);
 
-  const fetchAccounts = async (preserveActive = false) => {
+  useEffect(() => {
+    activeAccountRef.current = activeAccount;
+  }, [activeAccount]);
+
+  const fetchAccounts = useCallback(async (preserveActive = false) => {
     setLoading(true);
     try {
       const res = await api.get('/accounts-list/?skip=0&limit=100');
       const list = res.data?.data || [];
+      const currentActive = activeAccountRef.current;
       setAccounts(list);
-      if (!preserveActive && !activeAccount) setActiveAccount(list[0] || null);
-      else if (activeAccount) {
-        if (!list.find(acc => acc.id === activeAccount.id)) setActiveAccount(list[0] || null);
+      if (!preserveActive && !currentActive) {
+        setActiveAccount(list[0] || null);
+      } else if (currentActive) {
+        const latestActive = list.find((acc) => acc.id === currentActive.id);
+        if (latestActive) {
+          setActiveAccount(latestActive);
+        } else {
+          setActiveAccount(list[0] || null);
+        }
       }
     } catch {
+      // Keep the last rendered account list when fetch fails.
     } finally {
       setLoading(false);
     }
-  };
+  }, [setActiveAccount]);
 
-  useEffect(() => { fetchAccounts(); }, []);
+  useEffect(() => { fetchAccounts(); }, [fetchAccounts]);
 
   const handleSelect = (acc) => {
     setActiveAccount(acc);
@@ -382,24 +402,22 @@ export default function Sidebar() {
   };
 
   const handleDateChange = () => {
-    const today = new Date();
-    const startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-    const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
-    setSelectedDateRange({ from: startDate, to: endDate });
     setShowDateModal(true);
   };
 
-  const handleDateSelect = (dr) => {
+  const handleDateSelect = () => {
     setShowDateModal(false);
-    setSelectedDateRange({ from: dr.startDate, to: dr.endDate });
   };
+
+  const currentAccount = activeAccount || {};
+  const canEditAccount = Boolean(activeAccount);
 
   return (
     <>
       <div className="bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col h-full overflow-hidden">
 
         {/* Header */}
-        <div className="p-3 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+        <div className="p-3 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between gap-2">
           <button
             className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500 text-white rounded-lg text-xs font-bold hover:bg-cyan-600 shadow-md shadow-cyan-500/20 active:scale-95 transition-all"
             onClick={() => setSelectOpen(true)}
@@ -422,23 +440,22 @@ export default function Sidebar() {
             </div>
           )}
 
-          {!loading && !activeAccount && (
-            <p className="text-center text-gray-400 text-xs py-10 italic">No account selected</p>
-          )}
-
-          {!loading && activeAccount && (
-            <div className="p-4 space-y-4">
-              <div className="flex items-start justify-between gap-3">
+          <div className="p-4 space-y-2.5">
+              <div className="flex items-start flex-wrap justify-between gap-3">
                 <div className="space-y-0.5">
-                  <div className="font-bold text-gray-900 leading-tight truncate max-w-[150px]">{fmt(activeAccount.account_name)}</div>
-                  <div className="text-gray-500 text-[0.7rem] uppercase tracking-wider font-semibold">GST: {fmt(activeAccount.gst_no)}</div>
+                  <div className="font-bold text-gray-900 leading-tight truncate max-w-[150px]">{fmt(currentAccount.account_name || 'N/A')}</div>
+                  <div className="text-gray-500 text-[0.7rem] uppercase tracking-wider font-semibold">GST: {fmt(currentAccount.gst_no || 'N/A')}</div>
                 </div>
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   <div className="flex items-center gap-2 text-[0.7rem] font-bold">
-                    <button className="text-primary hover:underline hover:text-primary-hover transition-colors" onClick={() => setModal('edit')}>
-                      <FiEdit2 size={11} className="inline mr-1" /> EDIT
-                    </button>
-                    <span className="text-gray-300">|</span>
+                    {canEditAccount && (
+                      <>
+                        <button className="text-primary hover:underline hover:text-primary-hover transition-colors" onClick={() => setModal('edit')}>
+                          <FiEdit2 size={11} className="inline mr-1" /> EDIT
+                        </button>
+                        <span className="text-gray-300">|</span>
+                      </>
+                    )}
                     <button className="text-primary hover:underline hover:text-primary-hover transition-colors" onClick={() => setModal('add')}>
                       <FiPlusCircle size={11} className="inline mr-1" /> ADD NEW
                     </button>
@@ -466,10 +483,10 @@ export default function Sidebar() {
                 <button className="w-full py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-all active:scale-95 shadow-md shadow-red-600/20" onClick={handleDateChange}>CHANGE DATE</button>
               </div>
 
-              <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 space-y-4 shadow-inner">
+              <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 space-y-2.5 shadow-inner">
                 <span className="block text-xs font-bold text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">Account Status</span>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex justify-between items-end">
                     <h5 className="text-green-600 font-bold text-sm">Sales Profits</h5>
                     <h5 className="text-green-700 font-extrabold text-lg leading-none">55000.9</h5>
@@ -482,7 +499,7 @@ export default function Sidebar() {
 
                 <div className="h-px bg-gray-200/50" />
 
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <div className="flex justify-between items-end">
                     <h5 className="text-green-600 font-bold text-sm">Gross Profits</h5>
                     <h5 className="text-green-700 font-extrabold text-base leading-none">52300.9</h5>
@@ -517,29 +534,29 @@ export default function Sidebar() {
                 </button>
               </div>
 
-              <div className="space-y-3 pt-2">
+              <div className="space-y-2.5 pt-2">
                 <div className="flex justify-between items-center gap-1.5 flex-wrap">
                   <SearchButton onSearch={() => { }} onClear={() => { }} />
                   <div className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"><FaMoneyBillTrendUp size={20} className="text-green-600" /></div>
-                  <div className="p-2 border border-gray-100 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors shadow-sm" onClick={() => setShowReportModal(true)}><FaChartBar size={20} className="text-gray-600" /></div>
-                  <div className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"><FaClipboardList size={20} className="text-gray-600" /></div>
+                  <div className="p-2 border border-gray-100 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors shadow-sm" onClick={() => navigate('/business-growth-chart')} ><FaChartBar size={20} className="text-gray-600" /></div>
+                  <div className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm" onClick={() => setShowReportModal(true)}><FaClipboardList size={20} className="text-gray-600" /></div>
+                  <button className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-xs font-bold text-red-600">Clear All Search</button>
                   <div className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"><FaCog size={20} className="text-gray-600" /></div>
                 </div>
 
-                <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 space-y-4 shadow-inner">
+                <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 space-y-2.5 shadow-inner">
                   <span className="block text-xs font-bold text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">Daily Task</span>
                   <div className="grid grid-cols-2 gap-2">
                     <button className="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200" onClick={() => navigate('/pick-up-entry')}>PICK-UP ENTRY</button>
                     <button className="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200" onClick={() => setShowReturnModal(true)}>RETURN ENTRY</button>
                   </div>
                   <div className="flex gap-2">
-                    <button className="flex-1 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200">IMPORT DATA</button>
+                    <button className="flex-1 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200" onClick={() => setShowImportModal(true)}>IMPORT DATA</button>
                     <button className="p-2 bg-amber-100 text-amber-700 rounded-lg border border-amber-200 font-bold">⋮</button>
                   </div>
                 </div>
               </div>
             </div>
-          )}
         </div>
       </div>
 
@@ -549,7 +566,6 @@ export default function Sidebar() {
           active={activeAccount}
           onSelect={handleSelect}
           onClose={() => setSelectOpen(false)}
-          onDelete={() => fetchAccounts(true)}
           onRefresh={() => fetchAccounts(true)}
         />
       )}
@@ -584,6 +600,11 @@ export default function Sidebar() {
           onDateSelect={handleDateSelect}
         />
       )}
+
+      <ImportDataModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+      />
     </>
   );
 }

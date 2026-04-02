@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const cardData = {
   allOrders: {
@@ -135,15 +136,13 @@ const cardData = {
   },
 };
 
-function StatCard({ title, bg, text, subtitle, costLabel, cost, value, badge, badgeColor }) {
+function StatCard({ title, bg, text, subtitle, costLabel, cost, value, badge, badgeColor, onClick }) {
   return (
     <div className="h-full">
       <div
-        className="stat-card h-full"
-        style={{
-          backgroundColor: bg,
-          color: text,
-        }}
+        className={`stat-card h-full ${onClick ? 'cursor-pointer hover:opacity-90 hover:ring-2 hover:ring-white/30 transition-all active:scale-95' : ''}`}
+        style={{ backgroundColor: bg, color: text }}
+        onClick={onClick}
       >
         <div className="stat-card-header">
           <span className="stat-card-title">{title}</span>
@@ -169,37 +168,38 @@ function StatCard({ title, bg, text, subtitle, costLabel, cost, value, badge, ba
 }
 
 export default function DashboardCards() {
+  const navigate = useNavigate();
   return (
     <div className="w-full">
       <div className="px-0">
         {/* Row 1 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-          <StatCard {...cardData.allOrders} />
-          <StatCard {...cardData.cancelled} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3 mb-3">
+          <StatCard {...cardData.allOrders} onClick={() => navigate('/all-orders')} />
+          <StatCard {...cardData.cancelled} onClick={() => navigate('/cancelled-orders')} />
           <StatCard {...cardData.readyToShip} />
           <StatCard {...cardData.shipped} />
         </div>
 
         {/* Row 2 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-          <StatCard {...cardData.returnInTransit} />
-          <StatCard {...cardData.outForDelivery} />
-          <StatCard {...cardData.returnReceived} />
-          <StatCard {...cardData.returnScanPending} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3 mb-3">
+          <StatCard {...cardData.returnInTransit} onClick={() => navigate('/return-in-transit')} />
+          <StatCard {...cardData.outForDelivery} onClick={() => navigate('/out-for-delivery')} />
+          <StatCard {...cardData.returnReceived} onClick={() => navigate('/received-returns')} />
+          <StatCard {...cardData.returnScanPending} onClick={() => navigate('/returns-not-received')} />
         </div>
 
         {/* Row 3 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-          <StatCard {...cardData.returnMismatch} />
-          <StatCard {...cardData.paymentMismatch} />
-          <StatCard {...cardData.receivedPayment} />
-          <StatCard {...cardData.pendingPayment} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3 mb-3">
+          <StatCard {...cardData.returnMismatch} onClick={() => navigate('/return-mismatch')} />
+          <StatCard {...cardData.paymentMismatch} onClick={() => navigate('/payment-mismatch')} />
+          <StatCard {...cardData.receivedPayment} onClick={() => navigate('/received-payment-orders')} />
+          <StatCard {...cardData.pendingPayment} onClick={() => navigate('/pending-payment-orders')} />
         </div>
 
         {/* Row 4 — Unsettled, Cancel, Claim, Smart Tickets */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-          <StatCard {...cardData.unsettledPickup} />
-          <StatCard {...cardData.cancelPickup} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3 mb-3">
+          <StatCard {...cardData.unsettledPickup} onClick={() => navigate('/unsettled-pickup')} />
+          <StatCard {...cardData.cancelPickup} onClick={() => navigate('/cancel-pickup')} />
 
           {/* Claim Card */}
           <div className="h-full">
@@ -222,7 +222,10 @@ export default function DashboardCards() {
 
           {/* Smart Tickets Card */}
           <div className="h-full">
-            <div className="smart-tickets-card h-full">
+            <div
+              className="smart-tickets-card h-full cursor-pointer hover:opacity-90 hover:ring-2 hover:ring-white/30 transition-all active:scale-95"
+              onClick={() => navigate('/smart-tickets')}
+            >
               <div className="smart-tickets-title text-white">Smart Tickets</div>
               <div className="flex text-center">
                 <div className="w-1/3 border-r border-white/20">
@@ -246,7 +249,7 @@ export default function DashboardCards() {
         </div>
 
         {/* Row 5 — Advertisement, Bank, Business Insights */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3 mb-3">
           {/* Advertisement */}
           <div className="h-full">
             <div className="advertisement-card h-full">
@@ -269,11 +272,14 @@ export default function DashboardCards() {
 
           {/* Received In Bank */}
           <div className="h-full">
-            <div className="bank-card h-full">
+            <div
+              className="bank-card h-full cursor-pointer hover:opacity-90 hover:ring-2 hover:ring-white/30 transition-all active:scale-95"
+              onClick={() => navigate('/bank-credit-statement')}
+            >
               <div className="bank-header flex-wrap">
                 <span className="bank-title text-white">Received In Bank Acc.</span>
-                <span className="bank-last-payment text-right">Last Payment 12/12/2025</span>
               </div>
+                <div className="bank-last-payment text-right">Last Payment 12/12/2025</div>
               <div className="flex flex-col mt-4">
                 <div className="bank-amount-label">Amount</div>
                 <div className="bank-amount-value">398661.65</div>
@@ -282,7 +288,7 @@ export default function DashboardCards() {
           </div>
 
           {/* Business Insights */}
-          <div className="sm:col-span-2 h-full">
+          <div className="sm:col-span-2 h-full" onClick={() => navigate('/sku-report')}>
             <div className="business-insights-card h-full">
 
               {/* Header */}
@@ -301,7 +307,7 @@ export default function DashboardCards() {
                   { label: "RETURN", value: "355", sub: "11.00 %", color: "text-red-600" },
                   { label: "DELIVERY", value: "2871", sub: "89.00 %", color: "text-green-600" },
                 ].map((item) => (
-                  <div key={item.label} className="business-insight-item">
+                  <div key={item.label} className="business-insight-item border-r border-border">
                     <div className={`business-insight-label ${item.color}`}>
                       {item.label}
                     </div>
@@ -319,6 +325,51 @@ export default function DashboardCards() {
             </div>
           </div>
         </div>
+
+        {/* ── Daily Metrics Bar */}
+        <div
+          className="mt-3 rounded-lg overflow-hidden"
+          style={{ backgroundColor: '#111827', border: '1px solid #1f2937' }}
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 py-4">
+            {[
+              { label: 'Monthly Avg. Orders', value: null, color: '#4ade80' },
+              { label: 'Daily Avg. Orders', value: '31', color: '#4ade80' },
+              { label: 'Avg. Return Charge', value: '-160.35', color: '#f87171' },
+              { label: 'Avg. P/L Per Order', value: '9.92', color: '#4ade80' },
+              { label: "Today's Pickup", value: '73', color: '#4ade80' },
+              { label: "Today's Returns Received", value: '5', color: '#f87171' },
+              { label: "Today's Bank Credit", value: '0.00', color: '#d1d5db' },
+            ].map((item, i, arr) => (
+              <div
+                key={i}
+                className={[
+                  'flex flex-col items-center justify-center py-4 px-2 text-center',
+                  i < arr.length - 1 ? 'border-r border-gray-700' : '',
+                  'border-b border-gray-700 lg:border-b-0',
+                ].join(' ')}
+              >
+                <span
+                  className="text-[0.8rem] sm:text-[0.8rem] font-bold uppercase tracking-wide leading-tight mb-2"
+                  style={{ color: '#9ca3af' }}
+                >
+                  {item.label}
+                </span>
+                {item.value !== null ? (
+                  <span
+                    className="text-sm sm:text-base font-extrabold leading-none tabular-nums"
+                    style={{ color: item.color }}
+                  >
+                    {item.value}
+                  </span>
+                ) : (
+                  <span className="text-sm sm:text-base font-extrabold leading-none" style={{ color: '#6b7280' }}>—</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );

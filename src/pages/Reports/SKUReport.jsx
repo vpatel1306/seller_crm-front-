@@ -2,20 +2,21 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import { FiSearch, FiDownload, FiEye, FiRefreshCw, FiX, FiBarChart2, FiTrendingUp, FiTrendingDown, FiPackage, FiInfo, FiChevronLeft, FiChevronRight, FiCalendar } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
 
 const SKUReport = () => {
   // State Management
   const navigate = useNavigate();
+  const { activeAccount } = useAuth();
+  const accountName = activeAccount?.account_name || 'No account selected';
   const [skuData, setSkuData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchSize, setSearchSize] = useState('');
   const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'profit', 'loss'
   const itemsPerPage = 10;
-  const [allSkuData, setAllSkuData] = useState([]);
 
   // Summary metrics
   const [summary, setSummary] = useState({
@@ -34,7 +35,6 @@ const SKUReport = () => {
 
   const fetchSKUData = useCallback(async () => {
     setLoading(true);
-    setError(null);
 
     try {
       const response = await api.get(`/sku-list/?limit=10000`);
@@ -60,7 +60,6 @@ const SKUReport = () => {
         dataArray = dataArray.filter(item => (item.profit_loss || 0) < 0);
       }
 
-      setAllSkuData(dataArray);
       setTotalItems(dataArray.length);
 
       const start = (currentPage - 1) * itemsPerPage;
@@ -90,8 +89,8 @@ const SKUReport = () => {
           deliveryPercent: totalOrders ? ((totalDeliverySuccess / totalOrders) * 100).toFixed(2) : 0
         });
       }
-    } catch (err) {
-      setError(err.message || 'Failed to fetch SKU data');
+    } catch {
+      // Keep the current report state when the API request fails.
     } finally {
       setLoading(false);
     }
@@ -155,7 +154,7 @@ const SKUReport = () => {
                 </div>
                 SKU Report
               </h1>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.4em] ml-1">Dev E-Com Operations</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.4em] ml-1">{accountName} Operations</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -401,3 +400,4 @@ const SKUReport = () => {
 };
 
 export default SKUReport;
+

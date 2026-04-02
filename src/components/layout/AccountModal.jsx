@@ -4,6 +4,10 @@ import {
   FiFileText, FiCalendar, FiHash, FiLock, FiCreditCard,
 } from 'react-icons/fi';
 import api from '../../services/api';
+import StatusMessage from '../ui/StatusMessage';
+
+const GST_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+const MOBILE_PATTERN = /^[6-9]\d{9}$/;
 
 const EMPTY = {
   supplier_id: '', account_name: '', gst_no: '', mail_id: '',
@@ -34,7 +38,7 @@ const optionalFields = [
 export default function AccountModal({ mode = 'add', initialData = null, onClose, onSuccess }) {
   const [form, setForm] = useState(mode === 'edit' && initialData ? { ...EMPTY, ...initialData } : EMPTY);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [feedback, setFeedback] = useState({ type: '', message: '' });
 
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose(); };
@@ -42,26 +46,64 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
     return () => document.removeEventListener('keydown', handler);
   }, [onClose]);
 
+  useEffect(() => {
+    setForm(mode === 'edit' && initialData ? { ...EMPTY, ...initialData } : EMPTY);
+    setFeedback({ type: '', message: '' });
+  }, [initialData, mode]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
+    if (feedback.message) {
+      setFeedback({ type: '', message: '' });
+    }
+    setForm((f) => ({
+      ...f,
+      [name]: name === 'gst_no' ? value.toUpperCase() : value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setFeedback({ type: '', message: '' });
+
+    const gstNo = form.gst_no.trim().toUpperCase();
+    if (!GST_PATTERN.test(gstNo)) {
+      setFeedback({ type: 'error', message: 'Please enter a valid GST number. Example: 24ABCDE1234F1Z5' });
+      return;
+    }
+
+    const mobileNo = form.mobile_no.trim();
+    if (!MOBILE_PATTERN.test(mobileNo)) {
+      setFeedback({ type: 'error', message: 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.' });
+      return;
+    }
+
     setLoading(true);
     try {
-      const payload = { ...form, label_text_file_folder: form.label_text_file_folder || null };
+      const payload = {
+        ...form,
+        gst_no: gstNo,
+        mobile_no: mobileNo,
+        label_text_file_folder: form.label_text_file_folder || null,
+      };
       if (mode === 'edit') {
-        await api.put(`/account-update/${initialData.id}`, payload);
+        await api.post(`/account-edit/${initialData.id}`, payload);
       } else {
         await api.post('/account-register', payload);
       }
-      onSuccess?.();
-      onClose();
+      setFeedback({
+        type: 'success',
+        message: mode === 'edit' ? 'Account updated successfully.' : 'Account added successfully.',
+      });
+      setTimeout(() => {
+        onSuccess?.();
+        onClose();
+      }, 900);
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong. Please try again.');
+      setFeedback({
+        type: 'error',
+        message: err.response?.data?.message || err.response?.data?.detail || 'Something went wrong. Please try again.',
+      });
     } finally {
       setLoading(false);
     }
@@ -94,6 +136,7 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
           required={required}
           placeholder={label}
           autoComplete={type === 'password' ? 'new-password' : 'off'}
+          maxLength={key === 'gst_no' ? 15 : key === 'mobile_no' ? 10 : undefined}
         />
       )}
     </div>
@@ -120,12 +163,7 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
           </button>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 text-sm mx-6 mt-4 mb-0 py-2 px-4 rounded-lg flex-shrink-0" role="alert">
-            {error}
-          </div>
-        )}
+        <StatusMessage type={feedback.type} message={feedback.message} className="mx-6 mt-4 mb-0 flex-shrink-0" />
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col flex-grow overflow-hidden">

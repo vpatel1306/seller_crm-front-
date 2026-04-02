@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { FiCalendar, FiDownload, FiPercent, FiBox, FiRefreshCw, FiX, FiArrowRight, FiChevronLeft, FiChevronRight, FiTrendingUp } from "react-icons/fi";
+import { useAuth } from "../../context/AuthContext";
 
 const DateWiseReport = () => {
   const navigate = useNavigate();
+  const { activeAccount } = useAuth();
+  const accountName = activeAccount?.account_name || "No account selected";
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -13,7 +16,7 @@ const DateWiseReport = () => {
 
   const limit = 20;
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const skip = (page - 1) * limit;
@@ -24,11 +27,12 @@ const DateWiseReport = () => {
       console.error(err);
     }
     setLoading(false);
-  };
+  }, [page]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
-  }, [page]);
+  }, [fetchData]);
 
   const totalPages = Math.ceil(total / limit);
 
@@ -45,7 +49,7 @@ const DateWiseReport = () => {
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight leading-tight">Date Wise Order Report</h1>
-            <p className="text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.4em]">Analytics Engine — Dev E-Com</p>
+            <p className="text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.4em]">Analytics Engine - {accountName}</p>
           </div>
         </div>
 
@@ -222,3 +226,6 @@ const DateWiseReport = () => {
 };
 
 export default DateWiseReport;
+
+
+

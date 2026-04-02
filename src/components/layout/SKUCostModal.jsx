@@ -4,7 +4,7 @@ import CommonModal from '../common/CommonModal';
 const SKUCostModal = ({ isOpen, onClose, skuData }) => {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const [basicCost, setBasicCost] = useState(skuData?.basic_cost || 70);
+  const [basicCost, setBasicCost] = useState(skuData?.basic_cost || 0);
   const [gst, setGst] = useState(skuData?.gst_percentage || 0);
   const [packing, setPacking] = useState(skuData?.packing_charge || 5);
   const [weight, setWeight] = useState('');

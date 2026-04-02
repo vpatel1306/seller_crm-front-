@@ -37,7 +37,7 @@ export default function Dashboard() {
           <div className="w-full lg:w-3/4">
             <DashboardCards />
           </div>
-          <div className="w-full lg:w-1/4">
+          <div className="w-full lg:w-1/4 h-full">
             <Sidebar />
           </div>
         </div>

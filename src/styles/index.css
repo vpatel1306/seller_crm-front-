@@ -124,7 +124,7 @@ a {
   }
 
   .claim-card-title {
-    @apply text-lg font-semibold mb-3;
+    @apply text-lg font-semibold mb-0.5;
   }
 
   .claim-approved-label,
@@ -147,7 +147,7 @@ a {
   }
 
   .smart-tickets-title {
-    @apply text-lg font-semibold mb-3;
+    @apply text-lg font-semibold mb-0.5;
   }
 
   .smart-tickets-label {
@@ -191,7 +191,7 @@ a {
   }
 
   .bank-header {
-    @apply flex justify-between items-start mb-4;
+    @apply flex justify-between items-start;
   }
 
   .bank-title {

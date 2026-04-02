@@ -3,6 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 const AuthContext = createContext(null);
+const getCurrentMonthRange = () => {
+  const now = new Date();
+  const formatDate = (date) => date.toISOString().split('T')[0];
+
+  return {
+    from: formatDate(new Date(now.getFullYear(), now.getMonth(), 1)),
+    to: formatDate(now),
+  };
+};
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('token'));
@@ -11,6 +20,10 @@ export function AuthProvider({ children }) {
     // Try to load active account from localStorage
     const saved = localStorage.getItem('activeAccount');
     return saved ? JSON.parse(saved) : null;
+  });
+  const [selectedDateRange, setSelectedDateRange] = useState(() => {
+    const saved = localStorage.getItem('selectedDateRange');
+    return saved ? JSON.parse(saved) : getCurrentMonthRange();
   });
   const navigate = useNavigate();
 
@@ -37,9 +50,11 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('activeAccount');
+    localStorage.removeItem('selectedDateRange');
     setToken(null);
     setUser(null);
     setActiveAccount(null);
+    setSelectedDateRange(getCurrentMonthRange());
     navigate('/');
   }, [navigate]);
 
@@ -52,12 +67,20 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const setSelectedDateRangeWithPersist = useCallback((range) => {
+    const nextRange = range || getCurrentMonthRange();
+    setSelectedDateRange(nextRange);
+    localStorage.setItem('selectedDateRange', JSON.stringify(nextRange));
+  }, []);
+
   return (
     <AuthContext.Provider value={{ 
       token, 
       user, 
       activeAccount, 
+      selectedDateRange,
       setActiveAccount: setActiveAccountWithPersist,
+      setSelectedDateRange: setSelectedDateRangeWithPersist,
       login, 
       register, 
       logout, 
@@ -68,4 +91,5 @@ export function AuthProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

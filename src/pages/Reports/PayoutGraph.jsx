@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { FiX, FiInfo, FiTrendingUp, FiCreditCard, FiActivity } from "react-icons/fi";
+import { useAuth } from "../../context/AuthContext";
 
 const MONTHLY_DATA = [
   { month: "08/2025", claim: 180, recovery: 90, compensation: 4200, advertisement: 110, bankReceived: 54200 },
@@ -55,6 +56,8 @@ function CustomTooltip({ active, payload, label }) {
 
 export default function PayoutGraph() {
   const navigate = useNavigate();
+  const { activeAccount } = useAuth();
+  const accountName = activeAccount?.account_name || "No account selected";
   const [visible, setVisible] = useState(Object.fromEntries(BARS.map((b) => [b.key, true])));
   const toggle = useCallback((key) => setVisible((prev) => ({ ...prev, [key]: !prev[key] })), []);
 
@@ -71,7 +74,7 @@ export default function PayoutGraph() {
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight leading-tight">Payout Velocity Analytics</h1>
-            <p className="text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.4em]">Settlement Engine — Dev E-Com</p>
+            <p className="text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.4em]">Settlement Engine - {accountName}</p>
           </div>
         </div>
 
@@ -188,3 +191,5 @@ export default function PayoutGraph() {
     </div>
   );
 }
+
+
