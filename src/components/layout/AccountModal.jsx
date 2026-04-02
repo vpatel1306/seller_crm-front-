@@ -67,16 +67,7 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
     setFeedback({ type: '', message: '' });
 
     const gstNo = form.gst_no.trim().toUpperCase();
-    if (!GST_PATTERN.test(gstNo)) {
-      setFeedback({ type: 'error', message: 'Please enter a valid GST number. Example: 24ABCDE1234F1Z5' });
-      return;
-    }
-
     const mobileNo = form.mobile_no.trim();
-    if (!MOBILE_PATTERN.test(mobileNo)) {
-      setFeedback({ type: 'error', message: 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.' });
-      return;
-    }
 
     setLoading(true);
     try {

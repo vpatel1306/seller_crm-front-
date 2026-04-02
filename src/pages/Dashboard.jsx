@@ -32,12 +32,12 @@ export default function Dashboard() {
         transition={{ duration: 0.4 }}
       >
         {error && <div className="bg-[#fef2f2] text-error border border-[#fecaca] rounded-inner px-4 py-2.5 mb-4 text-[0.875rem]">{error}</div>}
-        <h2 className="text-[1.5rem] font-bold mb-6 text-text mx-2">Dashboard</h2>
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="w-full lg:w-3/4">
+        {/* <h2 className="text-[1.5rem] font-bold mb-6 text-text mx-2">Dashboard</h2> */}
+        <div className="flex flex-col lg:flex-row gap-6 items-stretch">
+          <div className="w-full lg:w-[72%] xl:w-[74%]">
             <DashboardCards />
           </div>
-          <div className="w-full lg:w-1/4 h-full">
+          <div className="w-full lg:w-[28%] xl:w-[24%] h-full">
             <Sidebar />
           </div>
         </div>
