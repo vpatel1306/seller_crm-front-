@@ -396,6 +396,19 @@ export default function Sidebar() {
 
   useEffect(() => { fetchAccounts(); }, [fetchAccounts]);
 
+  const requiresAccountSetup = !loading && accounts.length === 0;
+
+  useEffect(() => {
+    if (requiresAccountSetup) {
+      setModal('add');
+      setSelectOpen(false);
+      setShowReportModal(false);
+      setShowReturnModal(false);
+      setShowImportModal(false);
+      setShowDateModal(false);
+    }
+  }, [requiresAccountSetup]);
+
   const handleSelect = (acc) => {
     setActiveAccount(acc);
     fetchAccounts(true);
@@ -419,8 +432,13 @@ export default function Sidebar() {
         {/* Header */}
         <div className="p-4 bg-slate-950 text-white rounded-t-3xl flex items-center justify-between gap-2">
           <button
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500 text-white rounded-lg text-xs font-bold hover:bg-cyan-600 shadow-md shadow-cyan-500/20 active:scale-95 transition-all"
-            onClick={() => setSelectOpen(true)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 transition-all ${
+              requiresAccountSetup
+                ? 'bg-slate-700 text-slate-300 cursor-not-allowed'
+                : 'bg-cyan-500 text-white hover:bg-cyan-600 shadow-md shadow-cyan-500/20'
+            }`}
+            onClick={() => !requiresAccountSetup && setSelectOpen(true)}
+            disabled={requiresAccountSetup}
           >
             <FiUser size={13} />
             <span>ACCOUNT CHANGE</span>
@@ -445,6 +463,11 @@ export default function Sidebar() {
                 <div className="space-y-0.5">
                   <div className="font-bold text-gray-900 leading-tight truncate max-w-[150px]">{fmt(currentAccount.account_name || 'N/A')}</div>
                   <div className="text-gray-500 text-[0.7rem] uppercase tracking-wider font-semibold">GST: {fmt(currentAccount.gst_no || 'N/A')}</div>
+                  {requiresAccountSetup && (
+                    <div className="text-[0.7rem] font-bold uppercase tracking-wider text-amber-600">
+                      Create your first account to continue
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   <div className="flex items-center gap-2 text-[0.7rem] font-bold">
@@ -480,7 +503,7 @@ export default function Sidebar() {
                   <span className="opacity-70">FROM - {selectedDateRange.from ? fmtDate(selectedDateRange.from) : '—'}</span>
                   <span className="opacity-70">TO - {selectedDateRange.to ? fmtDate(selectedDateRange.to) : todayStr()}</span>
                 </div>
-                <button className="w-full py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-all active:scale-95 shadow-md shadow-red-600/20" onClick={handleDateChange}>CHANGE DATE</button>
+                <button className="w-full py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-all active:scale-95 shadow-md shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleDateChange} disabled={requiresAccountSetup}>CHANGE DATE</button>
               </div>
 
               <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 space-y-2.5 shadow-inner">
@@ -529,7 +552,7 @@ export default function Sidebar() {
               </div>
 
               <div className="pt-2">
-                <button className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg shadow-green-600/20 active:scale-95" onClick={() => navigate("/sku-list")}>
+                <button className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg shadow-green-600/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => navigate("/sku-list")} disabled={requiresAccountSetup}>
                   Total SKU - 334 / Without Cost - 0
                 </button>
               </div>
@@ -537,21 +560,21 @@ export default function Sidebar() {
               <div className="space-y-2.5 pt-2">
                 <div className="flex justify-between items-center gap-1.5 flex-wrap">
                   <SearchButton onSearch={() => { }} onClear={() => { }} />
-                  <div className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"><FaMoneyBillTrendUp size={20} className="text-green-600" /></div>
-                  <div className="p-2 border border-gray-100 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors shadow-sm" onClick={() => navigate('/business-growth-chart')} ><FaChartBar size={20} className="text-gray-600" /></div>
-                  <div className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm" onClick={() => setShowReportModal(true)}><FaClipboardList size={20} className="text-gray-600" /></div>
-                  <button className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-xs font-bold text-red-600">Clear All Search</button>
-                  <div className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"><FaCog size={20} className="text-gray-600" /></div>
+                  <div className={`p-2 border border-gray-100 rounded-lg transition-colors shadow-sm ${requiresAccountSetup ? 'opacity-40' : 'hover:bg-gray-50'}`}><FaMoneyBillTrendUp size={20} className="text-green-600" /></div>
+                  <div className={`p-2 border border-gray-100 rounded-lg transition-colors shadow-sm ${requiresAccountSetup ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`} onClick={() => !requiresAccountSetup && navigate('/business-growth-chart')} ><FaChartBar size={20} className="text-gray-600" /></div>
+                  <div className={`p-2 border border-gray-100 rounded-lg transition-colors shadow-sm ${requiresAccountSetup ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 cursor-pointer'}`} onClick={() => !requiresAccountSetup && setShowReportModal(true)}><FaClipboardList size={20} className="text-gray-600" /></div>
+                  <button className="p-2 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-xs font-bold text-red-600 disabled:opacity-40 disabled:cursor-not-allowed" disabled={requiresAccountSetup}>Clear All Search</button>
+                  <div className={`p-2 border border-gray-100 rounded-lg transition-colors shadow-sm ${requiresAccountSetup ? 'opacity-40' : 'hover:bg-gray-50'}`}><FaCog size={20} className="text-gray-600" /></div>
                 </div>
 
                 <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 space-y-2.5 shadow-inner">
                   <span className="block text-xs font-bold text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">Daily Task</span>
                   <div className="grid grid-cols-2 gap-2">
-                    <button className="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200" onClick={() => navigate('/pick-up-entry')}>PICK-UP ENTRY</button>
-                    <button className="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200" onClick={() => setShowReturnModal(true)}>RETURN ENTRY</button>
+                    <button className="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200 disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => navigate('/pick-up-entry')} disabled={requiresAccountSetup}>PICK-UP ENTRY</button>
+                    <button className="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200 disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowReturnModal(true)} disabled={requiresAccountSetup}>RETURN ENTRY</button>
                   </div>
                   <div className="flex gap-2">
-                    <button className="flex-1 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200" onClick={() => setShowImportModal(true)}>IMPORT DATA</button>
+                    <button className="flex-1 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-[0.65rem] font-bold hover:bg-amber-200 transition-colors border border-amber-200 disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowImportModal(true)} disabled={requiresAccountSetup}>IMPORT DATA</button>
                     <button className="p-2 bg-amber-100 text-amber-700 rounded-lg border border-amber-200 font-bold">⋮</button>
                   </div>
                 </div>
@@ -574,7 +597,11 @@ export default function Sidebar() {
         <AccountModal
           mode={modal}
           initialData={modal === 'edit' ? activeAccount : null}
-          onClose={() => setModal(null)}
+          disableClose={requiresAccountSetup && modal === 'add'}
+          onClose={() => {
+            if (requiresAccountSetup && modal === 'add') return;
+            setModal(null);
+          }}
           onSuccess={() => { setModal(null); fetchAccounts(true); }}
         />
       )}

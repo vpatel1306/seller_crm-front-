@@ -77,7 +77,7 @@ export default function Login() {
               name="email"
               value={form.email}
               onChange={handleChange}
-              placeholder="name@company.com"
+              placeholder="Enter your email address"
               className={`w-full px-4 py-3 bg-white border rounded-xl text-sm transition-all focus:ring-4 focus:ring-[#0d6efd]/10 outline-none ${errors.email ? 'border-red-500 bg-red-50' : 'border-[#e5e7eb] focus:border-[#0d6efd]'}`}
               disabled={loading}
               noValidate
@@ -88,16 +88,16 @@ export default function Login() {
           <div className="space-y-1.5">
             <div className="flex justify-between items-center mb-0.5">
               <label className="text-sm font-bold text-[#1a1a2e] ml-0.5">Password</label>
-              <Link to="/forgot-password" title="Coming soon!" className="text-xs font-bold text-[#0d6efd] hover:underline transition-colors">
+              {/* <Link to="/forgot-password" title="Coming soon!" className="text-xs font-bold text-[#0d6efd] hover:underline transition-colors">
                 Forgot password?
-              </Link>
+              </Link> */}
             </div>
             <input
               type="password"
               name="password"
               value={form.password}
               onChange={handleChange}
-              placeholder="••••••••"
+              placeholder="Enter your password"
               className={`w-full px-4 py-3 bg-white border rounded-xl text-sm transition-all focus:ring-4 focus:ring-[#0d6efd]/10 outline-none ${errors.password ? 'border-red-500 bg-red-50' : 'border-[#e5e7eb] focus:border-[#0d6efd]'}`}
               disabled={loading}
             />

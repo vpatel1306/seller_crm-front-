@@ -35,16 +35,18 @@ const optionalFields = [
   { key: 'bank_account_no', label: 'Bank Account No', icon: <FiHash size={13} />, type: 'text', required: false },
 ];
 
-export default function AccountModal({ mode = 'add', initialData = null, onClose, onSuccess }) {
+export default function AccountModal({ mode = 'add', initialData = null, onClose, onSuccess, disableClose = false }) {
   const [form, setForm] = useState(mode === 'edit' && initialData ? { ...EMPTY, ...initialData } : EMPTY);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
 
   useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    const handler = (e) => {
+      if (e.key === 'Escape' && !disableClose) onClose();
+    };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [onClose]);
+  }, [disableClose, onClose]);
 
   useEffect(() => {
     setForm(mode === 'edit' && initialData ? { ...EMPTY, ...initialData } : EMPTY);
@@ -118,24 +120,31 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
           rows={3}
         />
       ) : (
-        <input
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors bg-white"
-          type={type}
-          name={key}
-          value={form[key]}
-          onChange={handleChange}
-          required={required}
-          placeholder={label}
-          autoComplete={type === 'password' ? 'new-password' : 'off'}
-          maxLength={key === 'gst_no' ? 15 : key === 'mobile_no' ? 10 : undefined}
-        />
+        <>
+          <input
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors bg-white"
+            type={type}
+            name={key}
+            value={form[key]}
+            onChange={handleChange}
+            required={required}
+            placeholder={key === 'gst_no' ? 'Enter Gst No.' : label}
+            autoComplete={type === 'password' ? 'new-password' : 'off'}
+            maxLength={key === 'gst_no' ? 15 : key === 'mobile_no' ? 10 : undefined}
+          />
+          {key === 'gst_no' && (
+            <p className="mt-1 text-[11px] text-gray-500">
+              Format example: `24ABCDE1234F1Z5`
+            </p>
+          )}
+        </>
       )}
     </div>
   );
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[1050] p-4 animate-fade-in" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="bg-white rounded-xl shadow-2xl max-w-[95%] w-[800px] max-h-[90vh] overflow-hidden flex flex-col animate-slide-up">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[1050] p-4 animate-fade-in" onClick={(e) => e.target === e.currentTarget && !disableClose && onClose()}>
+      <div className="bg-white rounded-xl shadow-2xl max-w-[95%] w-[1200px] max-h-[90vh] overflow-hidden flex flex-col animate-slide-up">
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
@@ -149,12 +158,21 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
               </p>
             </div>
           </div>
-          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" onClick={onClose}>
+          <button
+            className={`p-2 rounded-lg transition-colors ${disableClose ? 'text-gray-300 cursor-not-allowed' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+            onClick={() => !disableClose && onClose()}
+            disabled={disableClose}
+          >
             <FiX size={18} />
           </button>
         </div>
 
         <StatusMessage type={feedback.type} message={feedback.message} className="mx-6 mt-4 mb-0 flex-shrink-0" />
+        {disableClose && (
+          <div className="mx-6 mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+            Create your first account to continue using the dashboard.
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col flex-grow overflow-hidden">
@@ -187,9 +205,11 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
 
           {/* Footer */}
           <div className="flex justify-end items-center gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
-            <button type="button" className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-white transition-colors" onClick={onClose}>
-              Cancel
-            </button>
+            {!disableClose && (
+              <button type="button" className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-white transition-colors" onClick={onClose}>
+                Cancel
+              </button>
+            )}
             <button type="submit" className="px-6 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-hover shadow-lg shadow-primary/20 disabled:opacity-60 transition-all flex items-center gap-2" disabled={loading}>
               {loading
                 ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -80,7 +80,7 @@ export default function Register() {
               name="name"
               value={form.name}
               onChange={handleChange}
-              placeholder="John Doe"
+              placeholder="Enter your full name"
               className={`w-full px-4 py-3 bg-white border rounded-xl text-sm transition-all focus:ring-4 focus:ring-[#0d6efd]/10 outline-none ${errors.name ? 'border-red-500 bg-red-50' : 'border-[#e5e7eb] focus:border-[#0d6efd]'}`}
               disabled={loading}
             />
@@ -94,7 +94,7 @@ export default function Register() {
               name="email"
               value={form.email}
               onChange={handleChange}
-              placeholder="name@company.com"
+              placeholder="Enter your email address"
               className={`w-full px-4 py-3 bg-white border rounded-xl text-sm transition-all focus:ring-4 focus:ring-[#0d6efd]/10 outline-none ${errors.email ? 'border-red-500 bg-red-50' : 'border-[#e5e7eb] focus:border-[#0d6efd]'}`}
               disabled={loading}
             />
@@ -108,7 +108,7 @@ export default function Register() {
               name="contact"
               value={form.contact}
               onChange={handleChange}
-              placeholder="10 digit number"
+              placeholder="Enter your mobile number"
               className={`w-full px-4 py-3 bg-white border rounded-xl text-sm transition-all focus:ring-4 focus:ring-[#0d6efd]/10 outline-none ${errors.contact ? 'border-red-500 bg-red-50' : 'border-[#e5e7eb] focus:border-[#0d6efd]'}`}
               disabled={loading}
             />
@@ -122,7 +122,7 @@ export default function Register() {
               name="password"
               value={form.password}
               onChange={handleChange}
-              placeholder="Min. 6 characters"
+              placeholder="Enter your password"
               className={`w-full px-4 py-3 bg-white border rounded-xl text-sm transition-all focus:ring-4 focus:ring-[#0d6efd]/10 outline-none ${errors.password ? 'border-red-500 bg-red-50' : 'border-[#e5e7eb] focus:border-[#0d6efd]'}`}
               disabled={loading}
             />

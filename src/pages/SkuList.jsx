@@ -41,7 +41,19 @@ export default function SkuList() {
   const [totalSKUs, setTotalSKUs] = useState(0);
   const [showPerPageOptions, setShowPerPageOptions] = useState(false);
   const [perPage, setPerPage] = useState(10);
+  const [skuFilter, setSkuFilter] = useState('all');
+  const [accountFilter, setAccountFilter] = useState('this-account');
   const accountName = activeAccount?.account_name || 'No account selected';
+  const activeAccountId = activeAccount?.id;
+  const accountHeaderValue = accountFilter === 'all-accounts' ? null : activeAccountId;
+  const hasSkuData = skuList.length > 0;
+  const resultStart = totalSKUs === 0 ? 0 : ((currentPage - 1) * perPage) + 1;
+  const resultEnd = totalSKUs === 0 ? 0 : Math.min(currentPage * perPage, totalSKUs);
+
+  const getNumericCount = (value) => {
+    const parsedValue = Number(value);
+    return Number.isFinite(parsedValue) ? parsedValue : null;
+  };
 
   const resetAddSkuForm = () => {
     setAddSkuForm({
@@ -55,49 +67,55 @@ export default function SkuList() {
     setAddSkuError('');
   };
 
+
   const fetchSkuList = useCallback(async (page = 1, perPageCount = perPage) => {
-    setLoading(true);
-    try {
-      const skip = (page - 1) * perPageCount;
-      const res = await api.get(`/sku-list/?skip=${skip}&limit=${perPageCount}`);
-
-      let list = [];
-      let total = 0;
-
-      if (res.data) {
-        if (Array.isArray(res.data)) {
-          list = res.data;
-          total = res.data.length;
-        } else if (res.data.data && Array.isArray(res.data.data)) {
-          list = res.data.data;
-          try {
-            const totalRes = await api.get('/sku-list/');
-            if (totalRes.data && Array.isArray(totalRes.data)) {
-              total = totalRes.data.length;
-            } else if (totalRes.data && totalRes.data.data && Array.isArray(totalRes.data.data)) {
-              total = totalRes.data.data.length;
-            }
-          } catch {
-            total = res.data.count || res.data.total || res.data.data.length;
-          }
-        } else if (res.data.results && Array.isArray(res.data.results)) {
-          list = res.data.results;
-          total = res.data.count || res.data.results.length;
-        }
-      }
-
-      setSkuList(list);
-      setTotalSKUs(total);
-      setTotalPages(total > 0 ? Math.ceil(total / perPageCount) : 1);
-      setCurrentPage(page);
-    } catch {
+    if (accountFilter === 'this-account' && !activeAccount?.id) {
       setSkuList([]);
       setTotalSKUs(0);
       setTotalPages(1);
+      setCurrentPage(1);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const skip = (page - 1) * perPageCount;
+      const res = await api.get(`/sku-list/?skip=${skip}&limit=${perPageCount}&page=${page}`, {
+        headers: {
+          account: accountHeaderValue,
+        },
+      });
+
+      const payload = res.data;
+      const list = Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload?.results)
+          ? payload.results
+          : Array.isArray(payload)
+            ? payload
+            : [];
+      const total =
+        getNumericCount(payload?.total_count) ??
+        getNumericCount(payload?.total) ??
+        getNumericCount(payload?.count) ??
+        list.length;
+      const resolvedPage = getNumericCount(payload?.current_page) ?? page;
+      const resolvedTotalPages =
+        getNumericCount(payload?.total_pages) ??
+        (total > 0 ? Math.ceil(total / perPageCount) : 0);
+
+      setSkuList(list);
+      setTotalSKUs(total);
+      setTotalPages(resolvedTotalPages);
+      setCurrentPage(resolvedPage);
+    } catch {
+      setSkuList([]);
+      setTotalSKUs(0);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }
-  }, [perPage]);
+  }, [accountFilter, accountHeaderValue, activeAccount?.id, perPage]);
 
   const handleRowClick = (sku, index) => {
     setSelectedSKU(sku);
@@ -299,19 +317,41 @@ export default function SkuList() {
 
           <div className="space-y-3 border-t border-gray-50 pt-4">
             <div className="space-y-1.5">
-              {['All SKUs', 'Without Cost SKUs', 'Cost Set SKUs'].map((opt, i) => (
-                <label key={opt} className="group flex cursor-pointer items-center gap-3">
-                  <input type="radio" name="sku-filter" defaultChecked={i === 0} className="h-4 w-4 accent-primary" />
-                  <span className="text-sm font-medium text-gray-600 transition-colors group-hover:text-primary">{opt}</span>
+              {[
+                { label: 'All SKUs', value: 'all' },
+                { label: 'Without Cost SKUs', value: 'without-cost' },
+                { label: 'Cost Set SKUs', value: 'cost-set' },
+              ].map((opt) => (
+                <label key={opt.value} className="group flex cursor-pointer items-center gap-3">
+                  <input
+                    type="radio"
+                    name="sku-filter"
+                    checked={skuFilter === opt.value}
+                    onChange={() => setSkuFilter(opt.value)}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span className="text-sm font-medium text-gray-600 transition-colors group-hover:text-primary">{opt.label}</span>
                 </label>
               ))}
             </div>
 
             <div className="space-y-1.5 border-t border-gray-50/50 pt-3">
-              {['This Account SKUs', 'All Account SKUs'].map((opt, i) => (
-                <label key={opt} className="group flex cursor-pointer items-center gap-3">
-                  <input type="radio" name="account-filter" defaultChecked={i === 0} className="h-4 w-4 accent-primary" />
-                  <span className="text-sm font-medium text-gray-600 transition-colors group-hover:text-primary">{opt}</span>
+              {[
+                { label: 'This Account SKUs', value: 'this-account' },
+                { label: 'All Account SKUs', value: 'all-accounts' },
+              ].map((opt) => (
+                <label key={opt.value} className="group flex cursor-pointer items-center gap-3">
+                  <input
+                    type="radio"
+                    name="account-filter"
+                    checked={accountFilter === opt.value}
+                    onChange={() => {
+                      setAccountFilter(opt.value);
+                      setCurrentPage(1);
+                    }}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span className="text-sm font-medium text-gray-600 transition-colors group-hover:text-primary">{opt.label}</span>
                 </label>
               ))}
             </div>
@@ -321,6 +361,38 @@ export default function SkuList() {
         <main className="flex flex-1 flex-col bg-white lg:min-h-0 lg:overflow-hidden">
           <div className="flex-1 overflow-visible p-3 sm:p-4 lg:min-h-0 lg:overflow-auto lg:p-6">
             <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+              <div className="flex flex-col gap-3 border-b border-gray-100 bg-gray-50/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-gray-400">SKU Records</div>
+                  <div className="mt-1 text-sm font-bold text-gray-700">
+                    {`Total Count: ${totalSKUs}`}
+                  </div>
+                </div>
+
+                <div className="relative self-start sm:self-auto">
+                  <button
+                    className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600 transition-all hover:border-primary active:scale-95"
+                    onClick={() => setShowPerPageOptions(!showPerPageOptions)}
+                  >
+                    <span>Show {perPage}</span>
+                    <FiChevronDown size={14} className={showPerPageOptions ? 'rotate-180' : ''} />
+                  </button>
+                  {showPerPageOptions ? (
+                    <div className="absolute right-0 top-full z-30 mt-2 w-32 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl">
+                      {[10, 25, 50, 100].map((opt) => (
+                        <button
+                          key={opt}
+                          className={`w-full px-4 py-2.5 text-left text-xs font-bold transition-colors hover:bg-gray-50 ${perPage === opt ? 'bg-primary/5 text-primary' : 'text-gray-500'}`}
+                          onClick={() => handlePerPageChange(opt)}
+                        >
+                          {opt} per page
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
               {loading ? (
                 <div className="px-5 py-20 text-center">
                   <div className="flex flex-col items-center gap-3">
@@ -348,19 +420,20 @@ export default function SkuList() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50 text-[0.8rem]">
-                        {skuList.map((item, index) => {
-                          const isActive = index === selectedRowIndex;
-                          const finalCost =
-                            (item.basic_cost || 0) +
-                            ((item.basic_cost || 0) * (item.gst_percentage || 0) / 100) +
-                            (item.packing_charge || 0);
+                         {skuList.map((item, index) => {
+                           const rowIndex = ((currentPage - 1) * perPage) + index;
+                           const isActive = rowIndex === selectedRowIndex;
+                           const finalCost =
+                             (item.basic_cost || 0) +
+                             ((item.basic_cost || 0) * (item.gst_percentage || 0) / 100) +
+                             (item.packing_charge || 0);
 
                           return (
-                            <tr
-                              key={index}
-                              className={`group cursor-pointer transition-colors hover:bg-indigo-50/30 ${isActive ? 'bg-indigo-50/70 shadow-inner' : ''}`}
-                              onClick={() => handleRowClick(item, index)}
-                            >
+                             <tr
+                               key={item.id || item.sku_id || rowIndex}
+                               className={`group cursor-pointer transition-colors hover:bg-indigo-50/30 ${isActive ? 'bg-indigo-50/70 shadow-inner' : ''}`}
+                               onClick={() => handleRowClick(item, rowIndex)}
+                             >
                               <td className="px-5 py-4 font-bold text-gray-900 group-hover:text-primary">{item.sku_id || '-'}</td>
                               <td className="px-5 py-4 font-medium uppercase italic text-gray-600">{item.box_size || 'Free Size'}</td>
                               <td className="px-5 py-4 font-mono font-bold">{item.orders || 0}</td>
@@ -384,85 +457,87 @@ export default function SkuList() {
               )}
             </div>
 
-            <div className="mt-6 flex flex-col gap-4 px-2 lg:flex-row lg:items-center lg:justify-between">
-              <div className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                {totalSKUs > 0
-                  ? `Results: ${((currentPage - 1) * perPage) + 1} - ${Math.min(currentPage * perPage, totalSKUs)} total ${totalSKUs}`
-                  : 'No records'}
-              </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                <div className="relative">
-                  <button
-                    className="flex items-center gap-2 rounded-lg border border-gray-100 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 transition-all hover:border-primary active:scale-95"
-                    onClick={() => setShowPerPageOptions(!showPerPageOptions)}
-                  >
-                    <span>Show {perPage}</span>
-                    <FiChevronDown size={14} className={showPerPageOptions ? 'rotate-180' : ''} />
-                  </button>
-                  {showPerPageOptions ? (
-                    <div className="absolute bottom-full z-30 mb-2 w-32 origin-bottom overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl duration-200 animate-in fade-in slide-in-from-bottom-2">
-                      {[10, 25, 50, 100].map((opt) => (
-                        <button
-                          key={opt}
-                          className={`w-full px-4 py-2.5 text-left text-xs font-bold transition-colors hover:bg-gray-50 ${perPage === opt ? 'bg-primary/5 text-primary' : 'text-gray-500'}`}
-                          onClick={() => handlePerPageChange(opt)}
-                        >
-                          {opt} per page
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
+            {hasSkuData && (
+              <div className="mt-6 flex flex-col gap-4 px-2 lg:flex-row lg:items-center lg:justify-between">
+                <div className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                  {`Results: ${resultStart} - ${resultEnd} of ${totalSKUs}`}
                 </div>
 
-                <nav className="flex items-center overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
-                  <button
-                    className={`p-2 transition-colors hover:bg-gray-50 ${currentPage === 1 ? 'cursor-not-allowed text-gray-200' : 'text-gray-600'}`}
-                    onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    <FiChevronLeft size={18} />
-                  </button>
-
-                  <div className="flex items-center">
-                    {getPaginationNumbers().map((page, index) =>
-                      page === '...' ? (
-                        <span key={`dots-${index}`} className="px-3 text-[0.7rem] font-bold text-gray-300">
-                          ...
-                        </span>
-                      ) : (
-                        <button
-                          key={page}
-                          className={`px-4 py-2 text-xs font-bold transition-all ${currentPage === page ? 'bg-primary text-white shadow-inner' : 'text-gray-500 hover:bg-gray-50'}`}
-                          onClick={() => handlePageChange(page)}
-                        >
-                          {page}
-                        </button>
-                      )
-                    )}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                  <div className="relative">
+                    <button
+                      className="flex items-center gap-2 rounded-lg border border-gray-100 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 transition-all hover:border-primary active:scale-95"
+                      onClick={() => setShowPerPageOptions(!showPerPageOptions)}
+                    >
+                      <span>Show {perPage}</span>
+                      <FiChevronDown size={14} className={showPerPageOptions ? 'rotate-180' : ''} />
+                    </button>
+                    {showPerPageOptions ? (
+                      <div className="absolute bottom-full z-30 mb-2 w-32 origin-bottom overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl duration-200 animate-in fade-in slide-in-from-bottom-2">
+                        {[10, 25, 50, 100].map((opt) => (
+                          <button
+                            key={opt}
+                            className={`w-full px-4 py-2.5 text-left text-xs font-bold transition-colors hover:bg-gray-50 ${perPage === opt ? 'bg-primary/5 text-primary' : 'text-gray-500'}`}
+                            onClick={() => handlePerPageChange(opt)}
+                          >
+                            {opt} per page
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
 
-                  <button
-                    className={`p-2 transition-colors hover:bg-gray-50 ${currentPage === totalPages ? 'cursor-not-allowed text-gray-200' : 'text-gray-600'}`}
-                    onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    <FiChevronRight size={18} />
-                  </button>
-                </nav>
+                  <nav className="flex items-center overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
+                    <button
+                      className={`p-2 transition-colors hover:bg-gray-50 ${currentPage === 1 ? 'cursor-not-allowed text-gray-200' : 'text-gray-600'}`}
+                      onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      <FiChevronLeft size={18} />
+                    </button>
+
+                    <div className="flex items-center">
+                      {getPaginationNumbers().map((page, index) =>
+                        page === '...' ? (
+                          <span key={`dots-${index}`} className="px-3 text-[0.7rem] font-bold text-gray-300">
+                            ...
+                          </span>
+                        ) : (
+                          <button
+                            key={page}
+                            className={`px-4 py-2 text-xs font-bold transition-all ${currentPage === page ? 'bg-primary text-white shadow-inner' : 'text-gray-500 hover:bg-gray-50'}`}
+                            onClick={() => handlePageChange(page)}
+                          >
+                            {page}
+                          </button>
+                        )
+                      )}
+                    </div>
+
+                    <button
+                      className={`p-2 transition-colors hover:bg-gray-50 ${currentPage === totalPages ? 'cursor-not-allowed text-gray-200' : 'text-gray-600'}`}
+                      onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      <FiChevronRight size={18} />
+                    </button>
+                  </nav>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <footer className="z-20 flex flex-col gap-4 border-t border-gray-100 bg-gray-50 p-4">
-            <div className="flex flex-wrap items-center gap-3 rounded-xl bg-gray-900 px-4 py-2 text-[0.7rem] font-bold uppercase tracking-widest text-white">
-              <span className="opacity-50">Page Statistics</span>
-              <span className="font-mono text-primary">
-                {currentPage} of {totalPages}
-              </span>
-              <span className="text-lg opacity-20">|</span>
-              <span>Total Count: {totalSKUs}</span>
-            </div>
+            {hasSkuData && (
+              <div className="flex flex-wrap items-center gap-3 rounded-xl bg-gray-900 px-4 py-2 text-[0.7rem] font-bold uppercase tracking-widest text-white">
+                <span className="opacity-50">Page Statistics</span>
+                <span className="font-mono text-primary">
+                  {currentPage} of {totalPages}
+                </span>
+                <span className="text-lg opacity-20">|</span>
+                <span>Total Count: {totalSKUs}</span>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 justify-end gap-2 sm:grid-cols-2 xl:ml-auto xl:flex xl:flex-wrap xl:justify-end xl:items-stretch">
               <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold uppercase tracking-wider italic text-gray-500 shadow-sm transition-all hover:border-primary hover:text-primary active:scale-95 xl:w-auto">

@@ -9,8 +9,7 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
-
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://192.168.1.14:8005").replace(/\/$/, "");
+import api from "../../services/api";
 
 const TABLE_COLUMNS = [
   { key: "order_no", label: "Order No." },
@@ -80,35 +79,24 @@ const PickUpEntry = () => {
       return;
     }
 
-    if (!activeAccountId) {
-      setErrorMessage("Active account not selected.");
-      setSuccessMessage("");
-      return;
-    }
-
     setIsUploading(true);
     setErrorMessage("");
     setSuccessMessage("");
 
     try {
-      const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch(`${API_BASE}/upload-label`, {
-        method: "POST",
+      const response = await api.post("/upload-label", formData, {
         headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          account: String(activeAccountId),
+          account: activeAccountId,
         },
-        body: formData,
       });
+      const responseData = response?.data || {};
 
-      const responseData = await response.json().catch(() => ({}));
-
-      if (!response.ok || responseData?.status === false) {
+      if (responseData?.status === false) {
         throw new Error(
-          responseData?.message || `Upload failed with status ${response.status}.`
+          responseData?.message || "Upload failed."
         );
       }
 
