@@ -1,6 +1,22 @@
 import axios from 'axios';
 
-const BASE = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
+const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
+
+function resolveBaseUrl() {
+  if (!rawBaseUrl) return import.meta.env.DEV ? '/api' : '';
+
+  if (!import.meta.env.DEV) return rawBaseUrl.replace(/\/$/, '');
+
+  try {
+    const parsed = new URL(rawBaseUrl, window.location.origin);
+    const proxyPath = parsed.pathname.replace(/\/$/, '');
+    return proxyPath || '/api';
+  } catch {
+    return rawBaseUrl.replace(/\/$/, '') || '/api';
+  }
+}
+
+const BASE = resolveBaseUrl();
 
 const api = axios.create({ baseURL: BASE });
 

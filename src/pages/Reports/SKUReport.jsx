@@ -1,436 +1,345 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import api from '../../services/api';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FiChevronLeft, FiChevronRight, FiDownload, FiRefreshCw, FiSearch, FiTrendingDown, FiTrendingUp, FiX } from 'react-icons/fi';
+import AppShell from '../../components/layout/AppShell';
+import OrdersPageHeader from '../../components/orders/OrdersPageHeader';
+import OrdersFilterSection from '../../components/orders/OrdersFilterSection';
+import Card from '../../components/ui/Card';
+import DataTable from '../../components/ui/DataTable';
+import Button from '../../components/ui/Button';
+import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
+import { label } from 'framer-motion/client';
 
-const SKUReport = () => {
-  // State Management
+const fmt = (v) => (Number(v) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtN = (v) => Number(v ?? 0).toLocaleString('en-IN');
+
+const COLUMNS = [
+  {
+    key: 'sku_id', label: 'SKU ID', className: 'min-w-[200px]',
+    render: (row) => (
+      <div>
+        <div className="font-extrabold text-text">{row.sku_id || '-'}</div>
+        <div className="text-[0.65rem] font-bold uppercase tracking-wider text-text-muted">{row.size || 'Free Size'}</div>
+      </div>
+    ),
+  },
+  {
+    key: 'profit_loss', label: '± P/L', right: true, className: 'min-w-[110px]',
+    render: (row) => (
+      <span className={`rounded-full px-3 py-1 text-xs font-extrabold ${Number(row.profit_loss) >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+        Rs. {fmt(row.profit_loss)}
+      </span>
+    ),
+  },
+  { key: 'orders', label: 'Orders', right: true, className: 'min-w-[72px]', render: (row) => <span className="font-bold tabular-nums">{fmtN(row.orders)}</span> },
+  { key: 'hold', label: 'Hold', right: true, className: 'min-w-[60px]', render: (row) => <span className="text-text-muted tabular-nums">{fmtN(row.hold)}</span> },
+  { key: 'pending', label: 'Pending', right: true, className: 'min-w-[72px]', render: (row) => <span className="text-text-muted tabular-nums">{fmtN(row.pending)}</span> },
+  { key: 'cancelled', label: 'Cancel', right: true, className: 'min-w-[72px]', render: (row) => <span className={`tabular-nums font-bold ${Number(row.cancelled) > 50 ? 'text-rose-600' : 'text-text-muted'}`}>{fmtN(row.cancelled)}</span> },
+  { key: 'rts', label: 'RTS', right: true, className: 'min-w-[60px]', render: (row) => <span className="text-text-muted tabular-nums">{fmtN(row.rts)}</span> },
+  { key: 'picked', label: 'Picked', right: true, className: 'min-w-[72px]', render: (row) => <span className="font-bold tabular-nums text-text">{fmtN(row.picked)}</span> },
+  {
+    key: 'shipped', label: 'Shipped', right: true, className: 'min-w-[80px]',
+    render: (row) => (
+      <div className="text-right">
+        <div className="font-bold tabular-nums text-sky-600">{fmtN(row.shipped)}</div>
+        <div className="text-[0.62rem] text-text-muted">{row.shipped_pct ?? 0}%</div>
+      </div>
+    ),
+  },
+  {
+    key: 'rto', label: 'RTO', right: true, className: 'min-w-[72px]',
+    render: (row) => (
+      <div className="text-right">
+        <div className="font-bold tabular-nums text-rose-600">{fmtN(row.rto)}</div>
+        <div className="text-[0.62rem] text-text-muted">{row.rto_pct ?? 0}%</div>
+      </div>
+    ),
+  },
+  {
+    key: 'delivered', label: 'Delivered', right: true, className: 'min-w-[88px]',
+    render: (row) => (
+      <div className="text-right">
+        <div className="font-bold tabular-nums text-emerald-600">{fmtN(row.delivered)}</div>
+        <div className="text-[0.62rem] text-text-muted">{row.delivered_pct ?? 0}%</div>
+      </div>
+    ),
+  },
+  {
+    key: 'return', label: 'Return', right: true, className: 'min-w-[80px]',
+    render: (row) => (
+      <div className="text-right">
+        <div className="font-bold tabular-nums text-amber-600">{fmtN(row.return)}</div>
+        <div className="text-[0.62rem] text-text-muted">{row.return_pct ?? 0}%</div>
+      </div>
+    ),
+  },
+  {
+    key: 'delivery', label: 'Delivery', right: true, className: 'min-w-[80px]',
+    render: (row) => (
+      <div className="text-right">
+        <div className="font-bold tabular-nums text-emerald-700">{fmtN(row.delivery)}</div>
+        <div className="text-[0.62rem] text-text-muted">{row.delivery_pct ?? 0}%</div>
+      </div>
+    ),
+  },
+  { key: 'na', label: 'N/A', right: true, className: 'min-w-[60px]', render: (row) => <span className="text-text-muted tabular-nums">{fmtN(row.na)}</span> },
+  {
+    key: 'avg_pl', label: 'Avg P/L', right: true, className: 'min-w-[90px]',
+    render: (row) => (
+      <span className={`font-extrabold tabular-nums ${Number(row.avg_pl) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+        {fmt(row.avg_pl)}
+      </span>
+    ),
+  },
+];
+
+const SUMMARY_STATS = [
+  { key: 'picked', label: 'Picked', color: 'text-text' },
+  { key: 'shipped', label: 'Shipped', pctKey: 'shipped_pct', color: 'text-sky-600' },
+  { key: 'rto', label: 'RTO', pctKey: 'rto_pct', color: 'text-rose-600' },
+  { key: 'delivered', label: 'Delivered', pctKey: 'delivered_pct', color: 'text-emerald-600' },
+  { key: 'return', label: 'Return', pctKey: 'return_pct', color: 'text-amber-600' },
+  { key: 'delivery', label: 'Delivery', pctKey: 'delivery_pct', color: 'text-emerald-700' },
+  { key: 'grand_total', label: 'Grand Total', color: 'text-primary' },
+  { key: 'grand_pl', label: 'Grand P/L', isCurrency: true, color: 'text-primary' },
+];
+
+const PER_PAGE_OPTIONS = [10, 25, 50, 100];
+
+export default function SKUReport() {
   const navigate = useNavigate();
-  const [skuData, setSkuData] = useState([]);
+  const { activeAccount, selectedDateRange, setSelectedDateRange } = useAuth();
+
+  const [data, setData] = useState([]);
+  const [summary, setSummary] = useState({});
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  const [skuSearch, setSkuSearch] = useState('');
+  const [sizeSearch, setSizeSearch] = useState('');
+  const [plFilter, setPlFilter] = useState('all');
+
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchSize, setSearchSize] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'profit', 'loss'
-  const itemsPerPage = 10;
-  const [allSkuData, setAllSkuData] = useState([]);
+  const [perPage, setPerPage] = useState(10);
+  const [selectedId, setSelectedId] = useState(null);
 
-  // Summary metrics from the image
-  const [summary, setSummary] = useState({
-    picked: 0,
-    shipped: 0,
-    rto: 0,
-    delivered: 0,
-    returned: 0,
-    delivery: 0,
-    pickedPercent: 0,
-    shippedPercent: 0,
-    deliveredPercent: 0,
-    returnPercent: 0,
-    deliveryPercent: 0
-  });
+  const fromDate = selectedDateRange.from;
+  const toDate = selectedDateRange.to;
 
-  // Mock API function - Replace with your actual API call
+  const fetchData = useCallback(async () => {
+    if (!activeAccount?.id) return;
+    setLoading(true);
+    try {
+      const res = await api.post('/get-sku-wise-report', {
+        start_date: fromDate || '',
+        end_date: toDate || '',
+        page_no: currentPage,
+        limit: perPage,
+        ...(skuSearch.trim() ? { sku_id: skuSearch.trim() } : {}),
+        ...(sizeSearch.trim() ? { size: sizeSearch.trim() } : {}),
+        ...(plFilter !== 'all' ? { pl_filter: plFilter } : {}),
+      }, { headers: { account: activeAccount.id } });
 
-const fetchSKUData = useCallback(async () => {
-  setLoading(true);
-  setError(null);
-
-  try {
-    // Fetch ALL data without pagination
-    const response = await api.get(`/sku-list/?limit=10000`); // Fetch all or use a large limit
-    const resData = response.data;
-    
-    let dataArray = resData.data || [];
-    
-    // Apply filters on all data
-    if (searchTerm.trim()) {
-      dataArray = dataArray.filter(item =>
-        item.sku_id?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const payload = res.data || {};
+      setData(Array.isArray(payload.data) ? payload.data : []);
+      setSummary(payload.summary || {});
+      setTotal(Number(payload.total) || 0);
+    } catch {
+      setData([]); setSummary({}); setTotal(0);
+    } finally {
+      setLoading(false);
     }
-    
-    if (searchSize.trim()) {
-      dataArray = dataArray.filter(item =>
-        item.box_size?.toLowerCase().includes(searchSize.toLowerCase())
-      );
-    }
-    
-    if (activeFilter === 'profit') {
-      dataArray = dataArray.filter(item => (item.profit_loss || 0) > 0);
-    } else if (activeFilter === 'loss') {
-      dataArray = dataArray.filter(item => (item.profit_loss || 0) < 0);
-    }
-    
-    // Store all filtered data
-    setAllSkuData(dataArray);
-    setTotalItems(dataArray.length);
-    
-    // Apply pagination
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    setSkuData(dataArray.slice(start, end));
-    
-    // Calculate summary metrics from filtered data
-    if (dataArray.length > 0) {
-      const totalPicked = dataArray.reduce((sum, item) => sum + (item.picked || 0), 0);
-      const totalShipped = dataArray.reduce((sum, item) => sum + (item.shipped || 0), 0);
-      const totalRto = dataArray.reduce((sum, item) => sum + (item.rto || 0), 0);
-      const totalDelivered = dataArray.reduce((sum, item) => sum + (item.delivery || 0), 0);
-      const totalReturned = dataArray.reduce((sum, item) => sum + (item.return_qty || 0), 0);
-      const totalDeliverySuccess = dataArray.reduce((sum, item) => sum + (item.delivery_success || 0), 0);
-      
-      const totalOrders = dataArray.reduce((sum, item) => sum + (item.orders || 0), 0);
-      
-      setSummary({
-        picked: totalPicked,
-        shipped: totalShipped,
-        rto: totalRto,
-        delivered: totalDelivered,
-        returned: totalReturned,
-        delivery: totalDeliverySuccess,
-        pickedPercent: totalOrders ? ((totalPicked / totalOrders) * 100).toFixed(2) : 0,
-        shippedPercent: totalOrders ? ((totalShipped / totalOrders) * 100).toFixed(2) : 0,
-        deliveredPercent: totalOrders ? ((totalDelivered / totalOrders) * 100).toFixed(2) : 0,
-        returnPercent: totalOrders ? ((totalReturned / totalOrders) * 100).toFixed(2) : 0,
-        deliveryPercent: totalOrders ? ((totalDeliverySuccess / totalOrders) * 100).toFixed(2) : 0
-      });
-    }
+  }, [activeAccount?.id, fromDate, toDate, currentPage, perPage, skuSearch, sizeSearch, plFilter]);
 
-  } catch (err) {
-    setError(err.message || 'Failed to fetch SKU data');
-  } finally {
-    setLoading(false);
-  }
-}, [searchTerm, searchSize, activeFilter, currentPage]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-useEffect(() => {
-  fetchSKUData();
-}, [searchTerm, searchSize, activeFilter, currentPage, fetchSKUData]);
-  // Calculate totals
-  const totalSales = skuData.reduce((sum, item) => sum + (item.profit_loss || 0), 0);
-  const totalProfit = skuData.reduce((sum, item) => sum + (item.profit_loss || 0), 0);
-  const totalOrders = skuData.reduce((sum, item) => sum + (item.orders || 0), 0);
+  const tableData = useMemo(() =>
+    data.map((row, i) => ({ ...row, id: row.sku_id || i })),
+    [data]
+  );
 
-  // Pagination
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage + 1;
-  const endIndex = Math.min(currentPage * itemsPerPage, totalItems);
+  const totalPages = Math.max(Math.ceil(total / perPage), 1);
 
-  const goToPage = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
+  const getPaginationNumbers = () => {
+    const delta = 1; const range = []; const result = []; let last;
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) range.push(i);
     }
+    range.forEach((page) => {
+      if (last && page - last !== 1) result.push(page - last === 2 ? last + 1 : '...');
+      result.push(page); last = page;
+    });
+    return result;
   };
 
-  // Export to CSV
-  const exportToCSV = () => {
-    const headers = ['Sku ID', 'SIZE', 'PROFIT/LOSS', 'ORDERS', 'HOLD', 'PROING', 'CANCELED', 'R.T.S.', 'PICKED', 'SHIPPED', 'RTO', 'RETURN', 'DELIVERY', 'N/A', 'Avg. PJ%'];
-    const csvData = skuData.map(item => [
-      item.sku_id, item.box_size, item.profit_loss, item.orders, item.hold, item.proing,
-      item.canceled, item.rts, item.picked, item.shipped, item.rto, item.return_qty,
-      item.delivery, item.na || '', item.avg_pj
-    ]);
-    const csvContent = [headers, ...csvData].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'sku_report.csv';
-    link.click();
+  const handleApply = () => { setCurrentPage(1); fetchData(); setShowMobileFilters(false); };
+  const handleClear = () => { setSkuSearch(''); setSizeSearch(''); setPlFilter('all'); setSelectedDateRange({ from: '', to: '' }); setCurrentPage(1); };
+
+  const exportCSV = () => {
+    const headers = ['SKU ID', 'Size', 'P/L', 'Orders', 'Hold', 'Pending', 'Cancelled', 'RTS', 'Picked', 'Shipped', 'Shipped%', 'RTO', 'RTO%', 'Delivered', 'Delivered%', 'Return', 'Return%', 'Delivery', 'Delivery%', 'N/A', 'Avg P/L'];
+    const rows = data.map((r) => [r.sku_id, r.size, r.profit_loss, r.orders, r.hold, r.pending, r.cancelled, r.rts, r.picked, r.shipped, r.shipped_pct, r.rto, r.rto_pct, r.delivered, r.delivered_pct, r.return, r.return_pct, r.delivery, r.delivery_pct, r.na, r.avg_pl]);
+    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c ?? ''}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `sku_report_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
   };
 
-  if (loading && skuData.length === 0) {
-    return (
-      <div className="container-fluid bg-light min-vh-100 d-flex align-items-center justify-content-center">
-        <div className="text-center">
-          <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}>
-            <span className="visually-hidden">Loading...</span>
-          </div>
-          <p className="text-muted">Loading SKU data...</p>
+  const filterContent = (
+    <div className="flex flex-wrap items-end gap-4">
+      <div className="flex min-w-[200px] flex-1 flex-col gap-1.5">
+        <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">SKU ID</label>
+        <div className="relative">
+          <FiSearch size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
+          <input type="text" value={skuSearch} onChange={(e) => setSkuSearch(e.target.value)} placeholder="Search SKU ID"
+            className="w-full rounded-[16px] border border-border bg-white py-3 pl-11 pr-4 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10" />
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className="container-fluid bg-light px-3 px-md-4 py-4 min-vh-100">
-      {/* Header Card - Matching Image Design */}
-      <div className="card shadow-sm mb-4 border-0">
-        <div className="card-body p-4">
-          <div className="row">
-            <div className="col-md-6">
-              <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
-                <div>
-                  <h1 className="h2 mb-1 fw-semibold" style={{ color: '#1a2c3e' }}>SKU Wise Report</h1>
-                  <p className="text-muted mb-0">Dev E-Com</p>
-                </div>
-                <div className="d-flex gap-3">
-                  <div>
-                    <span className="text-muted me-2">Search On SKU-ID (F3)</span>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm d-inline-block w-auto"
-                      placeholder="SKU ID"
-                      value={searchTerm}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      style={{ width: '150px' }}
-                    />
-                  </div>
-                  <div>
-                    <span className="text-muted me-2">Search On Size (F4)</span>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm d-inline-block w-auto"
-                      placeholder="Size"
-                      value={searchSize}
-                      onChange={(e) => {
-                        setSearchSize(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      style={{ width: '100px' }}
-                    />
-                  </div>
-                </div>
-              </div>
-                {/* Filter Buttons */}
-                <div className="d-flex gap-2 mb-4">
-                  <button
-                    className={`btn btn-sm ${activeFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                    onClick={() => setActiveFilter('all')}
-                  >
-                    All SKU
-                  </button>
-                  <button
-                    className={`btn btn-sm ${activeFilter === 'profit' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                    onClick={() => setActiveFilter('profit')}
-                  >
-                    Profit SKU
-                  </button>
-                  <button
-                    className={`btn btn-sm ${activeFilter === 'loss' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                    onClick={() => setActiveFilter('loss')}
-                  >
-                    Loss SKU
-                  </button>
-                </div>
-              </div>
-              <div className="col-md-6">
-                {/* Overall SKU Performance Table */}
-                <div className="border rounded overflow-hidden">
-                  <table className="table table-bordered mb-0" style={{ fontSize: '0.875rem' }}>
-                    <thead className="table-secondary">
-                      <tr className="text-center">
-                        <th colSpan="6" className="fw-semibold">Overall SKU performance</th>
-                      </tr>
-                      <tr className="text-center">
-                        <th className="fw-semibold">PICKED</th>
-                        <th className="fw-semibold">SHIPPED</th>
-                        <th className="fw-semibold">RTO</th>
-                        <th className="fw-semibold">DELIVERED</th>
-                        <th className="fw-semibold">RETURN</th>
-                        <th className="fw-semibold">DELIVERY</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="text-center">
-                        <td className="fw-bold">{summary.picked}</td>
-                        <td className="fw-bold">{summary.shipped}</td>
-                        <td className="fw-bold text-danger">{summary.rto}</td>
-                        <td className="fw-bold">{summary.delivered}</td>
-                        <td className="fw-bold">{summary.returned}</td>
-                        <td className="fw-bold">{summary.delivery}</td>
-                      </tr>
-                      <tr className="text-center">
-                        <td className="text-success fw-semibold">{summary.pickedPercent} %</td>
-                        <td className="text-success fw-semibold">{summary.shippedPercent} %</td>
-                        <td className="text-danger fw-semibold">-</td>
-                        <td className="text-success fw-semibold">{summary.deliveredPercent} %</td>
-                        <td className="text-warning fw-semibold">{summary.returnPercent} %</td>
-                        <td className="text-success fw-semibold">{summary.deliveryPercent} %</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-          </div>
-        </div>
+      <div className="flex min-w-[160px] flex-col gap-1.5">
+        <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Size</label>
+        <input type="text" value={sizeSearch} onChange={(e) => setSizeSearch(e.target.value)} placeholder="Search size"
+          className="w-full rounded-[16px] border border-border bg-white py-3 px-4 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10" />
       </div>
-
-      {/* Error Alert */}
-      {error && (
-        <div className="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-          <i className="bi bi-exclamation-triangle-fill me-2"></i>
-          {error}
-          <button type="button" className="btn-close" onClick={() => setError(null)}></button>
-        </div>
-      )}
-
-      {/* Main Table Card */}
-      <div className="card shadow-sm border-0 overflow-hidden">
-        <div className="table-responsive">
-          <table className="table table-hover table-bordered mb-0" style={{ fontSize: '0.875rem' }}>
-            <thead className="table-light">
-              <tr>
-                <th className="fw-semibold py-3">Sku ID</th>
-                <th className="fw-semibold py-3">SIZE</th>
-                <th className="fw-semibold py-3">PROFIT / LOSS</th>
-                <th className="fw-semibold py-3">ORDERS</th>
-                <th className="fw-semibold py-3">HOLD</th>
-                <th className="fw-semibold py-3">PROING</th>
-                <th className="fw-semibold py-3">CANCELED</th>
-                <th className="fw-semibold py-3">R.T.S.</th>
-                <th className="fw-semibold py-3">PICKED</th>
-                <th className="fw-semibold py-3">SHIPPED</th>
-                <th className="fw-semibold py-3">RTO</th>
-                <th className="fw-semibold py-3">RETURN</th>
-                <th className="fw-semibold py-3">DELIVERY</th>
-                <th className="fw-semibold py-3">N/A</th>
-                <th className="fw-semibold py-3">Avg. PJ%</th>
-              </tr>
-            </thead>
-            <tbody>
-              {skuData.length > 0 ? (
-                skuData.map((item, idx) => (
-                  <tr key={idx}>
-                    <td className="fw-semibold text-primary">{item.sku_id}</td>
-                    <td>{item.box_size || '-'}</td>
-                    <td className={`fw-semibold ${(item.profit_loss || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
-                      {item.profit_loss || '0.00'}
-                    </td>
-                    <td className="fw-semibold">{item.orders || '0'}</td>
-                    <td>{item.hold || '0'}</td>
-                    <td>{item.proing || '0'}</td>
-                    <td className={item.canceled > 50 ? 'text-danger fw-semibold' : ''}>{item.canceled || '0'}</td>
-                    <td>{item.rts || '0'}</td>
-                    <td>{item.picked || '0'}</td>
-                    <td>{item.shipped || '0'}</td>
-                    <td>{item.rto || '0'}</td>
-                    <td>{item.return_qty || '0'}</td>
-                    <td>{item.delivery || '0'}</td>
-                    <td>{item.na || '-'}</td>
-                    <td className="fw-semibold text-info">{item.avg_pj}%</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="15" className="text-center py-5">
-                    <i className="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
-                    <p className="text-muted mb-0">No SKU data found</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Footer Stats */}
-        <div className="bg-light border-top p-3">
-          <div className="row g-3">
-            <div className="col-md-4">
-              <div className="d-flex align-items-center gap-2">
-                <i className="bi bi-box-seam text-secondary"></i>
-                <span className="text-secondary">Total Boxes: {skuData.length} / {totalItems}</span>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="d-flex align-items-center gap-2">
-                <i className="bi bi-currency-dollar text-success"></i>
-                <span><strong>Total Sales:</strong> ${totalSales.toFixed(2)}</span>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="d-flex align-items-center gap-2">
-                <i className="bi bi-graph-up text-info"></i>
-                <span><strong>Total Profit:</strong> ${totalProfit.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="flex min-w-[160px] flex-col gap-1.5">
+        <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">P/L Filter</label>
+        <select value={plFilter} onChange={(e) => setPlFilter(e.target.value)}
+          className="w-full rounded-[16px] border border-border bg-white px-4 py-3 text-sm font-medium text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10">
+          <option value="all">All SKUs</option>
+          <option value="profit">Profit Only</option>
+          <option value="loss">Loss Only</option>
+        </select>
       </div>
-
-      {/* Action Buttons Card */}
-      <div className="card shadow-sm mt-3 border-0">
-        <div className="card-body p-3">
-          <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
-            <div className="d-flex align-items-center gap-2">
-              <i className="bi bi-calendar3 text-muted"></i>
-              <span className="text-muted small">Orders From Date 21/07/2025 To Date 13/12/2025</span>
-            </div>
-            <div className="d-flex flex-wrap gap-2">
-              <button onClick={exportToCSV} className="btn btn-sm btn-outline-primary">
-                <i className="bi bi-download me-1"></i> Export CSV
-              </button>
-              <button className="btn btn-sm btn-outline-secondary">
-                <i className="bi bi-eye me-1"></i> View SKU Cost
-              </button>
-              <button className="btn btn-sm btn-outline-secondary">
-                <i className="bi bi-speedometer2 me-1"></i> SKU Dashboard
-              </button>
-              <button onClick={() => fetchSKUData(currentPage, searchTerm, searchSize, activeFilter)} className="btn btn-sm btn-outline-secondary">
-                <i className="bi bi-arrow-repeat me-1"></i> Refresh
-              </button>
-              <button className="btn btn-sm btn-outline-danger" onClick={() => navigate('/dashboard')}>
-                <i className="bi bi-x-lg me-1"></i> Close
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">From Date</label>
+        <input type="date" value={fromDate} onChange={(e) => setSelectedDateRange({ ...selectedDateRange, from: e.target.value })}
+          className="h-[50px] rounded-[16px] border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
       </div>
-
-      {/* Pagination Card */}
-      {totalItems > 0 && (
-        <div className="card shadow-sm mt-3 border-0">
-          <div className="card-body p-3">
-            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
-              <div className="text-muted small">
-                <i className="bi bi-info-circle me-1"></i>
-                Showing {startIndex} to {endIndex} of {totalItems} entries
-              </div>
-              <nav>
-                <ul className="pagination pagination-sm mb-0">
-                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                    <button className="page-link" onClick={() => goToPage(currentPage - 1)}>
-                      <i className="bi bi-chevron-left"></i>
-                    </button>
-                  </li>
-                  {(() => {
-                    const pages = [];
-                    const maxVisible = 5;
-                    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-                    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-                    
-                    if (endPage - startPage + 1 < maxVisible) {
-                      startPage = Math.max(1, endPage - maxVisible + 1);
-                    }
-                    
-                    for (let i = startPage; i <= endPage; i++) {
-                      pages.push(
-                        <li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
-                          <button className="page-link" onClick={() => goToPage(i)}>
-                            {i}
-                          </button>
-                        </li>
-                      );
-                    }
-                    return pages;
-                  })()}
-                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                    <button className="page-link" onClick={() => goToPage(currentPage + 1)}>
-                      <i className="bi bi-chevron-right"></i>
-                    </button>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">To Date</label>
+        <input type="date" value={toDate} onChange={(e) => setSelectedDateRange({ ...selectedDateRange, to: e.target.value })}
+          className="h-[50px] rounded-[16px] border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+      </div>
+      <Button variant="primary" className="h-[50px] min-w-[56px] px-0 self-end" onClick={handleApply} title="Apply Filters"><FiSearch size={18} /></Button>
+      <Button variant="secondary" className="h-[50px] min-w-[56px] px-0 self-end" onClick={handleClear} title="Clear Filters"><FiX size={18} /></Button>
     </div>
   );
-};
 
-export default SKUReport;
+  return (
+    <AppShell>
+      <div className="space-y-4">
+        <OrdersPageHeader
+          breadcrumbs={[
+            { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+            { label: 'Reports'},
+            { label: 'SKU Report', current: true },
+          ]}
+          actions={(
+            <>
+              {/* <Button variant="success" size="sm" onClick={exportCSV}><FiDownload size={14} />Export CSV</Button> */}
+              <Button variant="secondary" size="sm" onClick={fetchData}><FiRefreshCw size={14} />Refresh</Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}><FiX size={14} />Cancel</Button>
+            </>
+          )}
+        />
+  
+
+        <OrdersFilterSection
+          title="Filters"
+          mobileTitle="SKU Report Filters"
+          mobileDescription="Filter SKU report by ID, size, P/L status and date range."
+          activeCount={[skuSearch, sizeSearch, plFilter !== 'all', fromDate, toDate].filter(Boolean).length}
+          isModalOpen={showMobileFilters}
+          onOpenModal={() => setShowMobileFilters(true)}
+          onCloseModal={() => setShowMobileFilters(false)}
+          onClear={handleClear}
+          onApply={handleApply}
+        >
+          {filterContent}
+        </OrdersFilterSection>
+
+        {/* Summary Stats */}
+        <Card title="Overall Performance" subtitle={`${total} SKUs total`} muted>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
+            {SUMMARY_STATS.map(({ key, label, pctKey, color, isCurrency }) => (
+              <div key={key} className="rounded-[18px] border border-border/70 bg-white p-3 text-center">
+                <div className="text-[0.62rem] font-extrabold uppercase tracking-[0.18em] text-text-muted">{label}</div>
+                <div className={`mt-2 text-lg font-black ${color}`}>
+                  {isCurrency ? `Rs. ${fmt(summary[key])}` : fmtN(summary[key])}
+                </div>
+                {pctKey ? <div className="text-[0.65rem] font-bold text-text-muted">{summary[pctKey] ?? 0}%</div> : null}
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Data Table */}
+        <Card
+          title="SKU Records"
+          subtitle={`Showing ${data.length} of ${total} SKUs`}
+          contentClassName="p-0"
+          action={(
+            <div className="flex items-center gap-3">
+              <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                className="rounded-[14px] border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary">
+                {PER_PAGE_OPTIONS.map((o) => <option key={o} value={o}>{o} / page</option>)}
+              </select>
+              <Button variant="secondary" size="sm" onClick={fetchData}><FiRefreshCw size={14} /></Button>
+            </div>
+          )}
+        >
+          <DataTable
+            columns={COLUMNS}
+            data={tableData}
+            loading={loading}
+            loadingText="Loading SKU report..."
+            emptyText="No SKU data found for the selected filters."
+            mobileCardView={false}
+            showIndex
+            stickyFirstColumn
+            selectedId={selectedId}
+            onRowClick={(row) => setSelectedId((prev) => (prev === row.id ? null : row.id))}
+            wrapperClassName="rounded-b-[24px] pb-2"
+            tableClassName="min-w-[1400px]"
+            headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
+            headerCellClassName="px-3 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap border-b border-border sm:px-4"
+            indexHeaderClassName="sticky left-0 z-20 w-10 border-b border-r border-border bg-surface-alt/95 px-3 py-3 text-center text-[0.62rem] font-extrabold"
+            indexCellClassName="sticky left-0 z-10 border-r border-border bg-surface-alt/95 px-3 py-3 text-center font-medium text-text-muted"
+            cellClassName="px-3 py-3 whitespace-nowrap text-xs text-text sm:px-4"
+            selectedClass="bg-primary/10 text-text"
+            hoverClass="hover:bg-surface-alt"
+          />
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-border px-4 py-3">
+              <span className="text-sm font-bold text-text-muted">
+                {((currentPage - 1) * perPage) + 1}–{Math.min(currentPage * perPage, total)} of {total}
+              </span>
+              <nav className="flex items-center overflow-x-auto rounded-[18px] border border-border bg-white shadow-sm">
+                <button className={`p-3 transition-colors hover:bg-surface-alt ${currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-text'}`}
+                  onClick={() => currentPage > 1 && setCurrentPage((p) => p - 1)} disabled={currentPage === 1}>
+                  <FiChevronLeft size={16} />
+                </button>
+                {getPaginationNumbers().map((page, idx) =>
+                  page === '...' ? (
+                    <span key={`d-${idx}`} className="px-3 text-xs font-bold text-text-muted">...</span>
+                  ) : (
+                    <button key={page} onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-3 text-sm font-bold transition-colors ${currentPage === page ? 'bg-primary text-white' : 'text-text hover:bg-surface-alt'}`}>
+                      {page}
+                    </button>
+                  )
+                )}
+                <button className={`p-3 transition-colors hover:bg-surface-alt ${currentPage === totalPages ? 'cursor-not-allowed text-slate-300' : 'text-text'}`}
+                  onClick={() => currentPage < totalPages && setCurrentPage((p) => p + 1)} disabled={currentPage === totalPages}>
+                  <FiChevronRight size={16} />
+                </button>
+              </nav>
+            </div>
+          )}
+        </Card>
+      </div>
+    </AppShell>
+  );
+}

@@ -1,144 +1,127 @@
-import React, { useEffect } from 'react';
-import '../../styles/CommanModal.css';
- 
-const CommonModal = ({
+import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { FiX } from 'react-icons/fi';
+import Button from '../ui/Button';
+
+const sizeClasses = {
+  sm: 'max-w-[440px]',
+  md: 'max-w-[560px]',
+  lg: 'max-w-[860px]',
+  xl: 'max-w-[1180px]',
+  full: 'h-[90vh] max-w-[1400px]',
+};
+
+const headerStyleClasses = {
+  default: 'border-b border-border bg-surface text-text',
+  gradient: 'bg-gradient-to-r from-primary to-teal-600 text-white',
+  danger: 'bg-gradient-to-r from-red-600 to-red-700 text-white',
+  success: 'bg-gradient-to-r from-emerald-600 to-green-700 text-white',
+  warning: 'bg-gradient-to-r from-amber-500 to-orange-600 text-white',
+  dark: 'bg-gradient-to-r from-slate-900 to-slate-800 text-white',
+};
+
+export default function CommonModal({
   isOpen,
   onClose,
   title,
-  size = 'md', // sm, md, lg, xl, full
+  size = 'md',
   children,
   footerButtons = [],
   showCloseButton = true,
   closeOnOverlayClick = true,
   closeOnEsc = true,
-  headerStyle = 'default', // default, gradient, danger, success, warning, dark
+  headerStyle = 'default',
   showHeader = true,
   showFooter = true,
   customClass = '',
   onOpen = () => {},
-  onAfterClose = () => {}
-}) => {
-  // Handle ESC key
+  onAfterClose = () => {},
+}) {
   useEffect(() => {
-    const handleEsc = (e) => {
-      if (closeOnEsc && e.key === 'Escape' && isOpen) {
+    if (!isOpen) {
+      onAfterClose();
+      return undefined;
+    }
+
+    const handleEsc = (event) => {
+      if (closeOnEsc && event.key === 'Escape') {
         onClose();
       }
     };
- 
-    if (isOpen) {
-      document.addEventListener('keydown', handleEsc);
-      document.body.style.overflow = 'hidden';
-      onOpen();
-    }
- 
+
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleEsc);
+    onOpen();
+
     return () => {
-      document.removeEventListener('keydown', handleEsc);
       document.body.style.overflow = 'unset';
-      if (!isOpen) {
-        onAfterClose();
-      }
+      document.removeEventListener('keydown', handleEsc);
     };
-  }, [isOpen, closeOnEsc, onClose, onOpen, onAfterClose]);
- 
-  // Handle overlay click
-  const handleOverlayClick = (e) => {
-    if (closeOnOverlayClick && e.target === e.currentTarget) {
-      onClose();
-    }
-  };
- 
-  if (!isOpen) return null;
- 
-  // Size classes
-  const sizeClasses = {
-    sm: 'common-modal-sm',
-    md: 'common-modal-md',
-    lg: 'common-modal-lg',
-    xl: 'common-modal-xl',
-    full: 'common-modal-full'
-  };
- 
-  // Header style classes
-  const headerStyleClasses = {
-    default: 'common-modal-header-default',
-    gradient: 'common-modal-header-gradient',
-    danger: 'common-modal-header-danger',
-    success: 'common-modal-header-success',
-    warning: 'common-modal-header-warning',
-    dark: 'common-modal-header-dark'
-  };
- 
-  return (
-    <div className="common-modal-overlay" onClick={handleOverlayClick}>
-      <div className={`common-modal-container ${sizeClasses[size]} ${customClass}`}>
-        {/* Header */}
-        {showHeader && (
-          <div className={`common-modal-header ${headerStyleClasses[headerStyle]}`}>
-            <h3 className="common-modal-title">{title}</h3>
-            {showCloseButton && (
-              <button className="common-modal-close" onClick={onClose}>
-                ×
+  }, [closeOnEsc, isOpen, onAfterClose, onClose, onOpen]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[1150] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm animate-fade-in"
+      onClick={(event) => {
+        if (closeOnOverlayClick && event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-[28px] border border-white/40 bg-surface shadow-[0_30px_80px_rgba(15,23,42,0.28)] animate-slide-up ${sizeClasses[size]} ${customClass}`}>
+        {showHeader ? (
+          <div className={`flex items-center justify-between gap-4 px-6 py-4 ${headerStyleClasses[headerStyle]}`}>
+            <h3 className="text-lg font-extrabold tracking-tight">{title}</h3>
+            {showCloseButton ? (
+              <button
+                className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] border border-black/5 bg-white/10 transition-colors hover:bg-black/10"
+                onClick={onClose}
+              >
+                <FiX size={18} />
               </button>
+            ) : null}
+          </div>
+        ) : null}
+
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6">{children}</div>
+
+        {showFooter ? (
+          <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border/80 bg-surface-alt px-5 py-4 sm:px-6">
+            {footerButtons.length > 0 ? (
+              footerButtons.map((button, index) => {
+                const handleClick = () => {
+                  button.onClick?.();
+                  if (button.autoClose !== false) {
+                    onClose();
+                  }
+                };
+
+                return (
+                  <Button
+                    key={`${button.label}-${index}`}
+                    variant={button.type || 'secondary'}
+                    loading={button.loading}
+                    disabled={button.disabled}
+                    className={button.className || ''}
+                    onClick={handleClick}
+                  >
+                    {button.label}
+                  </Button>
+                );
+              })
+            ) : (
+              <Button variant="secondary" onClick={onClose}>
+                Close
+              </Button>
             )}
           </div>
-        )}
- 
-        {/* Body */}
-        <div className="common-modal-body">
-          {children}
-        </div>
- 
-        {/* Footer */}
-        {showFooter && footerButtons.length > 0 && (
-          <div className="common-modal-footer">
-            {footerButtons.map((button, index) => {
-              const {
-                label,
-                onClick,
-                type = 'secondary',
-                disabled = false,
-                loading = false,
-                className = ''
-              } = button;
- 
-              const handleClick = () => {
-                if (onClick) {
-                  onClick();
-                }
-                if (button.autoClose !== false) {
-                  onClose();
-                }
-              };
- 
-              const btnClass = `common-modal-btn common-modal-btn-${type} ${className} ${loading ? 'loading' : ''}`;
- 
-              return (
-                <button
-                  key={index}
-                  className={btnClass}
-                  onClick={handleClick}
-                  disabled={disabled || loading}
-                >
-                  {loading && <span className="common-modal-spinner"></span>}
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-        )}
- 
-        {/* Footer with default close button if no buttons provided */}
-        {showFooter && footerButtons.length === 0 && (
-          <div className="common-modal-footer">
-            <button className="common-modal-btn common-modal-btn-secondary" onClick={onClose}>
-              Close
-            </button>
-          </div>
-        )}
+        ) : null}
       </div>
-    </div>
+    </div>,
+    document.body
   );
-};
-
-export default CommonModal;
+}
