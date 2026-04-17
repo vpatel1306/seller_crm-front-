@@ -1,54 +1,93 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
-import SKUCostModal from '../components/layout/SKUCostModal';
-import { useAuth } from '../context/AuthContext';
-import CommonModal from '../components/common/CommonModal';
 import {
+  FiArrowLeft,
   FiChevronDown,
   FiChevronLeft,
   FiChevronRight,
   FiDatabase,
   FiDownload,
+  FiEdit2,
   FiFilter,
+  FiInfo,
+  FiPackage,
   FiPlusCircle,
+  FiRotateCcw,
   FiSettings,
   FiUpload,
   FiX,
 } from 'react-icons/fi';
+import api from '../services/api';
+import SKUCostModal from '../components/layout/SKUCostModal';
+import { useAuth } from '../context/AuthContext';
+import CommonModal from '../components/common/CommonModal';
+import AppShell from '../components/layout/AppShell';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import DataTable from '../components/ui/DataTable';
+
+const FILTER_FIELDS = [
+  { key: 'keyword1', label: 'SKU Keyword' },
+  { key: 'size', label: 'Size' },
+];
+
+const initialAddSkuForm = {
+  sku_id: '',
+  product_name: '',
+  box_size: '',
+  basic_cost: '',
+  gst_percentage: '18',
+  packing_charge: '',
+};
+
+const initialQuickFilters = {
+  keyword1: '',
+  keyword2: '',
+  keyword3: '',
+  size: '',
+  minSelling: '',
+  maxSelling: '',
+  minCost: '',
+  maxCost: '',
+};
+
+const calculateFinalCost = (item) => {
+  const basic = Number(item.basic_cost) || 0;
+  const gst = Number(item.gst_percentage) || 0;
+  const packing = Number(item.packing_charge) || 0;
+  return basic + (basic * gst / 100) + packing;
+};
+
+const formatCurrency = (value) => `Rs. ${(Number(value) || 0).toFixed(2)}`;
+const PRODUCT_NAME_WORD_LIMIT = 4;
 
 export default function SkuList() {
   const navigate = useNavigate();
   const { activeAccount } = useAuth();
   const [showSKUCostModal, setShowSKUCostModal] = useState(false);
   const [showAddSkuModal, setShowAddSkuModal] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [skuList, setSkuList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [addSkuSubmitting, setAddSkuSubmitting] = useState(false);
   const [addSkuError, setAddSkuError] = useState('');
-  const [addSkuForm, setAddSkuForm] = useState({
-    sku_id: '',
-    product_name: '',
-    box_size: '',
-    basic_cost: '',
-    gst_percentage: '18',
-    packing_charge: '',
-  });
+  const [addSkuForm, setAddSkuForm] = useState(initialAddSkuForm);
+  const [editingSku, setEditingSku] = useState(null);
   const [selectedSKU, setSelectedSKU] = useState(null);
-  const [selectedRowIndex, setSelectedRowIndex] = useState(0);
+  const [productInfoSku, setProductInfoSku] = useState(null);
+  const [selectedRowId, setSelectedRowId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalSKUs, setTotalSKUs] = useState(0);
-  const [showPerPageOptions, setShowPerPageOptions] = useState(false);
   const [perPage, setPerPage] = useState(10);
   const [skuFilter, setSkuFilter] = useState('all');
   const [accountFilter, setAccountFilter] = useState('this-account');
+  const [quickFilters, setQuickFilters] = useState(initialQuickFilters);
+
   const accountName = activeAccount?.account_name || 'No account selected';
   const activeAccountId = activeAccount?.id;
   const accountHeaderValue = accountFilter === 'all-accounts' ? null : activeAccountId;
-  const hasSkuData = skuList.length > 0;
-  const resultStart = totalSKUs === 0 ? 0 : ((currentPage - 1) * perPage) + 1;
-  const resultEnd = totalSKUs === 0 ? 0 : Math.min(currentPage * perPage, totalSKUs);
 
   const getNumericCount = (value) => {
     const parsedValue = Number(value);
@@ -56,17 +95,17 @@ export default function SkuList() {
   };
 
   const resetAddSkuForm = () => {
-    setAddSkuForm({
-      sku_id: '',
-      product_name: '',
-      box_size: '',
-      basic_cost: '',
-      gst_percentage: '18',
-      packing_charge: '',
-    });
+    setAddSkuForm(initialAddSkuForm);
     setAddSkuError('');
+    setEditingSku(null);
   };
 
+  const handleClearFilters = () => {
+    setQuickFilters(initialQuickFilters);
+    setSkuFilter('all');
+    setAccountFilter('this-account');
+    setCurrentPage(1);
+  };
 
   const fetchSkuList = useCallback(async (page = 1, perPageCount = perPage) => {
     if (accountFilter === 'this-account' && !activeAccount?.id) {
@@ -80,13 +119,13 @@ export default function SkuList() {
     setLoading(true);
     try {
       const skip = (page - 1) * perPageCount;
-      const res = await api.get(`/sku-list/?skip=${skip}&limit=${perPageCount}&page=${page}`, {
+      const response = await api.get(`/sku-list/?skip=${skip}&limit=${perPageCount}&page=${page}`, {
         headers: {
           account: accountHeaderValue,
         },
       });
 
-      const payload = res.data;
+      const payload = response.data;
       const list = Array.isArray(payload?.data)
         ? payload.data
         : Array.isArray(payload?.results)
@@ -94,11 +133,13 @@ export default function SkuList() {
           : Array.isArray(payload)
             ? payload
             : [];
+
       const total =
         getNumericCount(payload?.total_count) ??
         getNumericCount(payload?.total) ??
         getNumericCount(payload?.count) ??
         list.length;
+
       const resolvedPage = getNumericCount(payload?.current_page) ?? page;
       const resolvedTotalPages =
         getNumericCount(payload?.total_pages) ??
@@ -106,20 +147,87 @@ export default function SkuList() {
 
       setSkuList(list);
       setTotalSKUs(total);
-      setTotalPages(resolvedTotalPages);
+      setTotalPages(Math.max(resolvedTotalPages, 1));
       setCurrentPage(resolvedPage);
     } catch {
       setSkuList([]);
       setTotalSKUs(0);
-      setTotalPages(0);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
   }, [accountFilter, accountHeaderValue, activeAccount?.id, perPage]);
 
-  const handleRowClick = (sku, index) => {
+  useEffect(() => {
+    fetchSkuList();
+  }, [fetchSkuList]);
+
+  useEffect(() => {
+    if (!showMobileFilters) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showMobileFilters]);
+
+  const filteredSkuList = useMemo(() => {
+    return skuList.filter((item) => {
+      const finalCost = calculateFinalCost(item);
+      const selling = Number(item.selling) || 0;
+
+      if (skuFilter === 'without-cost' && finalCost > 0) return false;
+      if (skuFilter === 'cost-set' && finalCost <= 0) return false;
+
+      const keywordChecks = [quickFilters.keyword1, quickFilters.keyword2, quickFilters.keyword3]
+        .filter(Boolean)
+        .every((keyword) =>
+          [item.sku_id, item.product_name, item.box_size]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+            .includes(keyword.toLowerCase())
+        );
+
+      if (!keywordChecks) return false;
+      if (quickFilters.size && !(item.box_size || '').toLowerCase().includes(quickFilters.size.toLowerCase())) return false;
+      if (quickFilters.minSelling && selling < Number(quickFilters.minSelling)) return false;
+      if (quickFilters.maxSelling && selling > Number(quickFilters.maxSelling)) return false;
+      if (quickFilters.minCost && finalCost < Number(quickFilters.minCost)) return false;
+      if (quickFilters.maxCost && finalCost > Number(quickFilters.maxCost)) return false;
+
+      return true;
+    });
+  }, [quickFilters, skuFilter, skuList]);
+
+  const resultStart = totalSKUs === 0 ? 0 : ((currentPage - 1) * perPage) + 1;
+  const resultEnd = totalSKUs === 0 ? 0 : Math.min(currentPage * perPage, totalSKUs);
+  const activeQuickFilterCount = Object.values(quickFilters).filter(Boolean).length + (skuFilter !== 'all' ? 1 : 0) + (accountFilter !== 'this-account' ? 1 : 0);
+
+  const handleRowClick = (sku) => {
     setSelectedSKU(sku);
-    setSelectedRowIndex(index);
+    setSelectedRowId(sku.id || sku.sku_id);
+  };
+
+  const handleEditSku = (sku) => {
+    setEditingSku(sku);
+    setAddSkuError('');
+    setAddSkuForm({
+      sku_id: sku.sku_id || '',
+      product_name: sku.product_name || '',
+      box_size: sku.box_size || '',
+      basic_cost: sku.basic_cost ?? '',
+      gst_percentage: sku.gst_percentage ?? '18',
+      packing_charge: sku.packing_charge ?? '',
+    });
+    setShowAddSkuModal(true);
+  };
+
+  const handleOpenSkuCost = (sku) => {
+    setSelectedSKU(sku);
+    setSelectedRowId(sku.id || sku.sku_id);
     setShowSKUCostModal(true);
   };
 
@@ -129,15 +237,9 @@ export default function SkuList() {
     }
   };
 
-  const handlePerPageChange = (newPerPage) => {
-    setPerPage(newPerPage);
-    setShowPerPageOptions(false);
-    fetchSkuList(1, newPerPage);
-  };
-
   const exportToCSV = () => {
     const headers = ['SKU ID', 'Size', 'Orders', 'Selling', 'Basic Cost', 'GST %', 'Packing', 'Final Cost', 'Last Update'];
-    const csvData = skuList.map((item) => [
+    const csvData = filteredSkuList.map((item) => [
       item.sku_id || '-',
       item.box_size || 'Free Size',
       item.orders || 0,
@@ -145,7 +247,7 @@ export default function SkuList() {
       item.basic_cost || 0,
       item.gst_percentage || 0,
       item.packing_charge || 0,
-      ((item.basic_cost || 0) + ((item.basic_cost || 0) * (item.gst_percentage || 0) / 100) + (item.packing_charge || 0)).toFixed(2),
+      calculateFinalCost(item).toFixed(2),
       item.updated_at || '-',
     ]);
 
@@ -171,15 +273,11 @@ export default function SkuList() {
     }
   };
 
-  const handleOpenAddSkuModal = () => {
-    resetAddSkuForm();
-    setShowAddSkuModal(true);
-  };
-
   const handleCloseAddSkuModal = () => {
     setShowAddSkuModal(false);
     setAddSkuSubmitting(false);
     setAddSkuError('');
+    setEditingSku(null);
   };
 
   const handleAddSkuSubmit = async () => {
@@ -201,14 +299,26 @@ export default function SkuList() {
     setAddSkuError('');
 
     try {
-      await api.post('/add-sku', {
+      const payload = {
         sku_id: addSkuForm.sku_id.trim(),
         product_name: addSkuForm.product_name.trim(),
         box_size: addSkuForm.box_size.trim(),
         basic_cost: basicCost,
         gst_percentage: gstPercentage,
         packing_charge: packingCharge,
-      });
+      };
+
+      if (editingSku?.id) {
+        await api.post(`/update-sku/${editingSku.id}`, {
+          box_size: payload.box_size,
+          product_name: payload.product_name,
+          basic_cost: payload.basic_cost,
+          gst_percentage: payload.gst_percentage,
+          packing_charge: payload.packing_charge,
+        });
+      } else {
+        await api.post('/add-sku', payload);
+      }
 
       handleCloseAddSkuModal();
       fetchSkuList(1, perPage);
@@ -220,7 +330,7 @@ export default function SkuList() {
   };
 
   const getPaginationNumbers = () => {
-    const delta = 2;
+    const delta = 1;
     const range = [];
     const rangeWithDots = [];
     let last;
@@ -231,477 +341,557 @@ export default function SkuList() {
       }
     }
 
-    range.forEach((i) => {
+    range.forEach((page) => {
       if (last) {
-        if (i - last === 2) rangeWithDots.push(last + 1);
-        else if (i - last !== 1) rangeWithDots.push('...');
+        if (page - last === 2) rangeWithDots.push(last + 1);
+        else if (page - last !== 1) rangeWithDots.push('...');
       }
-      rangeWithDots.push(i);
-      last = i;
+      rangeWithDots.push(page);
+      last = page;
     });
 
     return rangeWithDots;
   };
 
-  useEffect(() => {
-    fetchSkuList();
-  }, [fetchSkuList]);
+  const columns = [
+    {
+      key: 'sku_id',
+      label: 'SKU ID',
+      className: 'min-w-[220px] max-w-[240px] whitespace-nowrap',
+      render: (row) => (
+        <div className="max-w-[220px]">
+          <div className="font-extrabold text-text">{row.sku_id || '-'}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'product_name',
+      label: 'Product Name',
+      className: 'min-w-[320px] max-w-[380px] sm:min-w-[420px] sm:max-w-[520px]',
+      render: (row) => {
+        const fullName = row.product_name || 'Unnamed product';
+        const words = fullName.trim().split(/\s+/).filter(Boolean);
+        const hasMoreContent = words.length > PRODUCT_NAME_WORD_LIMIT;
+        const previewText = hasMoreContent
+          ? `${words.slice(0, PRODUCT_NAME_WORD_LIMIT).join(' ')}...`
+          : fullName;
+
+        return (
+          <div className="max-w-[320px] sm:max-w-[520px]">
+            <div className="flex items-center gap-2 text-sm leading-6 text-text-muted">
+              <span className="truncate">{previewText}</span>
+              {hasMoreContent ? (
+                <button
+                  type="button"
+                  className="inline-flex shrink-0 items-center gap-1 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-primary transition-colors hover:text-primary-hover"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setProductInfoSku(row);
+                  }}
+                >
+                  <FiInfo size={11} />
+                  More
+                </button>
+              ) : null}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'box_size',
+      label: 'Size',
+      className: 'min-w-[92px]',
+      render: (row) => <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-text">{row.box_size || 'Free Size'}</span>,
+    },
+    {
+      key: 'orders',
+      label: 'Orders',
+      right: true,
+      className: 'min-w-[72px]',
+      render: (row) => <span className="font-bold tabular-nums text-text">{row.orders || 0}</span>,
+    },
+    {
+      key: 'selling',
+      label: 'Selling',
+      right: true,
+      className: 'min-w-[92px]',
+      render: (row) => <span className="font-bold text-text">{formatCurrency(row.selling)}</span>,
+    },
+    {
+      key: 'basic_cost',
+      label: 'Basic Cost',
+      right: true,
+      className: 'min-w-[96px]',
+      render: (row) => <span className="text-text-muted">{formatCurrency(row.basic_cost)}</span>,
+    },
+    {
+      key: 'gst_percentage',
+      label: 'GST %',
+      right: true,
+      className: 'min-w-[82px]',
+      render: (row) => <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">{row.gst_percentage || 0}%</span>,
+    },
+    {
+      key: 'packing_charge',
+      label: 'Packing',
+      right: true,
+      className: 'min-w-[92px]',
+      render: (row) => <span className="text-text-muted">{formatCurrency(row.packing_charge)}</span>,
+    },
+    {
+      key: 'final_cost',
+      label: 'Final Cost',
+      right: true,
+      className: 'min-w-[100px]',
+      render: (row) => <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{formatCurrency(calculateFinalCost(row))}</span>,
+    },
+    {
+      key: 'updated_at',
+      label: 'Last Update',
+      className: 'min-w-[150px]',
+      render: (row) => <span className="text-xs text-text-muted">{row.updated_at || '-'}</span>,
+    },
+    {
+      key: 'actions',
+      label: 'Action',
+      className: 'min-w-[88px]',
+      render: (row) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="info"
+            size="sm"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleEditSku(row);
+            }}
+            title="Edit SKU"
+          >
+            <FiEdit2 size={15} />
+          </Button>
+          {/* <Button
+            variant="success"
+            size="sm"
+            className="h-8 rounded-[10px] px-3 text-[0.68rem] tracking-[0.14em]"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleOpenSkuCost(row);
+            }}
+          >
+            Set Cost
+          </Button> */}
+        </div>
+      ),
+    },
+  ];
+
+  const quickStats = [
+    { label: 'Server Total', value: totalSKUs, icon: FiDatabase },
+    { label: 'Visible Rows', value: filteredSkuList.length, icon: FiPackage },
+    { label: 'Per Page', value: perPage, icon: FiFilter },
+  ];
+
+  const filterPanelContent = (
+    <div className="space-y-3">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.95fr)_minmax(0,0.78fr)_minmax(0,0.78fr)_minmax(0,0.78fr)_minmax(0,0.78fr)_minmax(0,0.9fr)_minmax(0,1fr)_56px]">
+        {FILTER_FIELDS.map((field) => (
+          <Input
+            key={field.key}
+            label={field.label}
+            value={quickFilters[field.key]}
+            onChange={(event) => setQuickFilters((prev) => ({ ...prev, [field.key]: event.target.value }))}
+            placeholder={`Search ${field.label.toLowerCase()}`}
+          />
+        ))}
+
+        <Input
+          label="Min Selling"
+          type="number"
+          value={quickFilters.minSelling}
+          onChange={(event) => setQuickFilters((prev) => ({ ...prev, minSelling: event.target.value }))}
+          placeholder="0"
+        />
+        <Input
+          label="Max Selling"
+          type="number"
+          value={quickFilters.maxSelling}
+          onChange={(event) => setQuickFilters((prev) => ({ ...prev, maxSelling: event.target.value }))}
+          placeholder="500"
+        />
+        <Input
+          label="Min Cost"
+          type="number"
+          value={quickFilters.minCost}
+          onChange={(event) => setQuickFilters((prev) => ({ ...prev, minCost: event.target.value }))}
+          placeholder="0"
+        />
+        <Input
+          label="Max Cost"
+          type="number"
+          value={quickFilters.maxCost}
+          onChange={(event) => setQuickFilters((prev) => ({ ...prev, maxCost: event.target.value }))}
+          placeholder="500"
+        />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Cost Status</label>
+          <div className="relative">
+            <select
+              value={skuFilter}
+              onChange={(event) => setSkuFilter(event.target.value)}
+              className="w-full appearance-none rounded-[16px] border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+            >
+              <option value="all">All SKUs</option>
+              <option value="without-cost">Without Cost</option>
+              <option value="cost-set">Cost Set</option>
+            </select>
+            <FiChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Account Scope</label>
+          <div className="relative">
+            <select
+              value={accountFilter}
+              onChange={(event) => {
+                setAccountFilter(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full appearance-none rounded-[16px] border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+            >
+              <option value="this-account">This Account</option>
+              <option value="all-accounts">All Accounts</option>
+            </select>
+            <FiChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-transparent select-none">Clear</label>
+          <Button
+            type="button"
+            variant="secondary"
+            className="h-[50px] w-full min-w-0 px-0"
+            onClick={handleClearFilters}
+            title="Clear Filters"
+          >
+            <FiRotateCcw size={16} />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg font-sans lg:h-screen lg:overflow-hidden">
-      <header className="z-20 flex flex-col gap-3 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 px-4 py-3 text-white shadow-md lg:flex-row lg:items-center lg:justify-between lg:px-6">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary/20 p-2">
-            <FiDatabase size={20} className="text-primary" />
+    <AppShell>
+      <div className="space-y-5 sm:space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="shrink-0">
+             <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
+              <FiArrowLeft size={16} />
+              Back
+            </Button>
           </div>
-          <h1 className="text-lg font-bold tracking-tight sm:text-xl">
-            SKU MASTER <span className="font-medium text-primary/80">- {accountName}</span>
-          </h1>
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-2.5">
+            <Button
+              variant="primary"
+              size="sm"
+              className="h-10 rounded-[14px] px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-primary/20 sm:w-auto"
+              onClick={() => { resetAddSkuForm(); setShowAddSkuModal(true); }}
+            >
+              <FiPlusCircle size={16} />
+              Add SKU
+            </Button>
+            {/* <Button
+              variant="info"
+              size="sm"
+              className="h-10 rounded-[14px] px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-sky-600/20"
+            >
+              <FiSettings size={16} />
+              Bulk Update
+            </Button>
+            <Button
+              variant="warning"
+              size="sm"
+              className="h-10 rounded-[14px] px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-accent/20"
+              onClick={exportToCSV}
+            >
+              <FiDownload size={16} />
+              Export
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="h-10 rounded-[14px] border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm"
+            >
+              <FiUpload size={16} />
+              Import
+            </Button> */}
+           
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2">
-          <span className="text-[0.7rem] font-bold uppercase tracking-widest text-gray-400">Timeframe:</span>
-          <span className="text-xs font-mono">21/07/2025</span>
-          <FiChevronRight size={12} className="text-primary" />
-          <span className="text-xs font-mono">13/12/2025</span>
+        <div className="xl:hidden">
+          <Button variant="secondary" className="w-full justify-between" onClick={() => setShowMobileFilters(true)}>
+            <span className="inline-flex items-center gap-2">
+              <FiFilter size={16} />
+              Filters
+            </span>
+            <span className="rounded-full bg-surface-alt px-2.5 py-1 text-[0.65rem] font-extrabold uppercase tracking-[0.18em] text-text">
+              {activeQuickFilterCount} Active
+            </span>
+          </Button>
         </div>
-      </header>
 
-      <div className="relative flex flex-1 flex-col lg:min-h-0 lg:flex-row lg:overflow-hidden">
-        <aside className="z-10 flex w-full flex-col space-y-4 border-b border-gray-100 bg-white p-3 shadow-sm lg:w-72 lg:flex-shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r lg:p-4">
-          <div className="flex items-center gap-2 border-b border-gray-50 pb-2 text-primary">
-            <FiFilter size={16} />
-            <h2 className="text-sm font-bold uppercase tracking-wider">Refine Search</h2>
+        <CommonModal
+          isOpen={showMobileFilters}
+          onClose={() => setShowMobileFilters(false)}
+          title="Apply Quick Filters"
+          size="md"
+          headerStyle="default"
+          showFooter={false}
+          customClass="xl:hidden max-w-[620px] bg-[#f8f6f1]"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-text-muted">Set filters and tap apply to update the list.</p>
+
+            <div className="max-h-[calc(80vh-180px)] overflow-y-auto pr-1">
+              {filterPanelContent}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 border-t border-border bg-white/90 pt-4">
+              <Button variant="secondary" className="w-full" onClick={handleClearFilters}>
+                Clear
+              </Button>
+              <Button variant="primary" className="w-full" onClick={() => setShowMobileFilters(false)}>
+                Apply Filters
+              </Button>
+            </div>
           </div>
+        </CommonModal>
 
-          <div className="space-y-3">
-            {[
-              { label: 'SKU Keyword 1', shortcut: 'F3' },
-              { label: 'SKU Keyword 2', shortcut: null },
-              { label: 'SKU Keyword 3', shortcut: null },
-              { label: 'Size', shortcut: 'F4' },
-            ].map((field) => (
-              <div key={field.label} className="space-y-1">
-                <label className="flex justify-between text-[0.7rem] font-bold uppercase tracking-tighter text-gray-400">
-                  {field.label}
-                  {field.shortcut ? <span className="text-primary/50">{field.shortcut}</span> : null}
-                </label>
-                <input className="w-full rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none transition-all focus:bg-white focus:ring-1 focus:ring-primary" />
-              </div>
-            ))}
+        <div className="space-y-5 xl:space-y-6">
+          <Card
+            title="Apply Quick Filters"
+            muted
+            className="hidden xl:block"
+          >
+            {filterPanelContent}
+          </Card>
 
-            <div className="space-y-1">
-              <label className="flex justify-between text-[0.7rem] font-bold uppercase tracking-tighter text-gray-400">
-                Sell Price Range <span className="text-primary/50">F6</span>
-              </label>
-              <div className="flex gap-2">
-                <input className="w-1/2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm outline-none focus:bg-white focus:ring-1 focus:ring-primary" placeholder="Min" />
-                <input className="w-1/2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm outline-none focus:bg-white focus:ring-1 focus:ring-primary" placeholder="Max" />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="flex justify-between text-[0.7rem] font-bold uppercase tracking-tighter text-gray-400">
-                Cost Range <span className="text-primary/50">F7</span>
-              </label>
-              <div className="flex gap-2">
-                <input className="w-1/2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm outline-none focus:bg-white focus:ring-1 focus:ring-primary" placeholder="Min" />
-                <input className="w-1/2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm outline-none focus:bg-white focus:ring-1 focus:ring-primary" placeholder="Max" />
-              </div>
-            </div>
-
-            <button className="mt-1 w-full rounded-lg bg-gray-100 py-2 text-xs font-bold uppercase tracking-widest text-gray-500 transition-colors hover:bg-gray-200 active:scale-95">
-              Clear Filters
-            </button>
-          </div>
-
-          <div className="space-y-3 border-t border-gray-50 pt-4">
-            <div className="space-y-1.5">
-              {[
-                { label: 'All SKUs', value: 'all' },
-                { label: 'Without Cost SKUs', value: 'without-cost' },
-                { label: 'Cost Set SKUs', value: 'cost-set' },
-              ].map((opt) => (
-                <label key={opt.value} className="group flex cursor-pointer items-center gap-3">
-                  <input
-                    type="radio"
-                    name="sku-filter"
-                    checked={skuFilter === opt.value}
-                    onChange={() => setSkuFilter(opt.value)}
-                    className="h-4 w-4 accent-primary"
-                  />
-                  <span className="text-sm font-medium text-gray-600 transition-colors group-hover:text-primary">{opt.label}</span>
-                </label>
-              ))}
-            </div>
-
-            <div className="space-y-1.5 border-t border-gray-50/50 pt-3">
-              {[
-                { label: 'This Account SKUs', value: 'this-account' },
-                { label: 'All Account SKUs', value: 'all-accounts' },
-              ].map((opt) => (
-                <label key={opt.value} className="group flex cursor-pointer items-center gap-3">
-                  <input
-                    type="radio"
-                    name="account-filter"
-                    checked={accountFilter === opt.value}
-                    onChange={() => {
-                      setAccountFilter(opt.value);
-                      setCurrentPage(1);
+          <div className="min-w-0 space-y-5 xl:space-y-6">
+            <Card
+              title="SKU Records"
+              action={(
+                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+                  <select
+                    value={perPage}
+                    onChange={(event) => {
+                      const nextPerPage = Number(event.target.value);
+                      setPerPage(nextPerPage);
+                      fetchSkuList(1, nextPerPage);
                     }}
-                    className="h-4 w-4 accent-primary"
-                  />
-                  <span className="text-sm font-medium text-gray-600 transition-colors group-hover:text-primary">{opt.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        <main className="flex flex-1 flex-col bg-white lg:min-h-0 lg:overflow-hidden">
-          <div className="flex-1 overflow-visible p-3 sm:p-4 lg:min-h-0 lg:overflow-auto lg:p-6">
-            <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-              <div className="flex flex-col gap-3 border-b border-gray-100 bg-gray-50/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-gray-400">SKU Records</div>
-                  <div className="mt-1 text-sm font-bold text-gray-700">
-                    {`Total Count: ${totalSKUs}`}
-                  </div>
-                </div>
-
-                <div className="relative self-start sm:self-auto">
-                  <button
-                    className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600 transition-all hover:border-primary active:scale-95"
-                    onClick={() => setShowPerPageOptions(!showPerPageOptions)}
+                    className="w-full rounded-[14px] border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary sm:w-auto"
                   >
-                    <span>Show {perPage}</span>
-                    <FiChevronDown size={14} className={showPerPageOptions ? 'rotate-180' : ''} />
-                  </button>
-                  {showPerPageOptions ? (
-                    <div className="absolute right-0 top-full z-30 mt-2 w-32 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl">
-                      {[10, 25, 50, 100].map((opt) => (
-                        <button
-                          key={opt}
-                          className={`w-full px-4 py-2.5 text-left text-xs font-bold transition-colors hover:bg-gray-50 ${perPage === opt ? 'bg-primary/5 text-primary' : 'text-gray-500'}`}
-                          onClick={() => handlePerPageChange(opt)}
-                        >
-                          {opt} per page
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
+                    {[10, 25, 50, 100].map((option) => (
+                      <option key={option} value={option}>
+                        {option} / page
+                      </option>
+                    ))}
+                    
+                  </select>
 
-              {loading ? (
-                <div className="px-5 py-20 text-center">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
-                    <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Fetching records...</span>
-                  </div>
+                  <Button variant="secondary" size="sm" className="hidden sm:inline-flex sm:w-auto" onClick={() => fetchSkuList(currentPage, perPage)}>
+                    Refresh
+                  </Button>
                 </div>
-              ) : skuList.length === 0 ? (
-                <div className="px-5 py-20 text-center italic text-gray-400">No data found in this criteria</div>
-              ) : (
-                <>
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[980px] border-collapse text-left">
-                      <thead>
-                        <tr className="border-b border-gray-100 bg-gray-50/50 text-[0.65rem] font-bold uppercase tracking-widest text-gray-400">
-                          <th className="px-5 py-4">SKU ID</th>
-                          <th className="px-5 py-4">Size</th>
-                          <th className="px-5 py-4">Orders</th>
-                          <th className="px-5 py-4">Selling</th>
-                          <th className="px-5 py-4">Basic Cost</th>
-                          <th className="px-5 py-4">GST %</th>
-                          <th className="px-5 py-4">Packing</th>
-                          <th className="px-5 py-4">Final Cost</th>
-                          <th className="px-5 py-4">Last Update</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50 text-[0.8rem]">
-                         {skuList.map((item, index) => {
-                           const rowIndex = ((currentPage - 1) * perPage) + index;
-                           const isActive = rowIndex === selectedRowIndex;
-                           const finalCost =
-                             (item.basic_cost || 0) +
-                             ((item.basic_cost || 0) * (item.gst_percentage || 0) / 100) +
-                             (item.packing_charge || 0);
-
-                          return (
-                             <tr
-                               key={item.id || item.sku_id || rowIndex}
-                               className={`group cursor-pointer transition-colors hover:bg-indigo-50/30 ${isActive ? 'bg-indigo-50/70 shadow-inner' : ''}`}
-                               onClick={() => handleRowClick(item, rowIndex)}
-                             >
-                              <td className="px-5 py-4 font-bold text-gray-900 group-hover:text-primary">{item.sku_id || '-'}</td>
-                              <td className="px-5 py-4 font-medium uppercase italic text-gray-600">{item.box_size || 'Free Size'}</td>
-                              <td className="px-5 py-4 font-mono font-bold">{item.orders || 0}</td>
-                              <td className="px-5 py-4 font-bold text-gray-900">Rs. {item.selling || 0}</td>
-                              <td className="px-5 py-4 text-gray-600">Rs. {item.basic_cost || 0}</td>
-                              <td className="px-5 py-4">
-                                <span className="rounded bg-gray-100 px-2 py-0.5 font-bold text-gray-500">{item.gst_percentage || 0}%</span>
-                              </td>
-                              <td className="px-5 py-4 text-gray-600">Rs. {item.packing_charge || 0}</td>
-                              <td className="px-5 py-4">
-                                <span className="rounded-lg bg-primary/5 px-2 py-1 font-bold text-primary">Rs. {finalCost.toFixed(2)}</span>
-                              </td>
-                              <td className="whitespace-nowrap px-5 py-4 text-[0.7rem] text-gray-400">{item.updated_at || '-'}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
               )}
-            </div>
+              contentClassName="p-0"
+            >
+              <DataTable
+                columns={columns}
+                data={filteredSkuList}
+                loading={loading}
+                loadingText="Fetching SKU records..."
+                emptyText="No data found for the current criteria."
+                mobileCardView={false}
+                stickyFirstColumn
+                selectedId={selectedRowId}
+                getRowId={(row) => row.id || row.sku_id}
+                onRowClick={handleRowClick}
+                wrapperClassName="rounded-b-[24px] pb-2"
+                tableClassName="min-w-[1160px] xl:min-w-[1260px]"
+                headClassName="top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
+                headerCellClassName="border-b border-border px-2 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap sm:px-4 sm:py-4 sm:text-[0.68rem] sm:tracking-[0.18em]"
+                indexHeaderClassName="sticky left-0 z-20 w-10 border-b border-r border-border bg-surface-alt/95 px-2 py-3 text-center text-[0.62rem] font-extrabold sm:w-12 sm:px-4 sm:py-4 sm:text-[0.68rem]"
+                indexCellClassName="sticky left-0 z-10 border-r border-border bg-surface-alt/95 px-2 py-3 text-center font-medium text-text-muted sm:px-4 sm:py-4"
+                cellClassName="px-2 py-3 text-xs text-text sm:px-4 sm:py-4 sm:text-sm"
+                selectedClass="bg-primary/10 text-text"
+                hoverClass="hover:bg-surface-alt"
+              />
+            </Card>
 
-            {hasSkuData && (
-              <div className="mt-6 flex flex-col gap-4 px-2 lg:flex-row lg:items-center lg:justify-between">
-                <div className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                  {`Results: ${resultStart} - ${resultEnd} of ${totalSKUs}`}
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                  <div className="relative">
-                    <button
-                      className="flex items-center gap-2 rounded-lg border border-gray-100 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 transition-all hover:border-primary active:scale-95"
-                      onClick={() => setShowPerPageOptions(!showPerPageOptions)}
-                    >
-                      <span>Show {perPage}</span>
-                      <FiChevronDown size={14} className={showPerPageOptions ? 'rotate-180' : ''} />
-                    </button>
-                    {showPerPageOptions ? (
-                      <div className="absolute bottom-full z-30 mb-2 w-32 origin-bottom overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl duration-200 animate-in fade-in slide-in-from-bottom-2">
-                        {[10, 25, 50, 100].map((opt) => (
-                          <button
-                            key={opt}
-                            className={`w-full px-4 py-2.5 text-left text-xs font-bold transition-colors hover:bg-gray-50 ${perPage === opt ? 'bg-primary/5 text-primary' : 'text-gray-500'}`}
-                            onClick={() => handlePerPageChange(opt)}
-                          >
-                            {opt} per page
-                          </button>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <nav className="flex items-center overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
-                    <button
-                      className={`p-2 transition-colors hover:bg-gray-50 ${currentPage === 1 ? 'cursor-not-allowed text-gray-200' : 'text-gray-600'}`}
-                      onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      <FiChevronLeft size={18} />
-                    </button>
-
-                    <div className="flex items-center">
-                      {getPaginationNumbers().map((page, index) =>
-                        page === '...' ? (
-                          <span key={`dots-${index}`} className="px-3 text-[0.7rem] font-bold text-gray-300">
-                            ...
-                          </span>
-                        ) : (
-                          <button
-                            key={page}
-                            className={`px-4 py-2 text-xs font-bold transition-all ${currentPage === page ? 'bg-primary text-white shadow-inner' : 'text-gray-500 hover:bg-gray-50'}`}
-                            onClick={() => handlePageChange(page)}
-                          >
-                            {page}
-                          </button>
-                        )
-                      )}
-                    </div>
-
-                    <button
-                      className={`p-2 transition-colors hover:bg-gray-50 ${currentPage === totalPages ? 'cursor-not-allowed text-gray-200' : 'text-gray-600'}`}
-                      onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    >
-                      <FiChevronRight size={18} />
-                    </button>
-                  </nav>
-                </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm font-bold text-text-muted">
+                Results {resultStart}-{resultEnd} of {totalSKUs}
               </div>
-            )}
+
+              <nav className="flex max-w-full items-center overflow-x-auto rounded-[18px] border border-border bg-white shadow-sm [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300">
+                <button
+                  className={`p-3 transition-colors hover:bg-surface-alt ${currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-text'}`}
+                  onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <FiChevronLeft size={18} />
+                </button>
+
+                <div className="flex items-center">
+                  {getPaginationNumbers().map((page, index) =>
+                    page === '...' ? (
+                      <span key={`dots-${index}`} className="px-3 text-xs font-bold text-text-muted">
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        className={`px-3 py-3 text-sm font-bold transition-colors sm:px-4 ${currentPage === page ? 'bg-primary text-white' : 'text-text hover:bg-surface-alt'}`}
+                        onClick={() => handlePageChange(page)}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <button
+                  className={`p-3 transition-colors hover:bg-surface-alt ${currentPage === totalPages ? 'cursor-not-allowed text-slate-300' : 'text-text'}`}
+                  onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  <FiChevronRight size={18} />
+                </button>
+              </nav>
+            </div>
           </div>
-
-          <footer className="z-20 flex flex-col gap-4 border-t border-gray-100 bg-gray-50 p-4">
-            {hasSkuData && (
-              <div className="flex flex-wrap items-center gap-3 rounded-xl bg-gray-900 px-4 py-2 text-[0.7rem] font-bold uppercase tracking-widest text-white">
-                <span className="opacity-50">Page Statistics</span>
-                <span className="font-mono text-primary">
-                  {currentPage} of {totalPages}
-                </span>
-                <span className="text-lg opacity-20">|</span>
-                <span>Total Count: {totalSKUs}</span>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 justify-end gap-2 sm:grid-cols-2 xl:ml-auto xl:flex xl:flex-wrap xl:justify-end xl:items-stretch">
-              <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold uppercase tracking-wider italic text-gray-500 shadow-sm transition-all hover:border-primary hover:text-primary active:scale-95 xl:w-auto">
-                <span>No SKU Search Result</span>
-              </button>
-              <button
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary-hover active:scale-95 xl:w-auto"
-                onClick={handleOpenAddSkuModal}
-              >
-                <FiPlusCircle size={14} />
-                <span>Add SKU</span>
-              </button>
-              <button
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-500 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-green-500/20 transition-all hover:bg-green-600 active:scale-95 xl:w-auto"
-                onClick={() => setShowSKUCostModal(true)}
-              >
-                <FiPlusCircle size={14} />
-                <span>Set Single SKU Cost</span>
-              </button>
-              <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-600 active:scale-95 xl:w-auto">
-                <FiSettings size={14} />
-                <span>Bulk Update</span>
-              </button>
-              <button
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-600 active:scale-95 xl:w-auto"
-                onClick={exportToCSV}
-              >
-                <FiDownload size={14} />
-                <span>Export Excel</span>
-              </button>
-              <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-cyan-500/20 transition-all hover:bg-cyan-600 active:scale-95 xl:w-auto">
-                <FiUpload size={14} />
-                <span>Import Excel</span>
-              </button>
-              <button
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-red-600/20 transition-all hover:bg-red-700 active:scale-95 xl:w-auto"
-                onClick={() => navigate('/dashboard')}
-              >
-                <FiX size={14} />
-                <span>Exit</span>
-              </button>
-            </div>
-          </footer>
-        </main>
+        </div>
       </div>
 
       <CommonModal
         isOpen={showAddSkuModal}
         onClose={handleCloseAddSkuModal}
-        title="Add SKU"
+        title={editingSku ? 'Edit SKU' : 'Add SKU'}
         size="md"
         headerStyle="gradient"
         footerButtons={[
           { label: 'Cancel', type: 'secondary', onClick: handleCloseAddSkuModal },
-          { label: addSkuSubmitting ? 'Saving...' : 'Save SKU', type: 'success', onClick: handleAddSkuSubmit, loading: addSkuSubmitting, disabled: addSkuSubmitting, autoClose: false },
+          { label: addSkuSubmitting ? (editingSku ? 'Updating...' : 'Saving...') : (editingSku ? 'Update SKU' : 'Save SKU'), type: 'success', onClick: handleAddSkuSubmit, loading: addSkuSubmitting, disabled: addSkuSubmitting, autoClose: false },
         ]}
       >
         <div className="space-y-5">
-          <div className="rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3">
-            <div className="text-[0.68rem] font-bold uppercase tracking-[0.28em] text-primary/70">Active Account</div>
-            <div className="mt-1 text-sm font-bold text-gray-900">{accountName}</div>
-          </div>
 
           {addSkuError ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+            <div className="rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
               {addSkuError}
             </div>
           ) : null}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-gray-400">SKU ID</label>
-              <input
-                type="text"
-                value={addSkuForm.sku_id}
-                onChange={(e) => handleAddSkuInputChange('sku_id', e.target.value)}
-                placeholder="SKU0012"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700 outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-gray-400">Box Size</label>
-              <input
-                type="text"
-                value={addSkuForm.box_size}
-                onChange={(e) => handleAddSkuInputChange('box_size', e.target.value)}
-                placeholder="10x10x10 cm"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700 outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-gray-400">Product Name</label>
-            <input
-              type="text"
-              value={addSkuForm.product_name}
-              onChange={(e) => handleAddSkuInputChange('product_name', e.target.value)}
-              placeholder="Sample Product"
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700 outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input
+              label="SKU ID"
+              value={addSkuForm.sku_id}
+              onChange={(event) => handleAddSkuInputChange('sku_id', event.target.value)}
+              placeholder="SKU0012"
+              disabled={Boolean(editingSku)}
+            />
+            <Input
+              label="Box Size"
+              value={addSkuForm.box_size}
+              onChange={(event) => handleAddSkuInputChange('box_size', event.target.value)}
+              placeholder="10x10x10 cm"
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="space-y-1.5">
-              <label className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-gray-400">Basic Cost</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={addSkuForm.basic_cost}
-                onChange={(e) => handleAddSkuInputChange('basic_cost', e.target.value)}
-                placeholder="150.00"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700 outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
-              />
-            </div>
+          <Input
+            label="Product Name"
+            value={addSkuForm.product_name}
+            onChange={(event) => handleAddSkuInputChange('product_name', event.target.value)}
+            placeholder="Sample Product"
+          />
 
-            <div className="space-y-1.5">
-              <label className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-gray-400">GST %</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={addSkuForm.gst_percentage}
-                onChange={(e) => handleAddSkuInputChange('gst_percentage', e.target.value)}
-                placeholder="18"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700 outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-gray-400">Packing Charge</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={addSkuForm.packing_charge}
-                onChange={(e) => handleAddSkuInputChange('packing_charge', e.target.value)}
-                placeholder="10.00"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700 outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
-              />
-            </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Input
+              label="Basic Cost"
+              type="number"
+              min="0"
+              step="0.01"
+              value={addSkuForm.basic_cost}
+              onChange={(event) => handleAddSkuInputChange('basic_cost', event.target.value)}
+              placeholder="150.00"
+            />
+            <Input
+              label="GST %"
+              type="number"
+              min="0"
+              step="0.01"
+              value={addSkuForm.gst_percentage}
+              onChange={(event) => handleAddSkuInputChange('gst_percentage', event.target.value)}
+              placeholder="18"
+            />
+            <Input
+              label="Packing Charge"
+              type="number"
+              min="0"
+              step="0.01"
+              value={addSkuForm.packing_charge}
+              onChange={(event) => handleAddSkuInputChange('packing_charge', event.target.value)}
+              placeholder="10.00"
+            />
           </div>
 
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-            <div className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-emerald-600">Estimated Final Cost</div>
-            <div className="mt-1 text-xl font-black text-emerald-700">
-              Rs. {(
+          <div className="rounded-[20px] border border-emerald-200 bg-emerald-50 px-4 py-4">
+            <div className="crm-section-label !text-emerald-700">Estimated Final Cost</div>
+            <div className="mt-2 text-2xl font-black text-emerald-700">
+              {formatCurrency(
                 (Number(addSkuForm.basic_cost) || 0) +
                 ((Number(addSkuForm.basic_cost) || 0) * (Number(addSkuForm.gst_percentage) || 0) / 100) +
                 (Number(addSkuForm.packing_charge) || 0)
-              ).toFixed(2)}
+              )}
             </div>
           </div>
         </div>
       </CommonModal>
 
       <SKUCostModal
-        key={`${selectedSKU?.sku_id || 'sku'}-${selectedRowIndex}-${showSKUCostModal ? 'open' : 'closed'}`}
+        key={`${selectedSKU?.sku_id || 'sku'}-${selectedRowId}-${showSKUCostModal ? 'open' : 'closed'}`}
         isOpen={showSKUCostModal}
         onClose={() => setShowSKUCostModal(false)}
         skuData={selectedSKU}
       />
-    </div>
+
+      <CommonModal
+        isOpen={Boolean(productInfoSku)}
+        onClose={() => setProductInfoSku(null)}
+        title="Product Information"
+        size="md"
+        headerStyle="default"
+        footerButtons={[
+          { label: 'Close', type: 'secondary', onClick: () => setProductInfoSku(null) },
+        ]}
+      >
+        {productInfoSku ? (
+          <div className="space-y-4">
+            <div className="rounded-[18px] border border-primary/15 bg-primary/5 px-4 py-4">
+              <div className="crm-section-label">SKU ID</div>
+              <div className="mt-2 text-base font-extrabold text-text">{productInfoSku.sku_id || '-'}</div>
+            </div>
+
+            <div className="rounded-[18px] border border-border bg-white px-4 py-4">
+              <div className="crm-section-label">Product Name</div>
+              <div className="mt-3 text-sm leading-7 text-text">{productInfoSku.product_name || 'Unnamed product'}</div>
+            </div>
+          </div>
+        ) : null}
+      </CommonModal>
+    </AppShell>
   );
 }

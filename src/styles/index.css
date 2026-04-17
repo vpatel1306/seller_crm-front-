@@ -1,24 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #0d6efd;
-  --color-primary-hover: #0b5ed7;
-  --color-bg: #f4f6fb;
-  --color-surface: #ffffff;
-  --color-text: #1a1a2e;
-  --color-text-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-error: #ef4444;
+  --color-primary: #0f766e;
+  --color-primary-hover: #115e59;
+  --color-accent: #d97706;
+  --color-bg: #f3f1eb;
+  --color-surface: #fffdf8;
+  --color-surface-alt: #f7f4ee;
+  --color-text: #172033;
+  --color-text-muted: #667085;
+  --color-border: #ded7cb;
+  --color-error: #dc2626;
+  --color-success: #15803d;
+  --color-warning: #b45309;
+  --color-dark: #0f172a;
 
-  --radius-default: 12px;
-  --radius-inner: 8px;
+  --radius-default: 20px;
+  --radius-inner: 14px;
+  --radius-pill: 999px;
 
-  --shadow-card: 0 4px 24px rgba(13, 110, 253, 0.1);
+  --shadow-card: 0 18px 48px rgba(23, 32, 51, 0.08);
+  --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.06);
 
-  --font-sans: 'Inter', 'Segoe UI', sans-serif;
+  --font-sans: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
 
-  --animate-fade-in: fade-in 0.3s ease;
-  --animate-slide-up: slide-up 0.3s ease;
+  --animate-fade-in: fade-in 0.24s ease;
+  --animate-slide-up: slide-up 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   --animate-am-fade-in: am-fade-in 0.18s ease;
   --animate-am-slide-up: am-slide-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -35,7 +42,7 @@
 
 @keyframes slide-up {
   from {
-    transform: translateY(30px);
+    transform: translateY(24px);
     opacity: 0;
   }
 
@@ -68,181 +75,62 @@
 }
 
 @layer base {
-  body {
-    @apply bg-bg text-text font-sans min-h-screen;
-    margin: 0;
+  * {
+    box-sizing: border-box;
   }
-}
 
-a {
-  @apply text-primary hover:underline transition-colors;
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-bg font-sans text-text antialiased;
+    margin: 0;
+    background-image:
+      radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 30%),
+      radial-gradient(circle at top right, rgba(217, 119, 6, 0.08), transparent 26%),
+      linear-gradient(180deg, #fcfbf8 0%, #f3f1eb 100%);
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  a {
+    @apply text-primary transition-colors hover:text-primary-hover;
+  }
 }
 
 @layer components {
-  .stat-card {
-    @apply rounded-lg shadow-lg p-5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl;
+  .crm-panel {
+    @apply rounded-[24px] border border-border/80 bg-surface shadow-[0_18px_48px_rgba(23,32,51,0.08)];
   }
 
-  .stat-card-header {
-    @apply flex justify-between items-start mb-3;
+  .crm-panel-muted {
+    @apply rounded-[20px] border border-border/70 bg-surface-alt shadow-[0_10px_30px_rgba(15,23,42,0.06)];
   }
 
-  .stat-card-title {
-    @apply text-lg font-semibold;
+  .crm-pill {
+    @apply inline-flex items-center gap-2 rounded-full border border-border/80 bg-white/80 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-text-muted backdrop-blur;
   }
 
-  .stat-card-badge {
-    @apply text-sm font-medium px-2 py-1 rounded;
+  .crm-section-label {
+    @apply text-[0.68rem] font-extrabold uppercase tracking-[0.28em] text-text-muted/80;
   }
 
-  .stat-card-subtitle {
-    @apply text-sm opacity-75 mb-2;
+  .crm-kpi-card {
+    @apply relative overflow-hidden rounded-[24px] border border-border/80 bg-surface p-5 shadow-[0_18px_48px_rgba(23,32,51,0.08)];
   }
 
-  .stat-card-content {
-    @apply flex justify-between items-end;
-  }
-
-  .stat-card-cost-value {
-    @apply flex justify-between items-end w-full;
-  }
-
-  .stat-card-cost-label {
-    @apply text-xs opacity-75 mb-1;
-  }
-
-  .stat-card-cost {
-    @apply text-xl font-bold;
-  }
-
-  .stat-card-value {
-    @apply text-2xl font-bold;
-  }
-
-  .claim-card {
-    @apply bg-gradient-to-br from-purple-600 to-violet-600 text-white rounded-lg shadow-lg shadow-purple-600/30 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-purple-600/40;
-  }
-
-  .claim-card-title {
-    @apply text-lg font-semibold mb-0.5;
-  }
-
-  .claim-approved-label,
-  .claim-pending-label {
-    @apply text-sm opacity-90 mb-1;
-  }
-
-  .claim-approved-value,
-  .claim-pending-value {
-    @apply text-2xl font-bold mb-1;
-  }
-
-  .claim-approved-amount,
-  .claim-pending-amount {
-    @apply text-sm;
-  }
-
-  .smart-tickets-card {
-    @apply bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-lg shadow-lg shadow-blue-600/30 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-600/40;
-  }
-
-  .smart-tickets-title {
-    @apply text-lg font-semibold mb-0.5;
-  }
-
-  .smart-tickets-label {
-    @apply text-[0.75rem] opacity-90 mb-1;
-  }
-
-  .smart-tickets-value {
-    @apply text-xl font-bold mb-1;
-  }
-
-  .smart-tickets-amount {
-    @apply text-[0.75rem];
-  }
-
-  .advertisement-card {
-    @apply bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg shadow-lg shadow-orange-500/30 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-orange-500/40;
-  }
-
-  .advertisement-header {
-    @apply flex justify-between items-start mb-4;
-  }
-
-  .advertisement-title {
-    @apply text-lg font-semibold;
-  }
-
-  .advertisement-per-order {
-    @apply text-sm text-right;
-  }
-
-  .advertisement-label {
-    @apply text-sm opacity-90 mb-1;
-  }
-
-  .advertisement-amount {
-    @apply text-xl font-bold;
-  }
-
-  .bank-card {
-    @apply bg-gradient-to-br from-green-600 to-green-700 text-white rounded-lg shadow-lg shadow-green-600/30 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-green-600/40;
-  }
-
-  .bank-header {
-    @apply flex justify-between items-start;
-  }
-
-  .bank-title {
-    @apply text-lg font-semibold;
-  }
-
-  .bank-last-payment {
-    @apply text-sm opacity-90;
-  }
-
-  .bank-amount-label {
-    @apply text-sm opacity-90 mb-1;
-  }
-
-  .bank-amount-value {
-    @apply text-2xl font-bold;
-  }
-
-  .business-insights-card {
-    @apply bg-white border border-gray-200 rounded-lg shadow-sm p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md;
-  }
-
-  .business-insights-header {
-    @apply flex justify-between items-start mb-3;
-  }
-
-  .business-insights-title {
-    @apply text-base font-bold mb-1;
-  }
-
-  .business-insights-link {
-    @apply text-blue-600 cursor-pointer text-sm hover:underline;
-  }
-
-  .business-insights-grid {
-    @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-center;
-  }
-
-  .business-insight-item {
-    @apply flex flex-col items-center;
-  }
-
-  .business-insight-label {
-    @apply text-[0.75rem] font-bold mb-1;
-  }
-
-  .business-insight-value {
-    @apply text-lg font-bold mb-1;
-  }
-
-  .business-insight-sub {
-    @apply text-[0.75rem];
+  .crm-kpi-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    height: 4px;
+    width: 100%;
+    background: linear-gradient(90deg, rgba(15, 118, 110, 0.95), rgba(13, 148, 136, 0.2));
   }
 }

@@ -1,147 +1,127 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { FiX } from 'react-icons/fi';
+import Button from '../ui/Button';
 
-const CommonModal = ({
+const sizeClasses = {
+  sm: 'max-w-[440px]',
+  md: 'max-w-[560px]',
+  lg: 'max-w-[860px]',
+  xl: 'max-w-[1180px]',
+  full: 'h-[90vh] max-w-[1400px]',
+};
+
+const headerStyleClasses = {
+  default: 'border-b border-border bg-surface text-text',
+  gradient: 'bg-gradient-to-r from-primary to-teal-600 text-white',
+  danger: 'bg-gradient-to-r from-red-600 to-red-700 text-white',
+  success: 'bg-gradient-to-r from-emerald-600 to-green-700 text-white',
+  warning: 'bg-gradient-to-r from-amber-500 to-orange-600 text-white',
+  dark: 'bg-gradient-to-r from-slate-900 to-slate-800 text-white',
+};
+
+export default function CommonModal({
   isOpen,
   onClose,
   title,
-  size = 'md', // sm, md, lg, xl, full
+  size = 'md',
   children,
   footerButtons = [],
   showCloseButton = true,
   closeOnOverlayClick = true,
   closeOnEsc = true,
-  headerStyle = 'default', // default, gradient, danger, success, warning, dark
+  headerStyle = 'default',
   showHeader = true,
   showFooter = true,
   customClass = '',
-  onOpen = () => { },
-  onAfterClose = () => { }
-}) => {
-  // Handle ESC key
+  onOpen = () => {},
+  onAfterClose = () => {},
+}) {
   useEffect(() => {
-    const handleEsc = (e) => {
-      if (closeOnEsc && e.key === 'Escape' && isOpen) {
+    if (!isOpen) {
+      onAfterClose();
+      return undefined;
+    }
+
+    const handleEsc = (event) => {
+      if (closeOnEsc && event.key === 'Escape') {
         onClose();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener('keydown', handleEsc);
-      document.body.style.overflow = 'hidden';
-      onOpen();
-    }
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleEsc);
+    onOpen();
 
     return () => {
-      document.removeEventListener('keydown', handleEsc);
       document.body.style.overflow = 'unset';
-      if (!isOpen) {
-        onAfterClose();
-      }
+      document.removeEventListener('keydown', handleEsc);
     };
-  }, [isOpen, closeOnEsc, onClose, onOpen, onAfterClose]);
+  }, [closeOnEsc, isOpen, onAfterClose, onClose, onOpen]);
 
-  // Handle overlay click
-  const handleOverlayClick = (e) => {
-    if (closeOnOverlayClick && e.target === e.currentTarget) {
-      onClose();
-    }
-  };
+  if (!isOpen) {
+    return null;
+  }
 
-  if (!isOpen) return null;
-
-  // Size classes
-  const sizeClasses = {
-    sm: 'max-w-[400px]',
-    md: 'max-w-[500px]',
-    lg: 'max-w-[800px]',
-    xl: 'max-w-[1140px]',
-    full: 'w-[95%] max-w-[1400px] h-[90vh]'
-  };
-
-  // Header style classes
-  const headerStyleClasses = {
-    default: 'bg-white text-gray-900',
-    gradient: 'bg-gradient-to-r from-primary to-violet-600 text-white',
-    danger: 'bg-gradient-to-r from-red-500 to-red-700 text-white',
-    success: 'bg-gradient-to-r from-green-500 to-green-700 text-white',
-    warning: 'bg-gradient-to-r from-amber-500 to-amber-700 text-white',
-    dark: 'bg-gradient-to-r from-gray-800 to-gray-950 text-white'
-  };
-
-  const btnTypeClasses = {
-    primary: 'bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/20',
-    secondary: 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50',
-    danger: 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20',
-    success: 'bg-green-500 text-white hover:bg-green-600 shadow-lg shadow-green-500/20',
-    warning: 'bg-amber-500 text-white hover:bg-amber-600 shadow-lg shadow-amber-500/20',
-    info: 'bg-cyan-500 text-white hover:bg-cyan-600 shadow-lg shadow-cyan-500/20',
-    dark: 'bg-gray-800 text-white hover:bg-gray-900'
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[1150] p-4 animate-fade-in" onClick={handleOverlayClick}>
-      <div className={`bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden animate-slide-up w-full ${sizeClasses[size]} ${customClass}`}>
-        {/* Header */}
-        {showHeader && (
-          <div className={`px-6 py-4 flex justify-between items-center ${headerStyleClasses[headerStyle]}`}>
-            <h3 className="text-lg font-bold">{title}</h3>
-            {showCloseButton && (
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors text-2xl leading-none" onClick={onClose}>
-                ×
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[1150] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm animate-fade-in"
+      onClick={(event) => {
+        if (closeOnOverlayClick && event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-[28px] border border-white/40 bg-surface shadow-[0_30px_80px_rgba(15,23,42,0.28)] animate-slide-up ${sizeClasses[size]} ${customClass}`}>
+        {showHeader ? (
+          <div className={`flex items-center justify-between gap-4 px-6 py-4 ${headerStyleClasses[headerStyle]}`}>
+            <h3 className="text-lg font-extrabold tracking-tight">{title}</h3>
+            {showCloseButton ? (
+              <button
+                className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] border border-black/5 bg-white/10 transition-colors hover:bg-black/10"
+                onClick={onClose}
+              >
+                <FiX size={18} />
               </button>
-            )}
+            ) : null}
           </div>
-        )}
+        ) : null}
 
-        {/* Body */}
-        <div className="p-6 overflow-y-auto flex-1">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6">{children}</div>
 
-        {/* Footer */}
-        {showFooter && (
-          <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 flex-wrap">
+        {showFooter ? (
+          <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border/80 bg-surface-alt px-5 py-4 sm:px-6">
             {footerButtons.length > 0 ? (
               footerButtons.map((button, index) => {
-                const {
-                  label,
-                  onClick,
-                  type = 'secondary',
-                  disabled = false,
-                  loading = false,
-                  className = ''
-                } = button;
-
                 const handleClick = () => {
-                  if (onClick) onClick();
-                  if (button.autoClose !== false) onClose();
+                  button.onClick?.();
+                  if (button.autoClose !== false) {
+                    onClose();
+                  }
                 };
 
                 return (
-                  <button
-                    key={index}
-                    className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 active:scale-95 disabled:opacity-60 ${btnTypeClasses[type]} ${className}`}
+                  <Button
+                    key={`${button.label}-${index}`}
+                    variant={button.type || 'secondary'}
+                    loading={button.loading}
+                    disabled={button.disabled}
+                    className={button.className || ''}
                     onClick={handleClick}
-                    disabled={disabled || loading}
                   >
-                    {loading && <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-                    {label}
-                  </button>
+                    {button.label}
+                  </Button>
                 );
               })
             ) : (
-              <button
-                className="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-50 transition-all active:scale-95"
-                onClick={onClose}
-              >
+              <Button variant="secondary" onClick={onClose}>
                 Close
-              </button>
+              </Button>
             )}
           </div>
-        )}
+        ) : null}
       </div>
-    </div>
+    </div>,
+    document.body
   );
-};
-
-export default CommonModal;
+}

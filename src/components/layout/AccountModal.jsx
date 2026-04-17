@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   FiX, FiSave, FiUser, FiMail, FiPhone, FiMapPin,
   FiFileText, FiCalendar, FiHash, FiLock, FiCreditCard,
@@ -35,8 +36,13 @@ const optionalFields = [
   { key: 'bank_account_no', label: 'Bank Account No', icon: <FiHash size={13} />, type: 'text', required: false },
 ];
 
+const normalizeInitialData = (data) => Object.entries({ ...EMPTY, ...(data || {}) }).reduce((acc, [key, value]) => ({
+  ...acc,
+  [key]: value ?? '',
+}), {});
+
 export default function AccountModal({ mode = 'add', initialData = null, onClose, onSuccess, disableClose = false }) {
-  const [form, setForm] = useState(mode === 'edit' && initialData ? { ...EMPTY, ...initialData } : EMPTY);
+  const [form, setForm] = useState(mode === 'edit' && initialData ? normalizeInitialData(initialData) : EMPTY);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
 
@@ -49,7 +55,7 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
   }, [disableClose, onClose]);
 
   useEffect(() => {
-    setForm(mode === 'edit' && initialData ? { ...EMPTY, ...initialData } : EMPTY);
+    setForm(mode === 'edit' && initialData ? normalizeInitialData(initialData) : EMPTY);
     setFeedback({ type: '', message: '' });
   }, [initialData, mode]);
 
@@ -89,7 +95,7 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
         message: mode === 'edit' ? 'Account updated successfully.' : 'Account added successfully.',
       });
       setTimeout(() => {
-        onSuccess?.();
+        onSuccess?.(payload);
         onClose();
       }, 900);
     } catch (err) {
@@ -142,8 +148,8 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
     </div>
   );
 
-  return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[1050] p-4 animate-fade-in" onClick={(e) => e.target === e.currentTarget && !disableClose && onClose()}>
+  return createPortal(
+    <div className="fixed inset-0 z-[1250] flex items-center justify-center bg-black/60 p-4 animate-fade-in" onClick={(e) => e.target === e.currentTarget && !disableClose && onClose()}>
       <div className="bg-white rounded-xl shadow-2xl max-w-[95%] w-[1200px] max-h-[90vh] overflow-hidden flex flex-col animate-slide-up">
 
         {/* Header */}
@@ -221,6 +227,7 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
 
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

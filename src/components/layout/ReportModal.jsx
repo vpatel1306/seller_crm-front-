@@ -9,21 +9,21 @@ const ReportModal = ({ isOpen, onClose }) => {
 
   const reports = [
     { id: 'sku', name: 'SKU Wise Report', icon: '📊' },
-    { id: 'date', name: 'Date Wise Report', icon: '📅' },
-    { id: 'courier', name: 'Courier Wise Pickup And Return Report', icon: '🚚' },
-    { id: 'state', name: 'State Wise Report', icon: '🗺️' },
-    { id: 'multiple', name: 'Multiple Account Report', icon: '👥' },
-    { id: 'ledger', name: 'Account Ledger', icon: '📒' },
+    // { id: 'date', name: 'Date Wise Report', icon: '📅' },
+    // { id: 'courier', name: 'Courier Wise Pickup And Return Report', icon: '🚚' },
+    // { id: 'state', name: 'State Wise Report', icon: '🗺️' },
+    // { id: 'multiple', name: 'Multiple Account Report', icon: '👥' },
+    // { id: 'ledger', name: 'Account Ledger', icon: '📒' },
     { id: 'exit', name: 'EXIT', icon: '🚪' }
   ];
 
   const reportRoutes = {
     sku: '/sku-report',
-    date: '/date-wise-report',
-    courier: '/business-growth-chart',
-    state: '/payout-graph',
-    multiple: '/multiple-account-report',
-    ledger: '/account-ledger',
+    // date: '/date-wise-report',
+    // courier: '/business-growth-chart',
+    // state: '/payout-graph',
+    // multiple: '/multiple-account-report',
+    // ledger: '/account-ledger',
     exit: '/dashboard'
   };
 

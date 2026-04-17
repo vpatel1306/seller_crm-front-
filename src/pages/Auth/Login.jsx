@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import Input from '../../components/ui/Input';
-import Button from '../../components/ui/Button';
 
 const validate = ({ email, password }) => {
   const errors = {};

@@ -16,6 +16,7 @@ import CancelledOrders from '../pages/Orders/CancelledOrders';
 import CancelPickup from '../pages/Orders/CancelPickup';
 import OutForDelivery from '../pages/Orders/OutForDelivery';
 import PaymentMismatch from '../pages/Orders/PaymentMismatch';
+import PaymentDetails from '../pages/Orders/PaymentDetails';
 import PendingPaymentOrders from '../pages/Orders/PendingPaymentOrders';
 import ReceivedPaymentOrders from '../pages/Orders/ReceivedPaymentOrders';
 import ReceivedReturns from '../pages/Orders/ReceivedReturns';
@@ -24,6 +25,9 @@ import ReturnMismatch from '../pages/Orders/ReturnMismatch';
 import ReturnsNotReceived from '../pages/Orders/ReturnsNotReceived';
 import ReturnInTransit from '../pages/Orders/ReturnInTransit';
 import UnsettledPickup from '../pages/Orders/UnsettledPickup';
+import ReadyToShip from '../pages/Orders/ReadyToShip';
+import Shipped from '../pages/Orders/Shipped';
+import ApproveClaim from '../pages/Orders/Claim/ApproveClaim';
 
 export default function AppRoutes() {
   return (
@@ -44,6 +48,7 @@ export default function AppRoutes() {
       <Route path="/cancelled-orders" element={<ProtectedRoute><CancelledOrders /></ProtectedRoute>} />
       <Route path="/out-for-delivery" element={<ProtectedRoute><OutForDelivery /></ProtectedRoute>} />
       <Route path="/payment-mismatch" element={<ProtectedRoute><PaymentMismatch /></ProtectedRoute>} />
+      <Route path="/payment-details/:platformOrderId" element={<ProtectedRoute><PaymentDetails /></ProtectedRoute>} />
       <Route path="/pending-payment-orders" element={<ProtectedRoute><PendingPaymentOrders /></ProtectedRoute>} />
       <Route path="/received-payment-orders" element={<ProtectedRoute><ReceivedPaymentOrders /></ProtectedRoute>} />
       <Route path="/received-returns" element={<ProtectedRoute><ReceivedReturns /></ProtectedRoute>} />
@@ -52,6 +57,9 @@ export default function AppRoutes() {
       <Route path="/returns-not-received" element={<ProtectedRoute><ReturnsNotReceived /></ProtectedRoute>} />
       <Route path="/return-in-transit" element={<ProtectedRoute><ReturnInTransit /></ProtectedRoute>} />
       <Route path="/unsettled-pickup" element={<ProtectedRoute><UnsettledPickup /></ProtectedRoute>} />
+      <Route path="/ready-to-ship" element={<ProtectedRoute><ReadyToShip /></ProtectedRoute>} />
+      <Route path="/shipped" element={<ProtectedRoute><Shipped /></ProtectedRoute>} />  
+      <Route path="/approve-claim" element={<ProtectedRoute><ApproveClaim /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -1,58 +1,145 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { FiChevronDown, FiLogOut, FiRepeat, FiUser } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
-import { FiUser, FiLogOut, FiChevronDown } from 'react-icons/fi';
+import AccountSelectModal from './AccountSelectModal';
+import Button from '../ui/Button';
+
+const getCompactAccountLabel = (accountName) => {
+  if (!accountName) return 'Active Account';
+  const firstWord = accountName.trim().split(/\s+/)[0] || accountName;
+  return `${firstWord}..`;
+};
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
-  const [profOpen, setProfOpen] = useState(false);
-  const profRef = useRef(null);
+  const { token, user, logout, fetchUser, activeAccount } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showAccountSelect, setShowAccountSelect] = useState(false);
+  const menuRef = useRef(null);
 
   useEffect(() => {
-    const handler = (e) => {
-      const portalBackdrop = document.querySelector('.asm-backdrop');
-      if (portalBackdrop && portalBackdrop.contains(e.target)) return;
-      if (profRef.current && !profRef.current.contains(e.target)) setProfOpen(false);
+    const handleOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
   }, []);
 
+  useEffect(() => {
+    if (token && !user) {
+      fetchUser().catch(() => {});
+    }
+  }, [token, user, fetchUser]);
+
   return (
-    <header className="h-[60px] bg-surface border-b border-border flex items-center justify-between px-6 sticky top-0 z-[100] shadow-sm">
-      <span className="text-[1.1rem] font-bold text-primary">Meesho Seller Insight</span>
+    <header className="sticky top-0 z-[100] w-full border-b border-white/60 bg-[#fcfbf8]/95 shadow-sm backdrop-blur-xl">
+      <div className="grid w-full gap-3 px-4 py-2.5 sm:px-6 sm:py-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:px-8">
+        <div className="flex min-w-0 items-start justify-between gap-3 sm:items-center lg:justify-start lg:gap-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-primary to-teal-500 text-base font-black text-white shadow-lg shadow-primary/25 sm:h-12 sm:w-12 sm:rounded-[18px] sm:text-lg">
+            SI
+          </div>
+          <div className="hidden min-w-0 flex-1 sm:block">
+            <div className="text-[0.68rem] font-extrabold uppercase tracking-[0.32em] text-primary/80">Seller CRM</div>
+            <div className="text-base font-extrabold tracking-tight text-text sm:text-xl lg:truncate">Seller Insight Command Center</div>
+          </div>
 
-      <div className="flex items-center gap-4">
+          {user ? (
+            <div className="relative lg:hidden" ref={menuRef}>
+              <div className="flex items-center gap-2">
+               
+                <Button variant='outline' size='sm' onClick={() => setShowAccountSelect(true)} className="lg:hidden">
+                  <FiRepeat size={14} />
+                  {getCompactAccountLabel(activeAccount?.account_name)}
+                </Button>
 
-        {/* Admin Profile — only when logged in */}
-        {user && (
-          <div className="relative" ref={profRef}>
-            <button
-              className="flex items-center gap-2 px-2 py-1.5 rounded-inner hover:bg-bg transition-colors"
-              onClick={() => setProfOpen((o) => !o)}
-            >
-              <div className="w-8 h-8 rounded-full bg-primary text-white text-[0.9rem] font-bold flex items-center justify-center">{user.name?.[0]?.toUpperCase()}</div>
-              <span className="text-[0.9rem] font-medium text-text max-md:hidden">{user.name}</span>
-              <FiChevronDown size={14} />
-            </button>
-
-            {profOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-surface rounded-default shadow-card border border-border p-3 z-[110]">
-                <div className="flex items-center gap-3 p-2 mb-2">
-                  <div className="w-10 h-10 rounded-full bg-primary text-white text-[1.1rem] font-bold flex items-center justify-center">{user.name?.[0]?.toUpperCase()}</div>
-                  <div>
-                    <div className="text-[0.95rem] font-bold text-text">{user.name}</div>
-                    <div className="text-[0.8rem] text-text-muted">{user.email}</div>
+                <button
+                  className="inline-flex items-center gap-2 rounded-full bg-transparent px-0 py-0 text-text"
+                  onClick={() => setMenuOpen((value) => !value)}
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-dark text-xs font-extrabold text-white">
+                    {user.name?.[0]?.toUpperCase() || 'U'}
                   </div>
-                </div>
-                <div className="h-px bg-border my-2" />
-                <button className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-inner text-[0.9rem] text-text hover:bg-bg transition-colors text-error hover:bg-[#fef2f2]" onClick={logout}>
-                  <FiLogOut size={15} /> Logout
+                  <FiChevronDown size={16} className={`text-text-muted transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
                 </button>
               </div>
-            )}
-          </div>
-        )}
+
+              {menuOpen ? (
+                <div className="absolute right-0 mt-3 w-[300px] max-w-[calc(100vw-2rem)] rounded-[22px] border border-border bg-surface p-3 shadow-[0_26px_60px_rgba(15,23,42,0.18)]">
+                  <div className="rounded-[18px] bg-surface-alt p-4">
+                    <div className="mb-2 flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/15 text-primary">
+                        <FiUser size={18} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-extrabold text-text">{user.name}</div>
+                        <div className="truncate text-xs text-text-muted">{user.email}</div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-text-muted">Active Account : {activeAccount?.account_name || 'No account selected'}</div>
+                  </div>
+             
+                  <button
+                    className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-[16px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition-colors hover:bg-red-100"
+                    onClick={logout}
+                  >
+                    <FiLogOut size={16} />
+                    Logout
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="flex items-center justify-end gap-3">
+          {user ? (
+            <div className="hidden lg:flex lg:items-center lg:gap-3">
+              
+              <Button variant="outline" size="sm" onClick={() => setShowAccountSelect(true)}>
+                <FiRepeat size={14} />
+                {activeAccount?.account_name ? `${activeAccount.account_name}` : 'Active Account'}
+              </Button>
+
+              <div className="relative" ref={menuRef}>
+                <button onClick={() => setMenuOpen((value) => !value)}>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-dark text-sm font-extrabold text-white">
+                    {user.name?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                </button>
+
+                {menuOpen ? (
+                  <div className="absolute right-0 mt-3 w-72 rounded-[22px] border border-border bg-surface p-3 shadow-[0_26px_60px_rgba(15,23,42,0.18)]">
+                    <div className="rounded-[18px] bg-surface-alt p-4">
+                      <div className="mb-2 flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/15 text-primary">
+                          <FiUser size={18} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-extrabold text-text">{user.name}</div>
+                          <div className="truncate text-xs text-text-muted">{user.email}</div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-text-muted"> Active Account : {activeAccount?.account_name || 'No account selected'}</div>
+                    </div>
+                 
+                    <button
+                      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-[16px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition-colors hover:bg-red-100"
+                      onClick={logout}
+                    >
+                      <FiLogOut size={16} />
+                      Logout
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
+
+      <AccountSelectModal isOpen={showAccountSelect} onClose={() => setShowAccountSelect(false)} />
     </header>
   );
 }

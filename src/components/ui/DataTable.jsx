@@ -26,16 +26,49 @@ export default function DataTable({
   indexCellClassName = 'px-3 py-3 text-center font-medium text-slate-500',
   cellClassName = 'px-3 py-3 whitespace-nowrap text-slate-700',
   emptyCellClassName = 'py-20 text-center text-slate-500 italic text-sm',
+  getRowId = (row) => row.id,
 }) {
   const SortIcon = ({ k }) =>
     sortKey === k ? (
-      sortDir === 'asc' ? <FiChevronUp size={10} className="ml-0.5 inline" /> : <FiChevronDown size={10} className="ml-0.5 inline" />
+      sortDir === 'asc'
+        ? <FiChevronUp size={10} className="ml-0.5 inline" />
+        : <FiChevronDown size={10} className="ml-0.5 inline" />
     ) : null;
 
-  const getCellContent = (row, col, isSelected) => (col.render ? col.render(row, isSelected) : row[col.key] || '-');
+  const getCellContent = (row, col, isSelected) =>
+    col.render ? col.render(row, isSelected) : row[col.key] || '-';
 
   const getResolvedCellClassName = (row, col, isSelected) =>
-    col.className ? (typeof col.className === 'function' ? col.className(row, isSelected) : col.className) : '';
+    col.className
+      ? typeof col.className === 'function'
+        ? col.className(row, isSelected)
+        : col.className
+      : '';
+
+  const getResolvedHeaderClassName = (col) =>
+    col.headerClassName
+      ? typeof col.headerClassName === 'function'
+        ? col.headerClassName(col)
+        : col.headerClassName
+      : col.className && typeof col.className !== 'function'
+      ? col.className
+      : '';
+
+  const getStickyHeaderClassName = (col) => {
+    if (col.sticky === 'left') return 'sticky left-0 z-20';
+    if (col.sticky === 'right') return 'sticky right-0 z-20';
+    return '';
+  };
+
+  const getStickyCellClassName = (col, isSelected, index) => {
+    if (!col.sticky) return '';
+
+    const rowBg = isSelected ? 'bg-primary/10' : index % 2 === 0 ? 'bg-white' : 'bg-slate-50/70';
+
+    if (col.sticky === 'left') return `sticky left-0 z-10 ${rowBg}`;
+    if (col.sticky === 'right') return `sticky right-0 z-10 ${rowBg}`;
+    return '';
+  };
 
   return (
     <div className={`flex-1 min-h-0 overflow-auto bg-white ${wrapperClassName}`}>
@@ -46,76 +79,80 @@ export default function DataTable({
         </div>
       ) : (
         <>
-          {mobileCardView ? (
-          <div className="space-y-3 p-3 md:hidden">
-            {data.length === 0 ? (
-              <div className={emptyCellClassName}>{emptyText}</div>
-            ) : (
-              data.map((row, idx) => {
-                const isSelected = selectedId === row.id;
-                const resolvedRowClassName =
-                  typeof rowClassName === 'function' ? rowClassName(row, idx, isSelected) : rowClassName || '';
+          {/* MOBILE VIEW */}
+          {mobileCardView && (
+            <div className="space-y-3 p-3 md:hidden">
+              {data.length === 0 ? (
+                <div className={emptyCellClassName}>{emptyText}</div>
+              ) : (
+                data.map((row, idx) => {
+                  const rowId = getRowId(row) ?? idx;
+                  const isSelected = selectedId === rowId;
 
-                return (
-                  <div
-                    key={row.id || idx}
-                    onClick={() => onRowClick && onRowClick(row)}
-                    onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
-                    className={`rounded-2xl border border-slate-200 p-4 transition-colors ${
-                      isSelected ? selectedClass : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'
-                    } ${resolvedRowClassName}`}
-                  >
-                    {showIndex && (
-                      <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2">
-                        <span className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-400">Row</span>
-                        <span className="text-sm font-semibold text-slate-600">{idx + 1}</span>
-                      </div>
-                    )}
+                  return (
+                    <div
+                      key={rowId}
+                      onClick={() => onRowClick && onRowClick(row)}
+                      onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
+                      className={`rounded-2xl border border-slate-200 p-4 ${
+                        isSelected ? selectedClass : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'
+                      }`}
+                    >
+                      {showIndex && (
+                        <div className="mb-3 flex justify-between border-b border-slate-100 pb-2">
+                          <span className="text-[0.68rem] text-slate-400">Row</span>
+                          <span className="text-sm font-semibold">{idx + 1}</span>
+                        </div>
+                      )}
 
-                    <div className="space-y-2.5">
                       {columns.map((col, cIdx) => (
-                        <div key={cIdx} className="flex items-start justify-between gap-3">
-                          <span className="min-w-0 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        <div key={cIdx} className="flex justify-between">
+                          <span className="text-[0.68rem] text-slate-400">
                             {col.label}
                           </span>
-                          <span
-                            className={`min-w-0 text-right text-sm font-medium text-slate-700 ${getResolvedCellClassName(
-                              row,
-                              col,
-                              isSelected
-                            )}`}
-                          >
+                          <span className="text-sm">
                             {getCellContent(row, col, isSelected)}
                           </span>
                         </div>
                       ))}
                     </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-          ) : null}
+                  );
+                })
+              )}
+            </div>
+          )}
 
+          {/* TABLE VIEW */}
           <div className={`${mobileCardView ? 'hidden md:block' : 'block'} overflow-x-auto`}>
-            <table className={`w-full min-w-[900px] border-collapse text-left text-[0.78rem] ${tableClassName}`}>
+            <table className={`w-full border-collapse ${tableClassName}`}>
               <thead className={headClassName}>
                 <tr>
                   {showIndex && <th className={indexHeaderClassName}>#</th>}
+
                   {columns.map((col, idx) => (
                     <th
                       key={idx}
-                      onClick={() => col.sortable !== false && onSort && col.key && onSort(col.key)}
+                      onClick={() =>
+                        col.sortable !== false &&
+                        onSort &&
+                        col.key &&
+                        onSort(col.key)
+                      }
                       className={`${headerCellClassName} ${
-                        col.sortable !== false && col.key && onSort ? 'cursor-pointer hover:bg-slate-200/80' : ''
-                      } ${col.right ? 'text-right' : 'text-left'}`}
+                        col.sortable !== false && col.key && onSort
+                          ? 'cursor-pointer hover:bg-slate-200/80'
+                          : ''
+                      } ${col.right ? 'text-right' : 'text-left'} ${getResolvedHeaderClassName(col)} ${getStickyHeaderClassName(col)}`}
                     >
                       {col.label}
-                      {col.sortable !== false && col.key && <SortIcon k={col.key} />}
+                      {col.sortable !== false && col.key && (
+                        <SortIcon k={col.key} />
+                      )}
                     </th>
                   ))}
                 </tr>
               </thead>
+
               <tbody>
                 {data.length === 0 ? (
                   <tr>
@@ -125,32 +162,33 @@ export default function DataTable({
                   </tr>
                 ) : (
                   data.map((row, idx) => {
-                    const isSelected = selectedId === row.id;
-                    const resolvedRowClassName =
-                      typeof rowClassName === 'function' ? rowClassName(row, idx, isSelected) : rowClassName || '';
+                    const rowId = getRowId(row) ?? idx;
+                    const isSelected = selectedId === rowId;
 
                     return (
                       <tr
-                        key={row.id || idx}
+                        key={rowId}
                         onClick={() => onRowClick && onRowClick(row)}
-                        onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
-                        className={`cursor-pointer border-b border-slate-200 transition-colors ${
+                        className={`border-b ${
                           isSelected
                             ? selectedClass
                             : idx % 2 === 0
                             ? `bg-white ${hoverClass}`
                             : `bg-slate-50/70 ${hoverClass}`
-                        } ${resolvedRowClassName}`}
+                        }`}
                       >
-                        {showIndex && <td className={indexCellClassName}>{idx + 1}</td>}
+                        {showIndex && (
+                          <td className={indexCellClassName}>
+                            {idx + 1}
+                          </td>
+                        )}
+
                         {columns.map((col, cIdx) => (
                           <td
                             key={cIdx}
-                            className={`${cellClassName} ${col.right ? 'text-right' : ''} ${getResolvedCellClassName(
-                              row,
-                              col,
-                              isSelected
-                            )}`}
+                            className={`${cellClassName} ${
+                              col.right ? 'text-right' : ''
+                            } ${getResolvedCellClassName(row, col, isSelected)} ${getStickyCellClassName(col, isSelected, idx)}`}
                           >
                             {getCellContent(row, col, isSelected)}
                           </td>

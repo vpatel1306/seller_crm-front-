@@ -9,15 +9,15 @@ const ReturnModal = ({ isOpen, onClose }) => {
 
   const reports = [
     { id: 'sku', name: 'Return Entry - Account Wise' },
-    { id: 'date', name: 'Return Entry - Multi Account' },
-    { id: 'courier', name: 'Return Entry From File' },
+    // { id: 'date', name: 'Return Entry - Multi Account' },
+    // { id: 'courier', name: 'Return Entry From File' },
     { id: 'exit', name: 'EXIT' }
   ];
 
   const reportRoutes = {
     sku: '/return-entry-account-wise',
-    date: '/return-entry-multi-account',
-    courier: '/return-entry-from-file',
+    // date: '/return-entry-multi-account',
+    // courier: '/return-entry-from-file',
     exit: '/dashboard'
   };
 
