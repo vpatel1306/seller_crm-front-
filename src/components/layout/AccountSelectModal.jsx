@@ -48,6 +48,7 @@ export default function AccountSelectModal({ isOpen, onClose }) {
   const [editingAccount, setEditingAccount] = useState(null);
   const [pendingEditedAccountId, setPendingEditedAccountId] = useState(null);
   const activeAccountRef = useRef(activeAccount);
+  const requiresSelection = !activeAccount && accounts.length > 0;
  
   useEffect(() => {
     activeAccountRef.current = activeAccount;
@@ -61,15 +62,11 @@ export default function AccountSelectModal({ isOpen, onClose }) {
       const currentActive = activeAccountRef.current;
       setAccounts(list);
 
-      if (!preserveActive && !currentActive?.id) {
-        setActiveAccount(list[0] || null);
-      } else if (currentActive?.id) {
+      if (currentActive?.id) {
         const latestActive = list.find((acc) => acc.id === currentActive.id);
         if (latestActive) {
           setActiveAccount(latestActive);
           setChecked(new Set([latestActive.id]));
-        } else if (!latestActive && preserveActive && list.length > 0) {
-          setActiveAccount(list[0]);
         }
       }
 
@@ -291,7 +288,7 @@ export default function AccountSelectModal({ isOpen, onClose }) {
               }}
             >
               <FiFolder size={12} />
-              {isActive ? 'Active' : 'Open'}
+              {isActive ? 'Active' : 'Active'}
             </Button>
             <Button
               variant="danger"
@@ -316,13 +313,18 @@ export default function AccountSelectModal({ isOpen, onClose }) {
     <>
       <CommonModal
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={requiresSelection ? () => {} : onClose}
         title="Change Account"
         size="full"
         headerStyle="gradient"
         showFooter={false}
         customClass="max-w-[1380px]"
       >
+        {requiresSelection && (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+            Please select an account to continue using the dashboard.
+          </div>
+        )}
         <div className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm font-medium text-text-muted">

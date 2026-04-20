@@ -167,7 +167,7 @@ const ImportDataModal = ({ isOpen, onClose }) => {
               </div>
               <div className="space-y-1">
                 <div className="text-base font-extrabold text-text">{activeOption?.name}</div>
-                <div className="text-sm text-text-muted">Upload supported formats: `.pdf`, `.csv`</div>
+                <div className="text-sm text-text-muted">Upload files</div>
               </div>
             </div>
           </div>
@@ -181,7 +181,7 @@ const ImportDataModal = ({ isOpen, onClose }) => {
                 onChange={handleFileChange}
                 className="block w-full text-sm text-text file:mr-4 file:rounded-[12px] file:border-0 file:bg-primary file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-white hover:file:bg-primary-hover"
               />
-              <div className="mt-3 text-xs text-text-muted">Select a single PDF or CSV file for upload.</div>
+              <div className="mt-3 text-xs text-text-muted">Select a single file for upload.</div>
             </div>
           </label>
 

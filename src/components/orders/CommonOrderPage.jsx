@@ -711,7 +711,7 @@ export default function CommonOrderPage({
                 )}
                 contentClassName="p-0"
               >
-                  <DataTable
+                <DataTable
                   mobileCardView={false}
                   columns={tableColumns}
                   data={sortedOrders}

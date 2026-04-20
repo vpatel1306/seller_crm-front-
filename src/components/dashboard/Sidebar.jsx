@@ -4,6 +4,7 @@ import { FaChartBar, FaClipboardList, FaCog } from 'react-icons/fa';
 import { FaMoneyBillTrendUp } from 'react-icons/fa6';
 import api from '../../services/api';
 import AccountModal from '../layout/AccountModal';
+import AccountSelectModal from '../layout/AccountSelectModal';
 import { useNavigate } from 'react-router-dom';
 import ReportModal from '../layout/ReportModal';
 import SearchButton from '../layout/SearchButton';
@@ -28,6 +29,7 @@ export default function Sidebar({ accountDetails = null }) {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
+  const [showAccountSelectModal, setShowAccountSelectModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -46,10 +48,9 @@ export default function Sidebar({ accountDetails = null }) {
       setAccounts(list);
 
       if (!currentActive) {
-        // Use login-provided activeAccountId if available, else first account
         const savedId = localStorage.getItem('activeAccountId');
         const matched = savedId ? list.find((acc) => String(acc.id) === savedId) : null;
-        setActiveAccount(matched || list[0] || null);
+        setActiveAccount(matched || null);
       } else if (preserveActive) {
         const latestActive = list.find((acc) => acc.id === currentActive.id);
         setActiveAccount(latestActive || null);
@@ -63,16 +64,25 @@ export default function Sidebar({ accountDetails = null }) {
   useEffect(() => { fetchAccounts(); }, [fetchAccounts]);
 
   const requiresAccountSetup = !loading && accounts.length === 0;
+  const requiresAccountSelection = !loading && accounts.length > 0 && !activeAccount;
 
   useEffect(() => {
     if (requiresAccountSetup) {
       setModal('add');
+      setShowAccountSelectModal(false);
+      setShowReportModal(false);
+      setShowReturnModal(false);
+      setShowImportModal(false);
+      setShowDateModal(false);
+    } else if (requiresAccountSelection) {
+      setShowAccountSelectModal(true);
+      setModal(null);
       setShowReportModal(false);
       setShowReturnModal(false);
       setShowImportModal(false);
       setShowDateModal(false);
     }
-  }, [requiresAccountSetup]);
+  }, [requiresAccountSetup, requiresAccountSelection]);
 
   const currentAccount = activeAccount || {};
   const canEditAccount = Boolean(activeAccount);
@@ -229,6 +239,16 @@ export default function Sidebar({ accountDetails = null }) {
       {showReturnModal ? <ReturnModal isOpen={showReturnModal} onClose={() => setShowReturnModal(false)} /> : null}
       {showDateModal ? <DateSectionModal isOpen={showDateModal} onClose={() => setShowDateModal(false)} onDateSelect={() => setShowDateModal(false)} /> : null}
       <ImportDataModal isOpen={showImportModal} onClose={() => setShowImportModal(false)} />
+      {showAccountSelectModal ? (
+        <AccountSelectModal 
+          isOpen={showAccountSelectModal} 
+          onClose={() => {
+            if (!requiresAccountSelection) {
+              setShowAccountSelectModal(false);
+            }
+          }} 
+        />
+      ) : null}
     </>
   );
 }
