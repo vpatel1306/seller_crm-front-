@@ -115,11 +115,17 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail }) {
   const [accountStatus, setAccountStatus] = useState({});
   const [businessInsights, setBusinessInsights] = useState({});
   const [averages, setAverages] = useState({});
-  const { activeAccount } = useAuth();
+  const { activeAccount, selectedDateRange } = useAuth();
 
-  useEffect(() => {api.get('/get-dashboard-summary',{
-    headers: {'account': activeAccount?.id || ''},
-  })
+  useEffect(() => {
+    if (!activeAccount?.id || !selectedDateRange?.from || !selectedDateRange?.to) return;
+
+    api.post('/get-dashboard-summary', {
+      start_date: selectedDateRange.from,
+      end_date: selectedDateRange.to,
+    }, {
+      headers: { 'account': activeAccount.id },
+    })
       .then((res) => {
         const payload = res.data || {};
         const map = {};
@@ -134,7 +140,7 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail }) {
         onAccountDetail?.(accountDetails);
       })
       .catch(() => {});
-  }, [activeAccount?.id]);
+  }, [activeAccount?.id, selectedDateRange?.from, selectedDateRange?.to, onMetricsReady, onAccountDetail]);
 
   const claimSummary = summaryMap.Claim || {};
   const advertisementSummary = summaryMap.Advertisement || {};
@@ -196,8 +202,8 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail }) {
           tone="from-sky-700 to-indigo-700"
           // route={() => navigate('/smart-tickets')}
           columns={[
-            { label: 'New Found', value: '136', subtext: '19,030.00' },
-            { label: 'Open + Closed', value: '206', subtext: '20,461.00 / 10,232.00' },
+            { label: 'New Found', value: '0', subtext: '0.00' },
+            { label: 'Open + Closed', value: '0', subtext: '0.00' },
           ]}
         />
       </div>

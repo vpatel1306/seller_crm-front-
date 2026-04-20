@@ -59,11 +59,10 @@ export function AuthProvider({ children }) {
       const matched = activeAccountId
         ? list.find((acc) => String(acc.id) === String(activeAccountId))
         : null;
-      const resolved = matched || list[0] || null;
-      if (resolved) {
-        localStorage.setItem('activeAccount', JSON.stringify(resolved));
-        localStorage.setItem('activeAccountId', String(resolved.id));
-        setActiveAccount(resolved);
+      if (matched) {
+        localStorage.setItem('activeAccount', JSON.stringify(matched));
+        localStorage.setItem('activeAccountId', String(matched.id));
+        setActiveAccount(matched);
       }
     } catch {
       setActiveAccount(null);
@@ -72,7 +71,6 @@ export function AuthProvider({ children }) {
     await fetchUser();
     navigate('/dashboard');
   }, [fetchUser, navigate]);
-
 
   const register = useCallback(async (payload) => {
     await api.post('/register', payload);
