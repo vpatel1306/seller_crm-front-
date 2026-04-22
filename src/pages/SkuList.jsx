@@ -1,21 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FiArrowLeft,
   FiChevronDown,
   FiChevronLeft,
   FiChevronRight,
-  FiDatabase,
-  FiDownload,
   FiEdit2,
   FiFilter,
   FiInfo,
-  FiPackage,
   FiPlusCircle,
   FiRotateCcw,
-  FiSettings,
-  FiUpload,
-  FiX,
 } from 'react-icons/fi';
 import api from '../services/api';
 import SKUCostModal from '../components/layout/SKUCostModal';
@@ -50,6 +44,17 @@ const initialQuickFilters = {
   maxSelling: '',
   minCost: '',
   maxCost: '',
+};
+
+const COST_STATUS_MAP = {
+  all: null,
+  'cost-set': 'Active',
+  'without-cost': 'Inactive',
+};
+
+const ACCOUNT_SCOPE_MAP = {
+  'this-account': 'This Account',
+  'all-accounts': 'All Accounts',
 };
 
 const calculateFinalCost = (item) => {
@@ -107,6 +112,29 @@ export default function SkuList() {
     setCurrentPage(1);
   };
 
+  const buildSkuFilterData = useCallback(() => {
+    const filterData = {};
+    const skuKeyword = [quickFilters.keyword1, quickFilters.keyword2, quickFilters.keyword3]
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .join(' ');
+
+    if (quickFilters.size.trim()) filterData.size = quickFilters.size.trim();
+    if (skuKeyword) filterData.sku_keyword = skuKeyword;
+    if (quickFilters.minSelling !== '') filterData.min_selling = Number(quickFilters.minSelling);
+    if (quickFilters.maxSelling !== '') filterData.max_selling = Number(quickFilters.maxSelling);
+    if (quickFilters.minCost !== '') filterData.min_cost = Number(quickFilters.minCost);
+    if (quickFilters.maxCost !== '') filterData.max_cost = Number(quickFilters.maxCost);
+
+    const costStatus = COST_STATUS_MAP[skuFilter];
+    if (costStatus) filterData.cost_status = costStatus;
+
+    const accountScope = ACCOUNT_SCOPE_MAP[accountFilter];
+    if (accountScope) filterData.account_scope = accountScope;
+
+    return filterData;
+  }, [accountFilter, quickFilters, skuFilter]);
+
   const fetchSkuList = useCallback(async (page = 1, perPageCount = perPage) => {
     if (accountFilter === 'this-account' && !activeAccount?.id) {
       setSkuList([]);
@@ -118,8 +146,11 @@ export default function SkuList() {
 
     setLoading(true);
     try {
-      const skip = (page - 1) * perPageCount;
-      const response = await api.get(`/sku-list/?skip=${skip}&limit=${perPageCount}&page=${page}`, {
+      const response = await api.post('/sku-list', {
+        filter_data: buildSkuFilterData(),
+        page_no: page,
+        limit: perPageCount,
+      }, {
         headers: {
           account: accountHeaderValue,
         },
@@ -141,12 +172,14 @@ export default function SkuList() {
         list.length;
 
       const resolvedPage = getNumericCount(payload?.current_page) ?? page;
+      const resolvedPageSize = getNumericCount(payload?.page_size) ?? perPageCount;
       const resolvedTotalPages =
         getNumericCount(payload?.total_pages) ??
-        (total > 0 ? Math.ceil(total / perPageCount) : 0);
+        (total > 0 ? Math.ceil(total / resolvedPageSize) : 0);
 
       setSkuList(list);
       setTotalSKUs(total);
+      setPerPage(resolvedPageSize);
       setTotalPages(Math.max(resolvedTotalPages, 1));
       setCurrentPage(resolvedPage);
     } catch {
@@ -156,7 +189,7 @@ export default function SkuList() {
     } finally {
       setLoading(false);
     }
-  }, [accountFilter, accountHeaderValue, activeAccount?.id, perPage]);
+  }, [accountFilter, accountHeaderValue, activeAccount?.id, buildSkuFilterData, perPage]);
 
   useEffect(() => {
     fetchSkuList();
@@ -172,35 +205,6 @@ export default function SkuList() {
       document.body.style.overflow = previousOverflow;
     };
   }, [showMobileFilters]);
-
-  const filteredSkuList = useMemo(() => {
-    return skuList.filter((item) => {
-      const finalCost = calculateFinalCost(item);
-      const selling = Number(item.selling) || 0;
-
-      if (skuFilter === 'without-cost' && finalCost > 0) return false;
-      if (skuFilter === 'cost-set' && finalCost <= 0) return false;
-
-      const keywordChecks = [quickFilters.keyword1, quickFilters.keyword2, quickFilters.keyword3]
-        .filter(Boolean)
-        .every((keyword) =>
-          [item.sku_id, item.product_name, item.box_size]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase()
-            .includes(keyword.toLowerCase())
-        );
-
-      if (!keywordChecks) return false;
-      if (quickFilters.size && !(item.box_size || '').toLowerCase().includes(quickFilters.size.toLowerCase())) return false;
-      if (quickFilters.minSelling && selling < Number(quickFilters.minSelling)) return false;
-      if (quickFilters.maxSelling && selling > Number(quickFilters.maxSelling)) return false;
-      if (quickFilters.minCost && finalCost < Number(quickFilters.minCost)) return false;
-      if (quickFilters.maxCost && finalCost > Number(quickFilters.maxCost)) return false;
-
-      return true;
-    });
-  }, [quickFilters, skuFilter, skuList]);
 
   const resultStart = totalSKUs === 0 ? 0 : ((currentPage - 1) * perPage) + 1;
   const resultEnd = totalSKUs === 0 ? 0 : Math.min(currentPage * perPage, totalSKUs);
@@ -239,7 +243,7 @@ export default function SkuList() {
 
   const exportToCSV = () => {
     const headers = ['SKU ID', 'Size', 'Orders', 'Selling', 'Basic Cost', 'GST %', 'Packing', 'Final Cost', 'Last Update'];
-    const csvData = filteredSkuList.map((item) => [
+    const csvData = skuList.map((item) => [
       item.sku_id || '-',
       item.box_size || 'Free Size',
       item.orders || 0,
@@ -485,15 +489,9 @@ export default function SkuList() {
     },
   ];
 
-  const quickStats = [
-    { label: 'Server Total', value: totalSKUs, icon: FiDatabase },
-    { label: 'Visible Rows', value: filteredSkuList.length, icon: FiPackage },
-    { label: 'Per Page', value: perPage, icon: FiFilter },
-  ];
-
   const filterPanelContent = (
     <div className="space-y-3">
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.95fr)_minmax(0,0.78fr)_minmax(0,0.78fr)_minmax(0,0.78fr)_minmax(0,0.78fr)_minmax(0,0.9fr)_minmax(0,1fr)_56px]">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.95fr)_minmax(0,0.78fr)_minmax(0,0.78fr)_minmax(0,0.78fr)_minmax(0,0.78fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(120px,0.9fr)]">
         {FILTER_FIELDS.map((field) => (
           <Input
             key={field.key}
@@ -568,15 +566,26 @@ export default function SkuList() {
 
         <div className="flex flex-col gap-1.5">
           <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-transparent select-none">Clear</label>
-          <Button
-            type="button"
-            variant="secondary"
-            className="h-[50px] w-full min-w-0 px-0"
-            onClick={handleClearFilters}
-            title="Clear Filters"
-          >
-            <FiRotateCcw size={16} />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="primary"
+              className="h-[50px] flex-1 min-w-[52px] px-0"
+              onClick={() => fetchSkuList(1, perPage)}
+              title="Apply Filters"
+            >
+              <FiFilter size={16} />
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="h-[50px] flex-1 min-w-[52px] px-0"
+              onClick={handleClearFilters}
+              title="Clear Filters"
+            >
+              <FiRotateCcw size={16} />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -663,7 +672,14 @@ export default function SkuList() {
               <Button variant="secondary" className="w-full" onClick={handleClearFilters}>
                 Clear
               </Button>
-              <Button variant="primary" className="w-full" onClick={() => setShowMobileFilters(false)}>
+              <Button
+                variant="primary"
+                className="w-full"
+                onClick={() => {
+                  fetchSkuList(1, perPage);
+                  setShowMobileFilters(false);
+                }}
+              >
                 Apply Filters
               </Button>
             </div>
@@ -710,7 +726,7 @@ export default function SkuList() {
             >
               <DataTable
                 columns={columns}
-                data={filteredSkuList}
+                data={skuList}
                 loading={loading}
                 loadingText="Fetching SKU records..."
                 emptyText="No data found for the current criteria."

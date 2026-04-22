@@ -9,10 +9,13 @@ import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { label } from 'framer-motion/client';
 
 const fmt = (v) => (Number(v) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtN = (v) => Number(v ?? 0).toLocaleString('en-IN');
+const getNumericCount = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
 const COLUMNS = [
   {
@@ -109,49 +112,68 @@ const PER_PAGE_OPTIONS = [10, 25, 50, 100];
 
 export default function SKUReport() {
   const navigate = useNavigate();
-  const { activeAccount, selectedDateRange, setSelectedDateRange } = useAuth();
+  const { activeAccount, selectedDateRange } = useAuth();
 
   const [data, setData] = useState([]);
   const [summary, setSummary] = useState({});
   const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  const [skuSearch, setSkuSearch] = useState('');
-  const [sizeSearch, setSizeSearch] = useState('');
   const [plFilter, setPlFilter] = useState('all');
 
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [selectedId, setSelectedId] = useState(null);
+  const [dateRange, setDateRange] = useState(() => ({
+    from: selectedDateRange?.from || '',
+    to: selectedDateRange?.to || '',
+  }));
+  const [dateDraft, setDateDraft] = useState(() => ({
+    from: selectedDateRange?.from || '',
+    to: selectedDateRange?.to || '',
+  }));
 
-  const fromDate = selectedDateRange.from;
-  const toDate = selectedDateRange.to;
+  const fromDate = dateRange.from;
+  const toDate = dateRange.to;
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (appliedDateRange = dateRange) => {
     if (!activeAccount?.id) return;
     setLoading(true);
     try {
+      const requestFromDate = appliedDateRange?.from || '';
+      const requestToDate = appliedDateRange?.to || '';
       const res = await api.post('/get-sku-wise-report', {
-        start_date: fromDate || '',
-        end_date: toDate || '',
+        start_date: requestFromDate,
+        end_date: requestToDate,
+        order_filter: plFilter,
         page_no: currentPage,
         limit: perPage,
-        ...(skuSearch.trim() ? { sku_id: skuSearch.trim() } : {}),
-        ...(sizeSearch.trim() ? { size: sizeSearch.trim() } : {}),
-        ...(plFilter !== 'all' ? { pl_filter: plFilter } : {}),
       }, { headers: { account: activeAccount.id } });
 
       const payload = res.data || {};
-      setData(Array.isArray(payload.data) ? payload.data : []);
+      const list = Array.isArray(payload.data) ? payload.data : [];
+      const resolvedTotal = getNumericCount(payload.total_count) ?? getNumericCount(payload.count) ?? list.length;
+      const resolvedPage = getNumericCount(payload.current_page) ?? currentPage;
+      const resolvedPageSize = getNumericCount(payload.page_size) ?? perPage;
+      const resolvedTotalPages = getNumericCount(payload.total_pages) ?? Math.max(Math.ceil(resolvedTotal / resolvedPageSize), 1);
+
+      setData(list);
       setSummary(payload.summary || {});
-      setTotal(Number(payload.total) || 0);
+      setTotal(resolvedTotal);
+      setTotalPages(Math.max(resolvedTotalPages, 1));
+      setCurrentPage(resolvedPage);
+      setPerPage(resolvedPageSize);
     } catch {
-      setData([]); setSummary({}); setTotal(0);
+      setData([]);
+      setSummary({});
+      setTotal(0);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
-  }, [activeAccount?.id, fromDate, toDate, currentPage, perPage, skuSearch, sizeSearch, plFilter]);
+  }, [activeAccount?.id, currentPage, dateRange, perPage, plFilter]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -159,8 +181,6 @@ export default function SKUReport() {
     data.map((row, i) => ({ ...row, id: row.sku_id || i })),
     [data]
   );
-
-  const totalPages = Math.max(Math.ceil(total / perPage), 1);
 
   const getPaginationNumbers = () => {
     const delta = 1; const range = []; const result = []; let last;
@@ -174,8 +194,19 @@ export default function SKUReport() {
     return result;
   };
 
-  const handleApply = () => { setCurrentPage(1); fetchData(); setShowMobileFilters(false); };
-  const handleClear = () => { setSkuSearch(''); setSizeSearch(''); setPlFilter('all'); setSelectedDateRange({ from: '', to: '' }); setCurrentPage(1); };
+  const handleApply = () => {
+    const nextDateRange = { from: dateDraft.from || '', to: dateDraft.to || '' };
+    setDateRange(nextDateRange);
+    setCurrentPage(1);
+    fetchData(nextDateRange);
+    setShowMobileFilters(false);
+  };
+  const handleClear = () => {
+    setPlFilter('all');
+    setDateDraft({ from: '', to: '' });
+    setDateRange({ from: '', to: '' });
+    setCurrentPage(1);
+  };
 
   const exportCSV = () => {
     const headers = ['SKU ID', 'Size', 'P/L', 'Orders', 'Hold', 'Pending', 'Cancelled', 'RTS', 'Picked', 'Shipped', 'Shipped%', 'RTO', 'RTO%', 'Delivered', 'Delivered%', 'Return', 'Return%', 'Delivery', 'Delivery%', 'N/A', 'Avg P/L'];
@@ -188,21 +219,8 @@ export default function SKUReport() {
   };
 
   const filterContent = (
-    <div className="flex flex-wrap items-end gap-4">
-      <div className="flex min-w-[200px] flex-1 flex-col gap-1.5">
-        <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">SKU ID</label>
-        <div className="relative">
-          <FiSearch size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
-          <input type="text" value={skuSearch} onChange={(e) => setSkuSearch(e.target.value)} placeholder="Search SKU ID"
-            className="w-full rounded-[16px] border border-border bg-white py-3 pl-11 pr-4 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10" />
-        </div>
-      </div>
-      <div className="flex min-w-[160px] flex-col gap-1.5">
-        <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Size</label>
-        <input type="text" value={sizeSearch} onChange={(e) => setSizeSearch(e.target.value)} placeholder="Search size"
-          className="w-full rounded-[16px] border border-border bg-white py-3 px-4 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10" />
-      </div>
-      <div className="flex min-w-[160px] flex-col gap-1.5">
+    <div className="grid gap-4 xl:grid-cols-[minmax(220px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_72px_72px] xl:items-end">
+      <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">P/L Filter</label>
         <select value={plFilter} onChange={(e) => setPlFilter(e.target.value)}
           className="w-full rounded-[16px] border border-border bg-white px-4 py-3 text-sm font-medium text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10">
@@ -213,16 +231,16 @@ export default function SKUReport() {
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">From Date</label>
-        <input type="date" value={fromDate} onChange={(e) => setSelectedDateRange({ ...selectedDateRange, from: e.target.value })}
+        <input type="date" value={dateDraft.from} onChange={(e) => setDateDraft((prev) => ({ ...prev, from: e.target.value }))}
           className="h-[50px] rounded-[16px] border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">To Date</label>
-        <input type="date" value={toDate} onChange={(e) => setSelectedDateRange({ ...selectedDateRange, to: e.target.value })}
+        <input type="date" value={dateDraft.to} onChange={(e) => setDateDraft((prev) => ({ ...prev, to: e.target.value }))}
           className="h-[50px] rounded-[16px] border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
       </div>
-      <Button variant="primary" className="h-[50px] min-w-[56px] px-0 self-end" onClick={handleApply} title="Apply Filters"><FiSearch size={18} /></Button>
-      <Button variant="secondary" className="h-[50px] min-w-[56px] px-0 self-end" onClick={handleClear} title="Clear Filters"><FiX size={18} /></Button>
+      <Button variant="primary" className="h-[50px] w-full px-0 self-end" onClick={handleApply} title="Apply Filters"><FiSearch size={18} /></Button>
+      <Button variant="secondary" className="h-[50px] w-full px-0 self-end" onClick={handleClear} title="Clear Filters"><FiX size={18} /></Button>
     </div>
   );
 
@@ -248,8 +266,8 @@ export default function SKUReport() {
         <OrdersFilterSection
           title="Filters"
           mobileTitle="SKU Report Filters"
-          mobileDescription="Filter SKU report by ID, size, P/L status and date range."
-          activeCount={[skuSearch, sizeSearch, plFilter !== 'all', fromDate, toDate].filter(Boolean).length}
+          mobileDescription="Filter SKU report by P/L status and date range."
+          activeCount={[plFilter !== 'all', dateDraft.from, dateDraft.to].filter(Boolean).length}
           isModalOpen={showMobileFilters}
           onOpenModal={() => setShowMobileFilters(true)}
           onCloseModal={() => setShowMobileFilters(false)}
@@ -314,7 +332,7 @@ export default function SKUReport() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-border px-4 py-3">
               <span className="text-sm font-bold text-text-muted">
-                {((currentPage - 1) * perPage) + 1}–{Math.min(currentPage * perPage, total)} of {total}
+                {total === 0 ? 0 : ((currentPage - 1) * perPage) + 1}-{Math.min(currentPage * perPage, total)} of {total}
               </span>
               <nav className="flex items-center overflow-x-auto rounded-[18px] border border-border bg-white shadow-sm">
                 <button className={`p-3 transition-colors hover:bg-surface-alt ${currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-text'}`}

@@ -132,7 +132,8 @@ export default function PaymentMismatch() {
       loadingText="Loading payment mismatch orders..."
       emptyText="No payment mismatch orders found."
       endpoint="/get-payment-mismatch-orders"
-      buildRequestPayload={({ fromDate, toDate, page, limit }) => ({
+      buildRequestPayload={({ filterData, fromDate, toDate, page, limit }) => ({
+        filter_data: filterData,
         start_date: fromDate,
         end_date: toDate,
         page_no: page,
@@ -141,6 +142,8 @@ export default function PaymentMismatch() {
       mapResponse={mapPaymentMismatchResponse}
       columns={PAYMENT_MISMATCH_COLUMNS}
       showSidebar={false}
+      orderSearchFieldKey="order_id"
+      orderSearchLabel="Order ID"
     />
   );
 }
