@@ -230,7 +230,8 @@ export default function PendingPaymentOrders() {
       loadingText="Loading Pending payment orders..."
       emptyText="No Pending payment orders found."
       endpoint="/get-pending-payment-orders"
-      buildRequestPayload={({ fromDate, toDate, filters, page, limit }) => ({
+      buildRequestPayload={({ filterData, fromDate, toDate, filters, page, limit }) => ({
+        filter_data: filterData,
         start_date: fromDate || '',
         end_date: toDate || '',
         order_filter: filters.order_filter || 'all',
@@ -255,6 +256,8 @@ export default function PendingPaymentOrders() {
       ]}
       additionalInitialFilters={{ order_filter: 'all' }}
       compactSingleRowFilters
+      orderSearchFieldKey="order_id"
+      orderSearchLabel="Order ID"
       renderCustomFilters={({ filters, setFilters }) => (
         <div className="flex flex-col gap-1.5 xl:w-[240px]">
           <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Order Filter</label>

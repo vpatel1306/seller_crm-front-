@@ -199,7 +199,8 @@ export default function ReceivedPaymentOrders() {
       loadingText="Loading received payment orders..."
       emptyText="No received payment orders found."
       endpoint="/get-received-payment-orders"
-      buildRequestPayload={({ fromDate, toDate, filters, page, limit }) => ({
+      buildRequestPayload={({ filterData, fromDate, toDate, filters, page, limit }) => ({
+        filter_data: filterData,
         start_date: fromDate || '',
         end_date: toDate || '',
         order_filter: filters.order_filter || 'all',
@@ -224,6 +225,8 @@ export default function ReceivedPaymentOrders() {
       ]}
       additionalInitialFilters={{ order_filter: 'all' }}
       compactSingleRowFilters
+      orderSearchFieldKey="order_id"
+      orderSearchLabel="Order ID"
       renderCustomFilters={({ filters, setFilters }) => (
         <div className="flex flex-col gap-1.5 xl:w-[240px]">
           <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Order Filter</label>

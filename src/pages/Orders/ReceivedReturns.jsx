@@ -149,8 +149,9 @@ function normalizeSummaryRows(summaryData, config) {
   }));
 }
 
-function buildReceivedReturnsPayload({ fromDate, toDate, page, limit }) {
+function buildReceivedReturnsPayload({ filterData, fromDate, toDate, page, limit }) {
   return {
+    filter_data: filterData,
     start_date: fromDate || '',
     end_date: toDate || '',
     page_no: page,
@@ -277,6 +278,8 @@ export default function ReceivedReturns() {
       mapResponse={mapReceivedReturnsResponse}
       columns={RECEIVED_RETURNS_COLUMNS}
       renderSidebar={renderReceivedReturnsSidebar}
+      orderSearchFieldKey="order_id"
+      orderSearchLabel="Order ID"
     />
   );
 }

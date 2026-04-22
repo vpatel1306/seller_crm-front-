@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { FiChevronDown, FiLogOut, FiRepeat, FiUser } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
+import logoImage from '../../assets/logo.jpg';
 import AccountSelectModal from './AccountSelectModal';
 import Button from '../ui/Button';
 
@@ -34,15 +35,11 @@ export default function Navbar() {
   }, [token, user, fetchUser]);
 
   return (
-    <header className="sticky top-0 z-[100] w-full border-b border-white/60 bg-[#fcfbf8]/95 shadow-sm backdrop-blur-xl">
+    <header className="sticky top-0 z-[100] w-full border-b border-white/60 bg-white shadow-sm backdrop-blur-xl">
       <div className="grid w-full gap-3 px-4 py-2.5 sm:px-6 sm:py-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:px-8">
-        <div className="flex min-w-0 items-start justify-between gap-3 sm:items-center lg:justify-start lg:gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-primary to-teal-500 text-base font-black text-white shadow-lg shadow-primary/25 sm:h-12 sm:w-12 sm:rounded-[18px] sm:text-lg">
-            SI
-          </div>
-          <div className="hidden min-w-0 flex-1 sm:block">
-            <div className="text-[0.68rem] font-extrabold uppercase tracking-[0.32em] text-primary/80">Seller CRM</div>
-            <div className="text-base font-extrabold tracking-tight text-text sm:text-xl lg:truncate">Seller Insight Command Center</div>
+        <div className="flex min-w-0 items-center justify-between gap-3 sm:items-center lg:justify-start lg:gap-4">
+          <div className="flex h-12 w-[132px] items-center justify-center overflow-hidden rounded-[14px] bg-white px-2 sm:h-14 sm:w-[152px]">
+            <img src={logoImage} alt="Seller CRM logo" className="max-h-full w-full object-contain" />
           </div>
 
           {user ? (

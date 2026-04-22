@@ -25,7 +25,6 @@ import SummaryTable from '../ui/SummaryTable';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { label } from 'framer-motion/client';
 
 const STATUS_COLOR = {
   SHIPPED: 'text-sky-600',
@@ -189,9 +188,11 @@ export default function CommonOrderPage({
   compactSingleRowFilters = false,
   rowActions,
   showSidebar = true,
+  orderSearchFieldKey = 'platform_order_id',
+  orderSearchLabel = 'Platform Order ID',
 }) {
   const navigate = useNavigate();
-  const { activeAccount, selectedDateRange, setSelectedDateRange } = useAuth();
+  const { activeAccount, selectedDateRange } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const mergedInitialFilters = useMemo(
@@ -209,12 +210,22 @@ export default function CommonOrderPage({
   const [leftOpen, setLeftOpen] = useState(showSidebar);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [groupedData, setGroupedData] = useState(getEmptySummaryData());
-  const fromDate = selectedDateRange.from;
-  const toDate = selectedDateRange.to;
+  const [dateRange, setDateRange] = useState(() => ({
+    from: selectedDateRange?.from || '',
+    to: selectedDateRange?.to || '',
+  }));
+  const [dateDraft, setDateDraft] = useState(() => ({
+    from: selectedDateRange?.from || '',
+    to: selectedDateRange?.to || '',
+  }));
+  const fromDate = dateRange.from;
+  const toDate = dateRange.to;
 
-  const loadOrders = useCallback(async (page = 1, perPageCount = perPage) => {
+  const loadOrders = useCallback(async (page = 1, perPageCount = perPage, appliedDateRange = dateRange) => {
     setLoading(true);
     try {
+      const requestFromDate = appliedDateRange?.from || '';
+      const requestToDate = appliedDateRange?.to || '';
       const filterData = {
         ...fixedFilterData,
       };
@@ -222,16 +233,16 @@ export default function CommonOrderPage({
       if (showStatusAndPaymentFilters && filters.order_status !== 'all') filterData.order_status = filters.order_status;
       if (showStatusAndPaymentFilters && filters.payment_status !== 'all') filterData.payment_status = filters.payment_status;
       if (filters.sku.trim()) filterData.sku = filters.sku.trim();
-      if (filters.platform_order_id.trim()) filterData.platform_order_id = filters.platform_order_id.trim();
-      if (fromDate) filterData.start_date = fromDate;
-      if (toDate) filterData.end_date = toDate;
+      if (filters.platform_order_id.trim()) filterData[orderSearchFieldKey] = filters.platform_order_id.trim();
+      if (requestFromDate) filterData.start_date = requestFromDate;
+      if (requestToDate) filterData.end_date = requestToDate;
       const finalFilterData = extraFilterData ? extraFilterData(filterData) : filterData;
       const requestPayload = buildRequestPayload({
         filterData: finalFilterData,
         page,
         limit: perPageCount,
-        fromDate,
-        toDate,
+        fromDate: requestFromDate,
+        toDate: requestToDate,
         filters,
       });
       const requestConfig = {
@@ -253,8 +264,8 @@ export default function CommonOrderPage({
       } = mapResponse(payload, {
         page,
         limit: perPageCount,
-        fromDate,
-        toDate,
+        fromDate: requestFromDate,
+        toDate: requestToDate,
         filters,
       });
       setOrders(list);
@@ -273,7 +284,7 @@ export default function CommonOrderPage({
     } finally {
       setLoading(false);
     }
-  }, [activeAccount?.id, buildRequestPayload, endpoint, extraFilterData, filters, fixedFilterData, fromDate, mapResponse, perPage, requestMethod, showStatusAndPaymentFilters, toDate]);
+  }, [activeAccount?.id, buildRequestPayload, dateRange, endpoint, extraFilterData, filters, fixedFilterData, mapResponse, orderSearchFieldKey, perPage, requestMethod, showStatusAndPaymentFilters]);
 
   useEffect(() => {
     if (!activeAccount?.id) return;
@@ -302,12 +313,14 @@ export default function CommonOrderPage({
 
   const clearFilters = () => {
     setFilters(mergedInitialFilters);
-    setSelectedDateRange((prev) => ({ ...prev, from: '', to: '' }));
+    setDateDraft({ from: '', to: '' });
     setCurrentPage(1);
   };
 
   const activeQuickFilterCount =
-    Object.values(filters).filter((value) => value && value !== 'all').length;
+    Object.values(filters).filter((value) => value && value !== 'all').length +
+    (dateDraft.from ? 1 : 0) +
+    (dateDraft.to ? 1 : 0);
 
   const sortedOrders = useMemo(() => {
     const list = [...orders];
@@ -416,8 +429,13 @@ export default function CommonOrderPage({
   const resultEnd = totalOrders === 0 ? 0 : Math.min(currentPage * perPage, totalOrders);
 
   const handleApplyFilters = () => {
+    const nextDateRange = {
+      from: dateDraft.from || '',
+      to: dateDraft.to || '',
+    };
+    setDateRange(nextDateRange);
     setCurrentPage(1);
-    loadOrders(1, perPage);
+    loadOrders(1, perPage, nextDateRange);
     setShowMobileFilters(false);
   };
 
@@ -455,14 +473,14 @@ export default function CommonOrderPage({
     <div className="space-y-3">
       <div className={`flex flex-wrap items-end gap-4 ${compactSingleRowFilters ? 'xl:flex-nowrap' : 'xl:flex-nowrap'}`}>
         <div className={`flex flex-col gap-1.5 ${compactSingleRowFilters ? 'min-w-[220px] flex-[1.2_1_0]' : 'min-w-[220px] flex-[1_1_260px]'}`}>
-          <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Platform Order ID</label>
+          <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">{orderSearchLabel}</label>
           <div className="relative">
             <FiSearch size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
             <input
               type="text"
               value={filters.platform_order_id}
               onChange={(event) => setFilters((prev) => ({ ...prev, platform_order_id: event.target.value }))}
-              placeholder="Search platform order id"
+              placeholder={`Search ${orderSearchLabel.toLowerCase()}`}
               className="w-full rounded-[16px] border border-border bg-white py-3 pl-11 pr-4 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
             />
           </div>
@@ -541,8 +559,8 @@ export default function CommonOrderPage({
           <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">From Date</label>
           <input
             type="date"
-            value={fromDate}
-            onChange={(event) => setSelectedDateRange({ ...selectedDateRange, from: event.target.value })}
+            value={dateDraft.from}
+            onChange={(event) => setDateDraft((prev) => ({ ...prev, from: event.target.value }))}
             className="w-full rounded-[16px] border border-border bg-white px-4 py-3 text-sm text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
           />
         </div>
@@ -551,8 +569,8 @@ export default function CommonOrderPage({
           <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">To Date</label>
           <input
             type="date"
-            value={toDate}
-            onChange={(event) => setSelectedDateRange({ ...selectedDateRange, to: event.target.value })}
+            value={dateDraft.to}
+            onChange={(event) => setDateDraft((prev) => ({ ...prev, to: event.target.value }))}
             className="w-full rounded-[16px] border border-border bg-white px-4 py-3 text-sm text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
           />
         </div>

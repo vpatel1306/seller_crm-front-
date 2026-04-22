@@ -116,6 +116,7 @@ const summaryTableProps = {
 
 function buildRequestPayload({ filterData, page, limit }) {
   return {
+    filter_data: filterData,
     start_date: filterData.start_date || '',
     end_date: filterData.end_date || '',
     page_no: page,
@@ -217,6 +218,8 @@ export default function UnsettledPickup() {
       columns={COLUMNS}
       renderSidebar={renderSidebar}
       showSidebar
+      orderSearchFieldKey="order_id"
+      orderSearchLabel="Order ID"
     />
   );
 }

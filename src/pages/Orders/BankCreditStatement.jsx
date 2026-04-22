@@ -98,7 +98,7 @@ function CreditTable({ rows, dateField, loading }) {
 
 export default function BankCreditStatement() {
   const navigate = useNavigate();
-  const { activeAccount, selectedDateRange, setSelectedDateRange } = useAuth();
+  const { activeAccount, selectedDateRange } = useAuth();
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState(null);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -109,17 +109,27 @@ export default function BankCreditStatement() {
   const [receivedSettlements, setReceivedSettlements] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [dateRange, setDateRange] = useState(() => ({
+    from: selectedDateRange?.from || '',
+    to: selectedDateRange?.to || '',
+  }));
+  const [dateDraft, setDateDraft] = useState(() => ({
+    from: selectedDateRange?.from || '',
+    to: selectedDateRange?.to || '',
+  }));
 
-  const fromDate = selectedDateRange.from;
-  const toDate = selectedDateRange.to;
+  const fromDate = dateRange.from;
+  const toDate = dateRange.to;
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (appliedDateRange = dateRange) => {
     if (!activeAccount?.id) return;
     setLoading(true);
     try {
+      const requestFromDate = appliedDateRange?.from || '';
+      const requestToDate = appliedDateRange?.to || '';
       const res = await api.post('/get-bank-credit', {
-        start_date: fromDate || '',
-        end_date: toDate || '',
+        start_date: requestFromDate,
+        end_date: requestToDate,
       }, { headers: { account: activeAccount.id } });
       const d = res.data || {};
       setMonthWise(Array.isArray(d.month_wise) ? d.month_wise : []);
@@ -132,7 +142,7 @@ export default function BankCreditStatement() {
     } finally {
       setLoading(false);
     }
-  }, [activeAccount?.id, fromDate, toDate]);
+  }, [activeAccount?.id, dateRange]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -183,16 +193,38 @@ export default function BankCreditStatement() {
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">From Date</label>
-        <input type="date" value={fromDate} onChange={(e) => setSelectedDateRange({ ...selectedDateRange, from: e.target.value })}
+        <input type="date" value={dateDraft.from} onChange={(e) => setDateDraft((prev) => ({ ...prev, from: e.target.value }))}
           className="h-[50px] rounded-[16px] border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">To Date</label>
-        <input type="date" value={toDate} onChange={(e) => setSelectedDateRange({ ...selectedDateRange, to: e.target.value })}
+        <input type="date" value={dateDraft.to} onChange={(e) => setDateDraft((prev) => ({ ...prev, to: e.target.value }))}
           className="h-[50px] rounded-[16px] border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
       </div>
-      <Button variant="primary" className="h-[50px] min-w-[56px] px-0 self-end" onClick={fetchData} title="Apply"><FiSearch size={18} /></Button>
-      <Button variant="secondary" className="h-[50px] min-w-[56px] px-0 self-end" onClick={() => setSearch('')} title="Clear"><FiX size={18} /></Button>
+      <Button
+        variant="primary"
+        className="h-[50px] min-w-[56px] px-0 self-end"
+        onClick={() => {
+          const nextDateRange = { from: dateDraft.from || '', to: dateDraft.to || '' };
+          setDateRange(nextDateRange);
+          fetchData(nextDateRange);
+        }}
+        title="Apply"
+      >
+        <FiSearch size={18} />
+      </Button>
+      <Button
+        variant="secondary"
+        className="h-[50px] min-w-[56px] px-0 self-end"
+        onClick={() => {
+          setSearch('');
+          setDateDraft({ from: '', to: '' });
+          setDateRange({ from: '', to: '' });
+        }}
+        title="Clear"
+      >
+        <FiX size={18} />
+      </Button>
     </div>
   );
 
@@ -216,12 +248,21 @@ export default function BankCreditStatement() {
           title="Search Filters"
           mobileTitle="Search Settlements"
           mobileDescription="Filter by date range or search settlement rows."
-          activeCount={(search.trim() ? 1 : 0) + (fromDate ? 1 : 0) + (toDate ? 1 : 0)}
+          activeCount={(search.trim() ? 1 : 0) + (dateDraft.from ? 1 : 0) + (dateDraft.to ? 1 : 0)}
           isModalOpen={showMobileFilters}
           onOpenModal={() => setShowMobileFilters(true)}
           onCloseModal={() => setShowMobileFilters(false)}
-          onClear={() => { setSearch(''); setSelectedDateRange({ from: '', to: '' }); }}
-          onApply={() => { fetchData(); setShowMobileFilters(false); }}
+          onClear={() => {
+            setSearch('');
+            setDateDraft({ from: '', to: '' });
+            setDateRange({ from: '', to: '' });
+          }}
+          onApply={() => {
+            const nextDateRange = { from: dateDraft.from || '', to: dateDraft.to || '' };
+            setDateRange(nextDateRange);
+            fetchData(nextDateRange);
+            setShowMobileFilters(false);
+          }}
         >
           {filterContent}
         </OrdersFilterSection>

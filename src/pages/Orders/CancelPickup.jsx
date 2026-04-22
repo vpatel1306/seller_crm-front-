@@ -102,6 +102,7 @@ const COLUMNS = [
 
 function buildRequestPayload({ filterData, page, limit }) {
   return {
+    filter_data: filterData,
     start_date: filterData.start_date || '',
     end_date: filterData.end_date || '',
     page_no: page,
@@ -138,6 +139,8 @@ export default function CancelPickup() {
       mapResponse={mapResponse}
       columns={COLUMNS}
       showSidebar={false}
+      orderSearchFieldKey="order_id"
+      orderSearchLabel="Order ID"
     />
   );
 }
