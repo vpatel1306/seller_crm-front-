@@ -199,6 +199,10 @@ export default function CommonOrderPage({
     () => ({ ...INITIAL_FILTERS, ...additionalInitialFilters }),
     [additionalInitialFilters]
   );
+  const globalDateRange = useMemo(() => ({
+    from: selectedDateRange?.from || '',
+    to: selectedDateRange?.to || '',
+  }), [selectedDateRange?.from, selectedDateRange?.to]);
   const [filters, setFilters] = useState(mergedInitialFilters);
   const [selectedId, setSelectedId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -210,14 +214,8 @@ export default function CommonOrderPage({
   const [leftOpen, setLeftOpen] = useState(showSidebar);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [groupedData, setGroupedData] = useState(getEmptySummaryData());
-  const [dateRange, setDateRange] = useState(() => ({
-    from: selectedDateRange?.from || '',
-    to: selectedDateRange?.to || '',
-  }));
-  const [dateDraft, setDateDraft] = useState(() => ({
-    from: selectedDateRange?.from || '',
-    to: selectedDateRange?.to || '',
-  }));
+  const [dateRange, setDateRange] = useState(() => globalDateRange);
+  const [dateDraft, setDateDraft] = useState(() => globalDateRange);
   const fromDate = dateRange.from;
   const toDate = dateRange.to;
 
@@ -302,6 +300,11 @@ export default function CommonOrderPage({
     };
   }, [showMobileFilters]);
 
+  useEffect(() => {
+    setDateRange(globalDateRange);
+    setDateDraft(globalDateRange);
+  }, [globalDateRange]);
+
   const handleSort = (key) => {
     if (sortKey === key) {
       setSortDir((direction) => (direction === 'asc' ? 'desc' : 'asc'));
@@ -313,7 +316,8 @@ export default function CommonOrderPage({
 
   const clearFilters = () => {
     setFilters(mergedInitialFilters);
-    setDateDraft({ from: '', to: '' });
+    setDateRange(globalDateRange);
+    setDateDraft(globalDateRange);
     setCurrentPage(1);
   };
 
@@ -512,9 +516,7 @@ export default function CommonOrderPage({
                 >
                   <option value="all">All Order Status</option>
                   <option value="Unknown">Unknown</option>
-                  <option value="Cancelled">Cancelled</option>
                   <option value="CANCELLED">CANCELLED</option>
-                  <option value="Delivered">Delivered</option>
                   <option value="DELIVERED">DELIVERED</option>
                   <option value="Delivering Today">Delivering Today</option>
                   <option value="DOOR_STEP_EXCHANGED">DOOR_STEP_EXCHANGED</option>
