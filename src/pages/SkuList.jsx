@@ -223,7 +223,7 @@ export default function SkuList() {
       product_name: sku.product_name || '',
       box_size: sku.box_size || '',
       basic_cost: sku.basic_cost ?? '',
-      gst_percentage: sku.gst_percentage ?? '18',
+      gst_percentage: sku.gst_percentage ?? '0',
       packing_charge: sku.packing_charge ?? '',
     });
     setShowAddSkuModal(true);
@@ -285,8 +285,8 @@ export default function SkuList() {
   };
 
   const handleAddSkuSubmit = async () => {
-    if (!addSkuForm.sku_id.trim() || !addSkuForm.product_name.trim() || !addSkuForm.box_size.trim()) {
-      setAddSkuError('SKU ID, product name and box size are required.');
+    if (!addSkuForm.sku_id.trim() || !addSkuForm.product_name.trim()) {
+      setAddSkuError('SKU ID and product name are required.');
       return;
     }
 
@@ -296,6 +296,11 @@ export default function SkuList() {
 
     if ([basicCost, gstPercentage, packingCharge].some((value) => Number.isNaN(value))) {
       setAddSkuError('Basic cost, GST percentage and packing charge must be valid numbers.');
+      return;
+    }
+
+    if (basicCost <= 0 || gstPercentage <= 0 || packingCharge <= 0) {
+      setAddSkuError('Basic cost, GST percentage and packing charge must be greater than 0.');
       return;
     }
 
@@ -319,15 +324,27 @@ export default function SkuList() {
           basic_cost: payload.basic_cost,
           gst_percentage: payload.gst_percentage,
           packing_charge: payload.packing_charge,
+        }, {
+          headers: {
+            account: accountHeaderValue,
+          },
         });
       } else {
-        await api.post('/add-sku', payload);
+        await api.post('/add-sku', payload, {
+          headers: {
+            account: accountHeaderValue,
+          },
+        });
       }
 
       handleCloseAddSkuModal();
       fetchSkuList(1, perPage);
     } catch (error) {
-      setAddSkuError(error.response?.data?.message || error.response?.data?.detail || 'Unable to add SKU right now.');
+      const apiError = error.response?.data?.message
+        || error.response?.data?.detail
+        || error.response?.data?.errors?.[0]?.msg
+        || error.response?.data?.errors?.[0]?.message;
+      setAddSkuError(apiError || `Unable to ${editingSku ? 'update' : 'add'} SKU right now.`);
     } finally {
       setAddSkuSubmitting(false);
     }
@@ -491,7 +508,7 @@ export default function SkuList() {
 
   const filterPanelContent = (
     <div className="space-y-3">
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.95fr)_minmax(0,0.78fr)_minmax(0,0.78fr)_minmax(0,0.78fr)_minmax(0,0.78fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(120px,0.9fr)]">
+      <div className="grid gap-3 md:grid-cols-2 xl:flex xl:flex-nowrap xl:items-end">
         {FILTER_FIELDS.map((field) => (
           <Input
             key={field.key}
@@ -499,9 +516,10 @@ export default function SkuList() {
             value={quickFilters[field.key]}
             onChange={(event) => setQuickFilters((prev) => ({ ...prev, [field.key]: event.target.value }))}
             placeholder={`Search ${field.label.toLowerCase()}`}
+            containerClassName={field.key === 'keyword1' ? 'xl:min-w-[304px] xl:flex-[1.5_1_0]' : 'xl:min-w-[200px] xl:flex-[1_1_0]'}
           />
         ))}
-
+{/* 
         <Input
           label="Min Selling"
           type="number"
@@ -529,8 +547,8 @@ export default function SkuList() {
           value={quickFilters.maxCost}
           onChange={(event) => setQuickFilters((prev) => ({ ...prev, maxCost: event.target.value }))}
           placeholder="500"
-        />
-        <div className="flex flex-col gap-1.5">
+        /> */}
+        <div className="flex flex-col gap-1.5 xl:min-w-[164px] xl:flex-[0.9_1_0]">
           <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Cost Status</label>
           <div className="relative">
             <select
@@ -546,7 +564,7 @@ export default function SkuList() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 xl:min-w-[164px] xl:flex-[0.9_1_0]">
           <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Account Scope</label>
           <div className="relative">
             <select
@@ -564,7 +582,7 @@ export default function SkuList() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 xl:min-w-[120px] xl:flex-none">
           <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-transparent select-none">Clear</label>
           <div className="flex items-center gap-2">
             <Button
@@ -816,14 +834,14 @@ export default function SkuList() {
               label="SKU ID"
               value={addSkuForm.sku_id}
               onChange={(event) => handleAddSkuInputChange('sku_id', event.target.value)}
-              placeholder="SKU0012"
+              placeholder="Enter SKU ID"
               disabled={Boolean(editingSku)}
             />
             <Input
               label="Box Size"
               value={addSkuForm.box_size}
               onChange={(event) => handleAddSkuInputChange('box_size', event.target.value)}
-              placeholder="10x10x10 cm"
+              placeholder="Enter Box Size(L x W x H)"
             />
           </div>
 
@@ -831,36 +849,36 @@ export default function SkuList() {
             label="Product Name"
             value={addSkuForm.product_name}
             onChange={(event) => handleAddSkuInputChange('product_name', event.target.value)}
-            placeholder="Sample Product"
+            placeholder="Enter Product Name"
           />
 
           <div className="grid gap-4 sm:grid-cols-3">
             <Input
               label="Basic Cost"
               type="number"
-              min="0"
+              min="0.01"
               step="0.01"
               value={addSkuForm.basic_cost}
               onChange={(event) => handleAddSkuInputChange('basic_cost', event.target.value)}
-              placeholder="150.00"
+              placeholder="Enter Basic Cost"
             />
             <Input
               label="GST %"
               type="number"
-              min="0"
+              min="0.01"
               step="0.01"
               value={addSkuForm.gst_percentage}
               onChange={(event) => handleAddSkuInputChange('gst_percentage', event.target.value)}
-              placeholder="18"
+              placeholder="Enter GST %"
             />
             <Input
               label="Packing Charge"
               type="number"
-              min="0"
+              min="0.01"
               step="0.01"
               value={addSkuForm.packing_charge}
               onChange={(event) => handleAddSkuInputChange('packing_charge', event.target.value)}
-              placeholder="10.00"
+              placeholder="Enter Packing Charge"
             />
           </div>
 

@@ -242,8 +242,8 @@ export default function PendingPaymentOrders() {
       columns={RECEIVED_PAYMENT_COLUMNS}
       renderSidebar={renderReceivedPaymentSidebar}
       rowActions={[
-        { key: 'edit', label: 'Edit Order', icon: FiEdit2, className: 'border-emerald-200 text-emerald-700 hover:bg-emerald-50' },
-        { key: 'delete', label: 'Delete Order', icon: FiTrash2, className: 'border-rose-200 text-rose-700 hover:bg-rose-50' },
+        // { key: 'edit', label: 'Edit Order', icon: FiEdit2, className: 'border-emerald-200 text-emerald-700 hover:bg-emerald-50' },
+        // { key: 'delete', label: 'Delete Order', icon: FiTrash2, className: 'border-rose-200 text-rose-700 hover:bg-rose-50' },
         {
           key: 'payment-details',
           label: 'Payment Details',
@@ -252,7 +252,7 @@ export default function PendingPaymentOrders() {
           disabled: (row) => !row.platform_order_id,
           onClick: (row) => navigate(`/payment-details/${encodeURIComponent(row.platform_order_id)}`),
         },
-        { key: 'details', label: 'Order Details', icon: FiInfo, className: 'border-slate-200 text-slate-700 hover:bg-slate-100' },
+        // { key: 'details', label: 'Order Details', icon: FiInfo, className: 'border-slate-200 text-slate-700 hover:bg-slate-100' },
       ]}
       additionalInitialFilters={{ order_filter: 'all' }}
       compactSingleRowFilters

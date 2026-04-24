@@ -3,7 +3,7 @@ import { FiGlobe, FiMail, FiMapPin, FiPhone } from 'react-icons/fi';
 const supportItems = [
   { icon: FiPhone, label: '+91 12345 67890' },
   { icon: FiMail, label: 'support@sellerinsight.in' },
-  { icon: FiGlobe, label: 'www.sellerinsight.in' },
+  { icon: FiGlobe, label: 'meematrix.com' },
   { icon: FiMapPin, label: 'Surat, Gujarat 395001' },
 ];
 
