@@ -17,6 +17,13 @@ export default function Button({
     danger: 'bg-error text-white shadow-lg shadow-error/20 hover:bg-red-700',
     info: 'bg-sky-600 text-white shadow-lg shadow-sky-600/20 hover:bg-sky-700',
     dark: 'bg-dark text-white shadow-lg shadow-slate-950/20 hover:bg-slate-800',
+    create: 'bg-emerald-600 text-white shadow-md hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500',
+   edit: 'bg-sky-200 text-sky-800 hover:bg-sky-300 focus:ring-2 focus:ring-sky-300',
+    delete: 'bg-red-100 text-red-700 hover:bg-red-200 focus:ring-2 focus:ring-red-200',
+    refresh: 'bg-gray-600 text-white shadow-md hover:bg-gray-700 focus:ring-2 focus:ring-gray-500',
+    cancel: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-gray-400',
+    save: 'bg-teal-600 text-white shadow-md hover:bg-teal-700 focus:ring-2 focus:ring-teal-500',
+    view: 'bg-indigo-600 text-white shadow-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500',
   };
 
   const sizes = {

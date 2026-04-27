@@ -4,13 +4,26 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import logoImage from '../../assets/favicon.png';
 
+const PASSWORD_SPECIAL_CHAR_REGEX = /[@$!%*?&#^()\-_=+{}[\]|\\:;"'<>,./]/;
+
+const getPasswordError = (password) => {
+  if (!password) return 'Password is required';
+  if (password.length < 8) return 'Password must be at least 8 characters long';
+  if (!/[A-Za-z]/.test(password)) return 'Password must contain at least one letter';
+  if (!/[0-9]/.test(password)) return 'Password must contain at least one number';
+  if (!PASSWORD_SPECIAL_CHAR_REGEX.test(password)) {
+    return 'Password must contain at least one special character';
+  }
+  return '';
+};
+
 const validate = ({ name, email, password, contact }) => {
   const errors = {};
   if (!name) errors.name = 'Name is required';
   if (!email) errors.email = 'Email is required';
   else if (!/\S+@\S+\.\S+/.test(email)) errors.email = 'Invalid email';
-  if (!password) errors.password = 'Password is required';
-  else if (password.length < 6) errors.password = 'Min 6 characters';
+  const passwordError = getPasswordError(password);
+  if (passwordError) errors.password = passwordError;
   if (!contact) errors.contact = 'Contact is required';
   else if (!/^\d{10}$/.test(contact)) errors.contact = 'Must be 10 digits';
   return errors;
@@ -113,7 +126,7 @@ export default function Register() {
                 <div className="space-y-2 sm:col-span-2">
                   <label className="ml-1 text-sm font-extrabold text-text">Mobile Number</label>
                   <input
-                    type="tel"
+                    type="number"
                     name="contact"
                     value={form.contact}
                     onChange={handleChange}
@@ -135,6 +148,9 @@ export default function Register() {
                     className={`w-full rounded-[18px] border bg-[#fffdfa] px-4 py-3.5 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:ring-4 focus:ring-primary/10 ${errors.password ? 'border-red-400 bg-red-50' : 'border-border focus:border-primary'}`}
                     disabled={loading}
                   />
+                  <p className="ml-1 text-xs text-text-muted">
+                    Use 8+ characters with at least 1 letter, 1 number, and 1 special character.
+                  </p>
                   {errors.password && <span className="ml-1 text-xs font-bold text-red-500">{errors.password}</span>}
                 </div>
               </div>

@@ -71,7 +71,7 @@ export default function DataTable({
   };
 
   return (
-    <div className={`flex-1 min-h-0 overflow-auto bg-white ${wrapperClassName}`}>
+    <div className={`flex-1 min-h-0 overflow-hidden bg-white ${wrapperClassName}`}>
       {loading ? (
         <div className="flex h-full min-h-[260px] items-center justify-center gap-2 text-sm text-slate-500">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-500" />
@@ -123,7 +123,7 @@ export default function DataTable({
           )}
 
           {/* TABLE VIEW */}
-          <div className={`${mobileCardView ? 'hidden md:block' : 'block'} overflow-x-auto`}>
+          <div className={`${mobileCardView ? 'hidden md:block' : 'block'} h-full overflow-auto rounded-[inherit] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-400/80 [&::-webkit-scrollbar-track]:bg-slate-100`}>
             <table className={`w-full border-collapse ${tableClassName}`}>
               <thead className={headClassName}>
                 <tr>

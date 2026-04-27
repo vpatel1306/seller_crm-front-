@@ -8,7 +8,7 @@ import {
   FiEdit2,
   FiFilter,
   FiInfo,
-  FiPlusCircle,
+  FiPlus,
   FiRotateCcw,
 } from 'react-icons/fi';
 import api from '../services/api';
@@ -480,7 +480,7 @@ export default function SkuList() {
       render: (row) => (
         <div className="flex items-center gap-2">
           <Button
-            variant="info"
+            variant="edit"
             size="sm"
             onClick={(event) => {
               event.stopPropagation();
@@ -621,12 +621,12 @@ export default function SkuList() {
           </div>
           <div className="ml-auto flex flex-wrap items-center justify-end gap-2.5">
             <Button
-              variant="primary"
+              variant="create"
               size="sm"
               className="h-10 rounded-[14px] px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-primary/20 sm:w-auto"
               onClick={() => { resetAddSkuForm(); setShowAddSkuModal(true); }}
             >
-              <FiPlusCircle size={16} />
+              <FiPlus size={16} />
               Add SKU
             </Button>
             {/* <Button

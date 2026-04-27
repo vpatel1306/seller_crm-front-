@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { FiRefreshCw, FiEdit2, FiPlusCircle } from 'react-icons/fi';
+import { FiRefreshCw, FiEdit2, FiPlus } from 'react-icons/fi';
 import { FaChartBar, FaClipboardList, FaCog } from 'react-icons/fa';
 import { FaMoneyBillTrendUp } from 'react-icons/fa6';
 import api from '../../services/api';
@@ -109,10 +109,10 @@ export default function Sidebar({ accountDetails = null }) {
     <>
       <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center justify-between gap-2 rounded-t-3xl bg-slate-950 p-4 text-white">
-          <Button variant="info" size="sm" onClick={() => setModal('add')}>
-            <FiPlusCircle size={12} /> Add New
+          <Button variant="create" size="sm" onClick={() => setModal('add')}>
+            <FiPlus size={12} /> Add New
           </Button>
-          <Button variant="success" size="sm" onClick={() => fetchAccounts(true)}>
+          <Button variant="refresh" size="sm" onClick={() => fetchAccounts(true)}>
             <FiRefreshCw size={12} /> REFRESH
           </Button>
         </div>
@@ -132,7 +132,7 @@ export default function Sidebar({ accountDetails = null }) {
                 </div>
                 <div className="flex flex-shrink-0 flex-col items-end gap-2">
                   {canEditAccount ? (
-                    <Button variant="outline" size="sm" onClick={() => setModal('edit')}>
+                    <Button variant="edit" size="sm" onClick={() => setModal('edit')}>
                       <FiEdit2 size={12} /> Edit
                     </Button>
                   ) : null}
@@ -146,13 +146,15 @@ export default function Sidebar({ accountDetails = null }) {
                   <span className="opacity-70">FROM - {selectedDateRange.from ? fmtDate(selectedDateRange.from) : '-'}</span>
                   <span className="opacity-70">TO - {selectedDateRange.to ? fmtDate(selectedDateRange.to) : todayStr()}</span>
                 </div>
-                <button
-                  className="w-full rounded-lg bg-red-600 py-1.5 text-xs font-bold text-white shadow-md shadow-red-600/20 transition-all hover:bg-red-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                <Button
+                  variant="danger"
+                  size="sm"
+                  className="w-full"
                   onClick={() => setShowDateModal(true)}
                   disabled={requiresAccountSetup}
                 >
                   CHANGE DATE
-                </button>
+                </Button>
               </div>
 
               <div className="space-y-3.5 rounded-xl border border-gray-100 bg-gray-50/50 p-4 shadow-inner">
@@ -190,13 +192,15 @@ export default function Sidebar({ accountDetails = null }) {
               </div>
 
               <div className="pt-2">
-                <button
-                  className="w-full rounded-xl bg-green-600 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-green-600/20 transition-all hover:bg-green-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                <Button
+                  variant="save"
+                  size="sm"
+                  className="w-full"
                   onClick={() => navigate('/sku-list')}
                   disabled={requiresAccountSetup}
                 >
                   Total SKU - {totalSku} / Without Cost - {withoutCostSku}
-                </button>
+                </Button>
               </div>
 
               <div className="space-y-3 pt-4">
@@ -205,19 +209,19 @@ export default function Sidebar({ accountDetails = null }) {
                   <div className={`rounded-lg border border-gray-100 p-2 shadow-sm transition-colors ${requiresAccountSetup ? 'opacity-40' : 'hover:bg-gray-50'}`}><FaMoneyBillTrendUp size={20} className="text-green-600" /></div>
                   <div className={`rounded-lg border border-gray-100 p-2 shadow-sm transition-colors ${requiresAccountSetup ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-gray-50'}`} onClick={() => !requiresAccountSetup && navigate('/business-growth-chart')}><FaChartBar size={20} className="text-gray-600" /></div>
                   <div className={`rounded-lg border border-gray-100 p-2 shadow-sm transition-colors ${requiresAccountSetup ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-gray-50'}`} onClick={() => !requiresAccountSetup && setShowReportModal(true)}><FaClipboardList size={20} className="text-gray-600" /></div>
-                  <button className="rounded-lg border border-gray-100 p-2 text-xs font-bold text-red-600 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40" disabled={requiresAccountSetup}>Clear All Search</button>
+                  <Button variant="cancel" size="sm" disabled={requiresAccountSetup}>Clear All Search</Button>
                   <div className={`rounded-lg border border-gray-100 p-2 shadow-sm transition-colors ${requiresAccountSetup ? 'opacity-40' : 'hover:bg-gray-50'}`}><FaCog size={20} className="text-gray-600" /></div>
                 </div>
 
                 <div className="mt-6 space-y-4 rounded-xl border border-gray-100 bg-gray-50/50 p-4 shadow-inner">
                   <span className="block border-b border-gray-100 pb-2 text-xs font-bold uppercase tracking-widest text-gray-900">Daily Task</span>
                   <div className="grid grid-cols-2 gap-2">
-                    <button className="rounded-lg border border-amber-200 bg-amber-100 px-3 py-2 text-[0.65rem] font-bold text-amber-700 transition-colors hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-50" onClick={() => navigate('/pick-up-entry')} disabled={requiresAccountSetup}>PICK-UP ENTRY</button>
-                    <button className="rounded-lg border border-amber-200 bg-amber-100 px-3 py-2 text-[0.65rem] font-bold text-amber-700 transition-colors hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-50" onClick={() => setShowReturnModal(true)} disabled={requiresAccountSetup}>RETURN ENTRY</button>
+                    <Button variant="warning" size="sm" onClick={() => navigate('/pick-up-entry')} disabled={requiresAccountSetup}>PICK-UP ENTRY</Button>
+                    <Button variant="warning" size="sm" onClick={() => setShowReturnModal(true)} disabled={requiresAccountSetup}>RETURN ENTRY</Button>
                   </div>
                   <div className="flex gap-2">
-                    <button className="flex-1 rounded-lg border border-amber-200 bg-amber-100 px-3 py-2 text-[0.65rem] font-bold text-amber-700 transition-colors hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-50" onClick={() => setShowImportModal(true)} disabled={requiresAccountSetup}>IMPORT DATA</button>
-                    <button className="rounded-lg border border-amber-200 bg-amber-100 p-2 font-bold text-amber-700">...</button>
+                    <Button variant="warning" size="sm" className="flex-1" onClick={() => setShowImportModal(true)} disabled={requiresAccountSetup}>IMPORT DATA</Button>
+                    <Button variant="cancel" size="sm">...</Button>
                   </div>
                 </div>
               </div>
