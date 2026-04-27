@@ -115,7 +115,7 @@ function formatDate(value) {
 
 function mapReceivedPaymentResponse(payload, { page, limit }) {
   const list = Array.isArray(payload.data) ? payload.data : [];
-  const total = Number(payload.total_rows ?? payload.total) || list.length;
+  const total = Number(payload.total_count ?? payload.total_rows ?? payload.total) || list.length;
 
   return {
     list,
@@ -203,7 +203,7 @@ export default function ReceivedPaymentOrders() {
         filter_data: filterData,
         start_date: fromDate || '',
         end_date: toDate || '',
-        order_filter: filters.order_filter || 'all',
+        order_filter: filters.order_filter || 'All',
         page_no: page,
         limit,
       })}
@@ -223,7 +223,7 @@ export default function ReceivedPaymentOrders() {
         },
         // { key: 'details', label: 'Order Details', icon: FiInfo, className: 'border-slate-200 text-slate-700 hover:bg-slate-100' },
       ]}
-      additionalInitialFilters={{ order_filter: 'all' }}
+      additionalInitialFilters={{ order_filter: 'All' }}
       compactSingleRowFilters
       orderSearchFieldKey="order_id"
       orderSearchLabel="Order ID"
@@ -236,9 +236,9 @@ export default function ReceivedPaymentOrders() {
               onChange={(event) => setFilters((prev) => ({ ...prev, order_filter: event.target.value }))}
               className="w-full appearance-none rounded-[16px] border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 xl:w-[240px]"
             >
-              <option value="all">All</option>
-              <option value="profit">Profit</option>
-              <option value="loss">Loss</option>
+              <option value="All">All</option>
+              <option value="Profit">Profit</option>
+              <option value="Loss">Loss</option>
             </select>
           </div>
         </div>

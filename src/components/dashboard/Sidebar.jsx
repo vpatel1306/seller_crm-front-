@@ -89,41 +89,42 @@ export default function Sidebar({ accountDetails = null }) {
 
   const salesProfit = Number(accountStatus.sales_profit) || 0;
   const advertisement = Number(accountStatus.advertisement) || 0;
-  const grossProfit = salesProfit - Math.abs(advertisement);
+  const grossProfit = Number(accountStatus.gross_profit) || (salesProfit - Math.abs(advertisement));
   const netProfit = Number(accountStatus.net_profit) || 0;
-  const netProfitPct = Number(accountStatus.net_profit_pct) || 0;
+  const netProfitPct = Number(accountStatus.net_profit_percentage) || 0;
   const totalSku = accountStatus.total_sku ?? 0;
   const withoutCostSku = accountStatus.without_cost_sku ?? 0;
+  const lossBreakdown = accountStatus.loss_breakdown || {};
 
   const lossRows = [
-    { l: 'Wrong / Damage / Missing Returns', v: accountStatus.wrong_damage_missing_returns },
-    { l: 'Return Not Received Loss', v: accountStatus.return_not_received_loss },
-    { l: 'Payment Loss', v: accountStatus.payment_loss },
-    { l: 'RTO Packaging Loss', v: accountStatus.rto_packaging_loss },
-    { l: 'Customer Return Pending', v: accountStatus.customer_return_charge_pending },
+    { l: 'Wrong / Damage / Missing Returns', v: accountStatus.wrong_damage_missing_returns, c: lossBreakdown.wrong_damage_missing_returns?.count ?? 0 },
+    { l: 'Return Not Received Loss', v: accountStatus.return_not_received_loss, c: lossBreakdown.return_not_received_loss?.count ?? 0 },
+    { l: 'Payment Loss', v: accountStatus.payment_loss, c: lossBreakdown.payment_loss?.count ?? 0 },
+    { l: 'RTO Packaging Loss', v: accountStatus.rto_packaging_loss, c: lossBreakdown.rto_packaging_loss?.count ?? 0 },
+    { l: 'Customer Return Pending', v: accountStatus.customer_return_charge_pending, c: lossBreakdown.customer_return_pending?.count ?? 0 },
   ];
 
   const fmtAmt = (v) => Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
     <>
-      <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between gap-2 rounded-t-3xl bg-slate-950 p-4 text-white">
+      <div className="flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        {/* <div className="flex items-center justify-between gap-2 rounded-t-3xl bg-slate-950 p-4 text-white">
           <Button variant="create" size="sm" onClick={() => setModal('add')}>
             <FiPlus size={12} /> Add New
           </Button>
           <Button variant="refresh" size="sm" onClick={() => fetchAccounts(true)}>
             <FiRefreshCw size={12} /> REFRESH
           </Button>
-        </div>
+        </div> */}
 
-        <div className="flex-1 bg-gradient-to-b from-white via-white to-slate-50/80">
+        <div className="bg-gradient-to-b from-white via-white to-slate-50/80">
           {loading ? (
             <div className="flex justify-center py-10">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
             </div>
           ) : (
-            <div className="h-full space-y-3 p-4">
+            <div className="space-y-3 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="space-y-1.5">
                   <div className="max-w-[150px] truncate font-bold leading-tight text-gray-900">{fmt(currentAccount.account_name || 'N/A')}</div>
@@ -178,7 +179,7 @@ export default function Sidebar({ accountDetails = null }) {
                   <div className="space-y-3.5 pt-2">
                     {lossRows.map((row) => (
                       <div key={row.l} className="flex justify-between text-[11px] font-bold uppercase text-gray-400">
-                        <span>{row.l}</span>
+                        <span>{row.l} <span className="text-gray-300">({row.c})</span></span>
                         <span className="text-red-400">{fmtAmt(row.v)}</span>
                       </div>
                     ))}
@@ -220,7 +221,7 @@ export default function Sidebar({ accountDetails = null }) {
                     <Button variant="warning" size="sm" onClick={() => setShowReturnModal(true)} disabled={requiresAccountSetup}>RETURN ENTRY</Button>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="warning" size="sm" className="flex-1" onClick={() => setShowImportModal(true)} disabled={requiresAccountSetup}>IMPORT DATA</Button>
+                    <Button variant="warning" size="sm" className="flex-1" onClick={() => setShowImportModal(true)} disabled={requiresAccountSetup}>DAILY IMPORT FLOW</Button>
                     <Button variant="cancel" size="sm">...</Button>
                   </div>
                 </div>

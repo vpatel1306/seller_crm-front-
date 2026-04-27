@@ -22,17 +22,16 @@ export default function Dashboard() {
 
   return (
     <AppShell mainClassName="pt-4 lg:pt-5">
-      <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="space-y-6">
-        <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)] xl:items-stretch 2xl:gap-6 2xl:grid-cols-[360px_minmax(0,1fr)]">
-          <div className="min-w-0 h-full">
+      <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+        <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)] xl:items-start 2xl:gap-6 2xl:grid-cols-[360px_minmax(0,1fr)]">
+          <div className="min-w-0 self-start space-y-4">
             <Sidebar accountDetails={accountDetails}/>
+            <DashboardMetricsRow metrics={metrics} />
           </div>
           <div className="min-w-0">
             <DashboardCards  onMetricsReady={setMetrics} onAccountDetail={setAccountDetails} />
           </div>
         </div>
-
-        <DashboardMetricsRow metrics={metrics} />
       </motion.div>
     </AppShell>
   );
