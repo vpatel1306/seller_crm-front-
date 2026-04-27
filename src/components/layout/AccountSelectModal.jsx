@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  FiCheck,
   FiEdit2,
   FiMonitor,
   FiPlus,
@@ -126,8 +125,6 @@ export default function AccountSelectModal({ isOpen, onClose }) {
     ));
   }, [accounts, search]);
 
-  const isRowActive = useCallback((row) => activeAccountId === row.id, [activeAccountId]);
-
   const handleOpen = async (acc) => {
     if (!acc?.id) return;
     setChecked(new Set([acc.id]));
@@ -140,6 +137,26 @@ export default function AccountSelectModal({ isOpen, onClose }) {
     const updatedAcc = { ...acc, id: responseAccountId, account_name: responseAccountName };
     localStorage.setItem('activeAccountId', String(responseAccountId));
     setActiveAccount(updatedAcc);
+  };
+
+  const handleAccountStatusToggle = async (acc) => {
+    if (!acc?.id) return;
+
+    const nextStatus = Number(acc.is_active) === 1 ? 0 : 1;
+
+    await api.post(`/account-status/${acc.id}`, {
+      is_active: nextStatus,
+    });
+
+    setAccounts((prev) => prev.map((item) => (
+      item.id === acc.id
+        ? { ...item, is_active: nextStatus }
+        : item
+    )));
+
+    if (activeAccountId === acc.id) {
+      setActiveAccount({ ...acc, is_active: nextStatus });
+    }
   };
 
   const handleDelete = async (account) => {
@@ -167,25 +184,24 @@ export default function AccountSelectModal({ isOpen, onClose }) {
   };
 
   const columns = [
-    // {
-    //   key: 'select',
-    //   label: 'Sel',
-
-    //   render: (row) => (
-    //     <div className="flex justify-center">
-    //       <input
-    //         type="radio"
-    //         name="acc-select"
-    //         checked={checked.has(row.id)}
-    //         onChange={(event) => {
-    //           event.stopPropagation();
-    //           setChecked(new Set([row.id]));
-    //         }}
-    //         className="h-4 w-4 accent-primary"
-    //       />
-    //     </div>
-    //   ),
-    // },
+    {
+      key: 'select',
+      label: 'Sel',
+      render: (row) => (
+        <div className="flex justify-center">
+          <input
+            type="radio"
+            name="acc-select"
+            checked={checked.has(row.id)}
+            onChange={async (event) => {
+              event.stopPropagation();
+              await handleOpen(row);
+            }}
+            className="h-4 w-4 accent-primary"
+          />
+        </div>
+      ),
+    },
     {
       key: 'account_name',
       label: 'Account Name',
@@ -269,18 +285,18 @@ export default function AccountSelectModal({ isOpen, onClose }) {
     },
     {
       key: 'account_active',
-      label: 'Account Active',
+      label: 'Account status',
       className: 'min-w-[150px] md:sticky md:right-[130px] md:z-20 md:border-l md:border-border md:bg-white md:shadow-[-10px_0_16px_-16px_rgba(15,23,42,0.22)]',
       headerClassName: 'min-w-[150px] md:sticky md:right-[130px] md:z-30 md:border-l md:border-border md:bg-surface-alt/95 md:shadow-[-10px_0_16px_-16px_rgba(15,23,42,0.22)]',
       render: (row) => {
-        const isActive = isRowActive(row);
+        const isActive = Number(row.is_active) === 1;
         return (
           <div className="flex justify-center">
             <ActiveStatusToggle
               isActive={isActive}
               onClick={(event) => {
                 event.stopPropagation();
-                handleOpen(row);
+                handleAccountStatusToggle(row);
               }}
             />
           </div>
@@ -395,7 +411,7 @@ export default function AccountSelectModal({ isOpen, onClose }) {
                 emptyText="No accounts found matching your search."
                 selectedId={activeAccountId}
                 getRowId={(row) => row.id}
-                onRowClick={(row) => setChecked(new Set([row.id]))}
+                onRowClick={handleOpen}
                 onRowDoubleClick={handleOpen}
                 mobileCardView={false}
                 wrapperClassName="h-full rounded-[24px] border border-border bg-white"
