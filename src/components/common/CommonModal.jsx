@@ -72,22 +72,26 @@ export default function CommonModal({
         }
       }}
     >
-      <div className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-[28px] border border-white/40 bg-surface shadow-[0_30px_80px_rgba(15,23,42,0.28)] animate-slide-up ${sizeClasses[size]} ${customClass}`}>
+      <div className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-[10px] border border-white/40 bg-surface shadow-[0_30px_80px_rgba(15,23,42,0.28)] animate-slide-up ${sizeClasses[size]} ${customClass}`}>
         {showHeader ? (
           <div className={`flex items-center justify-between gap-4 px-6 py-4 ${headerStyleClasses[headerStyle]}`}>
             <h3 className="text-lg font-extrabold tracking-tight">{title}</h3>
             {showCloseButton ? (
-              <button
-                className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] border border-black/5 bg-white/10 transition-colors hover:bg-black/10"
+              <Button
+                variant="ghost"
+                size="icon"
+                className="border border-black/5 bg-white/10 text-current hover:bg-black/10"
                 onClick={onClose}
               >
                 <FiX size={18} />
-              </button>
+              </Button>
             ) : null}
           </div>
         ) : null}
 
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6">{children}</div>
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-track]:bg-transparent">
+          {children}
+        </div>
 
         {showFooter ? (
           <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border/80 bg-surface-alt px-5 py-4 sm:px-6">

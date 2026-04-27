@@ -51,15 +51,16 @@ export default function Navbar() {
                   {getCompactAccountLabel(activeAccount?.account_name)}
                 </Button>
 
-                <button
-                  className="inline-flex items-center gap-2 rounded-full bg-transparent px-0 py-0 text-text"
+                <Button
+                  variant="ghost"
+                  className="gap-2 px-0 py-0 text-text hover:bg-transparent"
                   onClick={() => setMenuOpen((value) => !value)}
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-dark text-xs font-extrabold text-white">
                     {user.name?.[0]?.toUpperCase() || 'U'}
                   </div>
                   <FiChevronDown size={16} className={`text-text-muted transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
-                </button>
+                </Button>
               </div>
 
               {menuOpen ? (
@@ -77,13 +78,14 @@ export default function Navbar() {
                     <div className="text-xs text-text-muted">Active Account : {activeAccount?.account_name || 'No account selected'}</div>
                   </div>
              
-                  <button
-                    className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-[16px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition-colors hover:bg-red-100"
+                  <Button
+                    variant="delete"
+                    className="mt-3 w-full"
                     onClick={logout}
                   >
                     <FiLogOut size={16} />
                     Logout
-                  </button>
+                  </Button>
                 </div>
               ) : null}
             </div>
@@ -100,11 +102,11 @@ export default function Navbar() {
               </Button>
 
               <div className="relative" ref={menuRef}>
-                <button onClick={() => setMenuOpen((value) => !value)}>
+                <Button variant="ghost" size="icon" className="bg-transparent hover:bg-transparent" onClick={() => setMenuOpen((value) => !value)}>
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-dark text-sm font-extrabold text-white">
                     {user.name?.[0]?.toUpperCase() || 'U'}
                   </div>
-                </button>
+                </Button>
 
                 {menuOpen ? (
                   <div className="absolute right-0 mt-3 w-72 rounded-[22px] border border-border bg-surface p-3 shadow-[0_26px_60px_rgba(15,23,42,0.18)]">
@@ -121,13 +123,14 @@ export default function Navbar() {
                       <div className="text-xs text-text-muted"> Active Account : {activeAccount?.account_name || 'No account selected'}</div>
                     </div>
                  
-                    <button
-                      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-[16px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition-colors hover:bg-red-100"
+                    <Button
+                      variant="delete"
+                      className="mt-3 w-full"
                       onClick={logout}
                     >
                       <FiLogOut size={16} />
                       Logout
-                    </button>
+                    </Button>
                   </div>
                 ) : null}
               </div>

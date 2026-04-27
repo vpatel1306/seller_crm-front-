@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FiCheck,
-  FiDatabase,
   FiEdit2,
-  FiFolder,
   FiMonitor,
+  FiPlus,
   FiRefreshCw,
   FiSearch,
   FiTrash2,
@@ -37,6 +36,28 @@ const fmtNum = (val) => {
   return n === null ? '-' : n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
+function ActiveStatusToggle({ isActive, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{ borderRadius: '999px' }}
+      className={`relative inline-flex h-5 w-[36px] items-center rounded-full px-1 text-[0.65rem] font-bold uppercase text-white shadow transition-all duration-200 active:scale-[0.95] ${
+        isActive
+          ? 'justify-start bg-gradient-to-b from-lime-600 to-green-700'
+          : 'justify-end bg-gradient-to-b from-red-700 to-red-900'
+      }`}
+    >
+      <span
+        style={{ borderRadius: '999px' }}
+        className={`pointer-events-none absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full bg-white shadow ${
+          isActive ? 'right-0.5' : 'left-0.5'
+        }`}
+      />
+    </button>
+  );
+}
+
 export default function AccountSelectModal({ isOpen, onClose }) {
   const { activeAccount, setActiveAccount } = useAuth();
   const activeAccountId = activeAccount?.id || null;
@@ -46,6 +67,7 @@ export default function AccountSelectModal({ isOpen, onClose }) {
   const [checked, setChecked] = useState(() => new Set(activeAccountId ? [activeAccountId] : []));
   const [deleting, setDeleting] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [pendingEditedAccountId, setPendingEditedAccountId] = useState(null);
   const activeAccountRef = useRef(activeAccount);
   const requiresSelection = !activeAccount && accounts.length > 0;
@@ -104,13 +126,13 @@ export default function AccountSelectModal({ isOpen, onClose }) {
     ));
   }, [accounts, search]);
 
-  const selectedAcc = checked.size === 1 ? accounts.find((acc) => checked.has(acc.id)) : null;
-
-  const toggleCheck = (id) => {
-    setChecked((prev) => (prev.has(id) ? new Set() : new Set([id])));
-  };
+  const isRowActive = useCallback((row) => activeAccountId === row.id, [activeAccountId]);
 
   const handleOpen = async (acc) => {
+    if (!acc?.id) return;
+    setChecked(new Set([acc.id]));
+    if (activeAccountId === acc.id) return;
+
     const res = await api.post(`/set-active-account/${acc.id}`);
     const responseAccountId = res.data?.data?.active_account_id || acc.id;
     const responseAccountName = res.data?.data?.account_name || acc.account_name;
@@ -118,7 +140,6 @@ export default function AccountSelectModal({ isOpen, onClose }) {
     const updatedAcc = { ...acc, id: responseAccountId, account_name: responseAccountName };
     localStorage.setItem('activeAccountId', String(responseAccountId));
     setActiveAccount(updatedAcc);
-    onClose();
   };
 
   const handleDelete = async (account) => {
@@ -146,45 +167,35 @@ export default function AccountSelectModal({ isOpen, onClose }) {
   };
 
   const columns = [
-    {
-      key: 'select',
-      label: 'Sel',
-      className: 'min-w-[72px] md:left-[52px] md:z-20 md:bg-white',
-      headerClassName: 'min-w-[72px] md:left-[52px] md:z-30 md:bg-surface-alt/95',
-      render: (row) => (
-        <div className="flex justify-center">
-          <input
-            type="radio"
-            name="acc-select"
-            checked={checked.has(row.id)}
-            onChange={(event) => {
-              event.stopPropagation();
-              toggleCheck(row.id);
-            }}
-            className="h-4 w-4 accent-primary"
-          />
-        </div>
-      ),
-    },
+    // {
+    //   key: 'select',
+    //   label: 'Sel',
+
+    //   render: (row) => (
+    //     <div className="flex justify-center">
+    //       <input
+    //         type="radio"
+    //         name="acc-select"
+    //         checked={checked.has(row.id)}
+    //         onChange={(event) => {
+    //           event.stopPropagation();
+    //           setChecked(new Set([row.id]));
+    //         }}
+    //         className="h-4 w-4 accent-primary"
+    //       />
+    //     </div>
+    //   ),
+    // },
     {
       key: 'account_name',
       label: 'Account Name',
-      className: 'min-w-[220px] md:left-[124px] md:z-20 md:bg-white md:shadow-[10px_0_18px_-18px_rgba(15,23,42,0.25)]',
-      headerClassName: 'min-w-[220px] md:left-[124px] md:z-30 md:bg-surface-alt/95 md:shadow-[10px_0_18px_-18px_rgba(15,23,42,0.25)]',
       render: (row) => {
-        const isActive = activeAccountId === row.id;
         return (
-          <div className="space-y-1">
+          <div>
             <div className="flex items-center gap-2 font-bold text-text">
               <span>{row.account_name || '-'}</span>
-              {isActive ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[0.65rem] font-extrabold uppercase tracking-[0.16em] text-emerald-700">
-                  <FiCheck size={10} />
-                  Active
-                </span>
-              ) : null}
+             
             </div>
-            <div className="text-xs text-text-muted">{row.person_name || row.mobile_no || 'No contact info'}</div>
           </div>
         );
       },
@@ -257,52 +268,58 @@ export default function AccountSelectModal({ isOpen, onClose }) {
       ) : '-',
     },
     {
+      key: 'account_active',
+      label: 'Account Active',
+      className: 'min-w-[150px] md:sticky md:right-[130px] md:z-20 md:border-l md:border-border md:bg-white md:shadow-[-10px_0_16px_-16px_rgba(15,23,42,0.22)]',
+      headerClassName: 'min-w-[150px] md:sticky md:right-[130px] md:z-30 md:border-l md:border-border md:bg-surface-alt/95 md:shadow-[-10px_0_16px_-16px_rgba(15,23,42,0.22)]',
+      render: (row) => {
+        const isActive = isRowActive(row);
+        return (
+          <div className="flex justify-center">
+            <ActiveStatusToggle
+              isActive={isActive}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleOpen(row);
+              }}
+            />
+          </div>
+        );
+      },
+    },
+    {
       key: 'actions',
       label: 'Action',
-      className: 'min-w-[260px] md:sticky md:right-0 md:z-20 md:border-l md:border-border md:bg-white md:shadow-[-12px_0_18px_-18px_rgba(15,23,42,0.28)]',
-      headerClassName: 'min-w-[260px] md:sticky md:right-0 md:z-30 md:border-l md:border-border md:bg-surface-alt/95 md:shadow-[-12px_0_18px_-18px_rgba(15,23,42,0.28)]',
+      className: 'min-w-[130px] md:sticky md:right-0 md:z-20 md:border-l md:border-border md:bg-white md:shadow-[-12px_0_18px_-18px_rgba(15,23,42,0.28)]',
+      headerClassName: 'min-w-[130px] md:sticky md:right-0 md:z-30 md:border-l md:border-border md:bg-surface-alt/95 md:shadow-[-12px_0_18px_-18px_rgba(15,23,42,0.28)]',
       render: (row) => {
-        const isActive = activeAccountId === row.id;
         const isDeletingThisRow = deleting && checked.has(row.id);
         return (
           <div className="flex items-center gap-2 bg-inherit">
             <Button
-              variant="secondary"
-              size="sm"
-              className="h-8 rounded-[10px] px-3 text-[0.66rem] tracking-[0.14em]"
+              variant="edit"
+              size="icon"
+              title="Edit account"
               onClick={(event) => {
                 event.stopPropagation();
                 handleEdit(row);
               }}
             >
-              <FiEdit2 size={12} />
-              Edit
+              <FiEdit2 size={14} />
             </Button>
             <Button
-              variant={isActive ? 'outline' : 'primary'}
-              size="sm"
-              className="h-8 rounded-[10px] px-3 text-[0.66rem] tracking-[0.14em]"
-              onClick={(event) => {
-                event.stopPropagation();
-                handleOpen(row);
-              }}
-            >
-              <FiFolder size={12} />
-              {isActive ? 'Active' : 'Active'}
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              className="h-8 rounded-[10px] px-3 text-[0.66rem] tracking-[0.14em]"
+              variant="delete"
+              size="icon"
+              title="Delete account"
               onClick={(event) => {
                 event.stopPropagation();
                 setChecked(new Set([row.id]));
                 handleDelete(row);
               }}
             >
-              <FiTrash2 size={12} />
-              {isDeletingThisRow ? 'Deleting...' : 'Delete'}
+              <FiTrash2 size={14} />
             </Button>
+            {isDeletingThisRow ? <span className="text-xs font-bold text-red-500">Deleting...</span> : null}
           </div>
         );
       },
@@ -318,40 +335,35 @@ export default function AccountSelectModal({ isOpen, onClose }) {
         size="full"
         headerStyle="gradient"
         showFooter={false}
-        customClass="max-w-[1380px]"
+        customClass="h-auto max-h-[90vh] max-w-[1380px]"
       >
         {requiresSelection && (
           <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
             Please select an account to continue using the dashboard.
           </div>
         )}
-        <div className="space-y-4">
+        <div className="flex h-full min-h-0 flex-col gap-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm font-medium text-text-muted">
               Showing {filtered.length} of {accounts.length} accounts
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {/* <button
-                type="button"
-                className="inline-flex items-center justify-center gap-2 rounded-[16px] bg-purple-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-purple-600/20 transition-all hover:bg-purple-700"
-                onClick={() => window.alert('Coming soon')}
-              >
-                <FiDatabase size={15} />
-                Backup DB
-              </button> */}
-              <button
-                type="button"
-                className="inline-flex items-center justify-center gap-2 rounded-[16px] bg-green-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-green-500/20 transition-all hover:bg-green-600"
-                onClick={() => fetchAccounts()}
-              >
+
+
+              <Button variant="create" size='sm' onClick={() => setIsAddModalOpen(true)}>
+                <FiPlus size={15} />
+                Add Account 
+              </Button>
+              <Button variant="refresh" size='sm' onClick={() => fetchAccounts()}>
                 <FiRefreshCw size={15} />
                 Refresh
-              </button>
+              </Button>
+            
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-border bg-white">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] border border-border bg-white">
             <div className="border-b border-border p-4">
               <div className="relative">
                 <FiSearch size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
@@ -374,20 +386,20 @@ export default function AccountSelectModal({ isOpen, onClose }) {
               </div>
             </div>
 
-            <div className="p-4">
+            <div className="min-h-0 flex-1 p-4">
               <DataTable
                 columns={columns}
                 data={filtered}
                 loading={loading}
                 loadingText="Loading accounts..."
                 emptyText="No accounts found matching your search."
-                selectedId={selectedAcc?.id || activeAccountId}
+                selectedId={activeAccountId}
                 getRowId={(row) => row.id}
-                onRowClick={(row) => toggleCheck(row.id)}
+                onRowClick={(row) => setChecked(new Set([row.id]))}
                 onRowDoubleClick={handleOpen}
                 mobileCardView={false}
-                wrapperClassName="rounded-[20px] border border-border"
-                tableClassName="min-w-[1580px]"
+                wrapperClassName="h-full rounded-[24px] border border-border bg-white"
+                tableClassName="min-w-[1680px]"
                 headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
                 headerCellClassName="border-b border-border px-3 py-3 text-[0.68rem] font-extrabold uppercase tracking-[0.16em] whitespace-nowrap"
                 indexHeaderClassName="w-[52px] border-b border-border px-3 py-3 text-center text-[0.68rem] font-extrabold md:sticky md:left-0 md:z-30 md:bg-surface-alt/95"
@@ -413,6 +425,17 @@ export default function AccountSelectModal({ isOpen, onClose }) {
           onSuccess={() => {
             setPendingEditedAccountId(editingAccount.id);
             setEditingAccount(null);
+            fetchAccounts(true);
+          }}
+        />
+      ) : null}
+
+      {isAddModalOpen ? (
+        <AccountModal
+          mode="add"
+          onClose={() => setIsAddModalOpen(false)}
+          onSuccess={() => {
+            setIsAddModalOpen(false);
             fetchAccounts(true);
           }}
         />
