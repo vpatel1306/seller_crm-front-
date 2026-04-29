@@ -40,7 +40,8 @@ const DateWiseReport = () => {
     <div className="min-h-screen bg-bg p-4 lg:p-8 flex flex-col gap-6 font-sans">
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white px-8 py-6 rounded-3xl shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white px-8 py-6 rounded-default shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
+
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -mr-32 -mt-32" />
 
         <div className="flex items-center gap-4 relative z-10">
@@ -64,7 +65,8 @@ const DateWiseReport = () => {
       <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 flex-1 overflow-hidden">
 
         {/* Main Table Content */}
-        <div className="lg:col-span-10 flex flex-col bg-white rounded-[2.5rem] shadow-xl shadow-primary/5 border border-gray-100/50 overflow-hidden">
+        <div className="lg:col-span-10 flex flex-col bg-white rounded-default shadow-xl shadow-primary/5 border border-gray-100/50 overflow-hidden">
+
           <div className="flex-1 overflow-auto scroll-none">
             <table className="w-full text-left text-[0.7rem] border-collapse min-w-[1200px]">
               <thead className="sticky top-0 z-20">
@@ -165,7 +167,8 @@ const DateWiseReport = () => {
 
         {/* Analytic Sidebar */}
         <aside className="lg:col-span-2 flex flex-col gap-6">
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 overflow-hidden relative group">
+          <div className="bg-white rounded-default border border-gray-100 shadow-sm p-6 overflow-hidden relative group">
+
             <div className="absolute top-0 left-0 w-1 h-full bg-green-500" />
             <h6 className="text-[0.65rem] font-black text-gray-400 uppercase tracking-widest mb-4">Top Performance</h6>
             <div className="space-y-4">
@@ -182,7 +185,8 @@ const DateWiseReport = () => {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-primary to-indigo-700 rounded-3xl shadow-xl shadow-primary/20 p-6 text-white relative overflow-hidden group">
+          <div className="bg-gradient-to-br from-primary to-indigo-700 rounded-default shadow-xl shadow-primary/20 p-6 text-white relative overflow-hidden group">
+
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-125 transition-transform duration-500" />
             <FiBox size={32} className="opacity-20 mb-4" />
             <div className="text-[0.6rem] font-black uppercase tracking-widest opacity-60">Fleet Statistics</div>
@@ -193,7 +197,8 @@ const DateWiseReport = () => {
       </div>
 
       {/* Footer Controls */}
-      <footer className="bg-white rounded-[2rem] p-4 lg:p-6 shadow-xl shadow-primary/5 border border-gray-100/50 flex flex-col sm:flex-row justify-between items-center gap-6">
+      <footer className="bg-white rounded-default p-4 lg:p-6 shadow-xl shadow-primary/5 border border-gray-100/50 flex flex-col sm:flex-row justify-between items-center gap-6">
+
 
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100">

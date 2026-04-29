@@ -423,7 +423,7 @@ export default function SkuList() {
       key: 'box_size',
       label: 'Size',
       className: 'min-w-[92px]',
-      render: (row) => <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-text">{row.box_size || 'Free Size'}</span>,
+      render: (row) => <span className="text-nowrap rounded-full bg-surface-alt px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-text">{row.box_size || 'Free Size'}</span>,
     },
     {
       key: 'orders',
@@ -519,7 +519,7 @@ export default function SkuList() {
             containerClassName={field.key === 'keyword1' ? 'xl:min-w-[304px] xl:flex-[1.5_1_0]' : 'xl:min-w-[200px] xl:flex-[1_1_0]'}
           />
         ))}
-{/* 
+        {/* 
         <Input
           label="Min Selling"
           type="number"
@@ -554,7 +554,8 @@ export default function SkuList() {
             <select
               value={skuFilter}
               onChange={(event) => setSkuFilter(event.target.value)}
-              className="w-full appearance-none rounded-[16px] border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+              className="w-full appearance-none rounded-default border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+
             >
               <option value="all">All SKUs</option>
               <option value="without-cost">Without Cost</option>
@@ -573,7 +574,8 @@ export default function SkuList() {
                 setAccountFilter(event.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full appearance-none rounded-[16px] border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+              className="w-full appearance-none rounded-default border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+
             >
               <option value="this-account">This Account</option>
               <option value="all-accounts">All Accounts</option>
@@ -614,7 +616,7 @@ export default function SkuList() {
       <div className="space-y-5 sm:space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="shrink-0">
-             <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
+            <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
               <FiArrowLeft size={16} />
               Back
             </Button>
@@ -623,7 +625,8 @@ export default function SkuList() {
             <Button
               variant="create"
               size="sm"
-              className="h-10 rounded-[14px] px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-primary/20 sm:w-auto"
+              className="h-10 rounded-default border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm"
+
               onClick={() => { resetAddSkuForm(); setShowAddSkuModal(true); }}
             >
               <FiPlus size={16} />
@@ -632,7 +635,8 @@ export default function SkuList() {
             {/* <Button
               variant="info"
               size="sm"
-              className="h-10 rounded-[14px] px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-sky-600/20"
+              className="h-10 rounded-default px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-sky-600/20"
+
             >
               <FiSettings size={16} />
               Bulk Update
@@ -640,7 +644,8 @@ export default function SkuList() {
             <Button
               variant="warning"
               size="sm"
-              className="h-10 rounded-[14px] px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-accent/20"
+              className="h-10 rounded-default px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-accent/20"
+
               onClick={exportToCSV}
             >
               <FiDownload size={16} />
@@ -649,12 +654,13 @@ export default function SkuList() {
             <Button
               variant="secondary"
               size="sm"
-              className="h-10 rounded-[14px] border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm"
+              className="h-10 rounded-default border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm"
+
             >
               <FiUpload size={16} />
               Import
             </Button> */}
-           
+
           </div>
         </div>
 
@@ -716,6 +722,7 @@ export default function SkuList() {
           <div className="min-w-0 space-y-5 xl:space-y-6">
             <Card
               title="SKU Records"
+              noHeaderBorder
               action={(
                 <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
                   <select
@@ -725,14 +732,15 @@ export default function SkuList() {
                       setPerPage(nextPerPage);
                       fetchSkuList(1, nextPerPage);
                     }}
-                    className="w-full rounded-[14px] border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary sm:w-auto"
+                    className="w-full rounded-inner border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary sm:w-auto"
+
                   >
                     {[10, 25, 50, 100].map((option) => (
                       <option key={option} value={option}>
                         {option} / page
                       </option>
                     ))}
-                    
+
                   </select>
 
                   <Button variant="secondary" size="sm" className="hidden sm:inline-flex sm:w-auto" onClick={() => fetchSkuList(currentPage, perPage)}>
@@ -753,7 +761,8 @@ export default function SkuList() {
                 selectedId={selectedRowId}
                 getRowId={(row) => row.id || row.sku_id}
                 onRowClick={handleRowClick}
-                wrapperClassName="rounded-b-[24px] pb-2"
+                wrapperClassName="rounded-b-default pb-2"
+
                 tableClassName="min-w-[1160px] xl:min-w-[1260px]"
                 headClassName="top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
                 headerCellClassName="border-b border-border px-2 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap sm:px-4 sm:py-4 sm:text-[0.68rem] sm:tracking-[0.18em]"
@@ -770,7 +779,8 @@ export default function SkuList() {
                 Results {resultStart}-{resultEnd} of {totalSKUs}
               </div>
 
-              <nav className="flex max-w-full items-center overflow-x-auto rounded-[18px] border border-border bg-white shadow-sm [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300">
+              <nav className="flex max-w-full items-center overflow-x-auto rounded-default border border-border bg-white shadow-sm [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300">
+
                 <button
                   className={`p-3 transition-colors hover:bg-surface-alt ${currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-text'}`}
                   onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
@@ -824,7 +834,8 @@ export default function SkuList() {
         <div className="space-y-5">
 
           {addSkuError ? (
-            <div className="rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+            <div className="rounded-default border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+
               {addSkuError}
             </div>
           ) : null}
@@ -882,7 +893,8 @@ export default function SkuList() {
             />
           </div>
 
-          <div className="rounded-[20px] border border-emerald-200 bg-emerald-50 px-4 py-4">
+          <div className="rounded-default border border-emerald-200 bg-emerald-50 px-4 py-4">
+
             <div className="crm-section-label !text-emerald-700">Estimated Final Cost</div>
             <div className="mt-2 text-2xl font-black text-emerald-700">
               {formatCurrency(
@@ -914,12 +926,13 @@ export default function SkuList() {
       >
         {productInfoSku ? (
           <div className="space-y-4">
-            <div className="rounded-[18px] border border-primary/15 bg-primary/5 px-4 py-4">
+            <div className="rounded-default border border-primary/15 bg-primary/5 px-4 py-4">
               <div className="crm-section-label">SKU ID</div>
               <div className="mt-2 text-base font-extrabold text-text">{productInfoSku.sku_id || '-'}</div>
             </div>
 
-            <div className="rounded-[18px] border border-border bg-white px-4 py-4">
+            <div className="rounded-default border border-border bg-white px-4 py-4">
+
               <div className="crm-section-label">Product Name</div>
               <div className="mt-3 text-sm leading-7 text-text">{productInfoSku.product_name || 'Unnamed product'}</div>
             </div>

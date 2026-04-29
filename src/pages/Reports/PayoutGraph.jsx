@@ -65,7 +65,8 @@ export default function PayoutGraph() {
     <div className="min-h-screen bg-bg p-4 lg:p-8 flex flex-col gap-6 font-sans">
 
       {/* Header Info */}
-      <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-primary/5 border border-gray-100/50 flex flex-col lg:flex-row justify-between items-center gap-6 relative overflow-hidden">
+      <div className="bg-white rounded-default p-8 shadow-xl shadow-primary/5 border border-gray-100/50 flex flex-col lg:flex-row justify-between items-center gap-6 relative overflow-hidden">
+
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
 
         <div className="flex items-center gap-4 relative z-10">
@@ -92,7 +93,8 @@ export default function PayoutGraph() {
       <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 flex-1">
 
         {/* Main Chart Card */}
-        <div className="lg:col-span-9 bg-white rounded-[3rem] p-10 shadow-2xl shadow-primary/10 border border-gray-100/50 flex flex-col relative overflow-hidden">
+        <div className="lg:col-span-9 bg-white rounded-default p-10 shadow-2xl shadow-primary/10 border border-gray-100/50 flex flex-col relative overflow-hidden">
+
           <div className="absolute top-10 right-10 flex gap-2">
             {BARS.map((bar) => (
               <button
@@ -156,7 +158,8 @@ export default function PayoutGraph() {
 
         {/* Side Info */}
         <div className="lg:col-span-3 flex flex-col gap-6">
-          <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[2.5rem] p-8 text-white shadow-xl shadow-indigo-500/20 relative group overflow-hidden">
+          <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-default p-8 text-white shadow-xl shadow-indigo-500/20 relative group overflow-hidden">
+
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700" />
             <div className="relative z-10">
               <FiTrendingUp size={32} className="opacity-40 mb-6" />
@@ -169,7 +172,8 @@ export default function PayoutGraph() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm flex-1 flex flex-col">
+          <div className="bg-white rounded-default border border-gray-100 p-8 shadow-sm flex-1 flex flex-col">
+
             <h4 className="text-[0.65rem] font-black text-gray-400 uppercase tracking-widest mb-6">Valuation Hints</h4>
             <div className="space-y-6 flex-1">
               <div className="flex gap-4">

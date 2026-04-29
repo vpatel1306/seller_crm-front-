@@ -1,33 +1,42 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #0f766e;
-  --color-primary-hover: #115e59;
-  --color-accent: #d97706;
-  --color-bg: #f3f1eb;
-  --color-surface: #fffdf8;
-  --color-surface-alt: #f7f4ee;
-  --color-text: #172033;
-  --color-text-muted: #667085;
-  --color-border: #ded7cb;
-  --color-error: #dc2626;
-  --color-success: #15803d;
-  --color-warning: #b45309;
-  --color-dark: #0f172a;
+  --color-primary: #0d9488;
+  --color-primary-hover: #0f766e;
+  --color-secondary: #64748b;
+  --color-accent: #f59e0b;
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f1f5f9;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-error: #ef4444;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-dark: #1e293b;
 
-  --radius-default: 20px;
-  --radius-inner: 14px;
+  --radius-default: 8px;
+  --radius-inner: 6px;
   --radius-pill: 999px;
 
-  --shadow-card: 0 18px 48px rgba(23, 32, 51, 0.08);
-  --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.06);
+  /* Override Tailwind v4 radius scale to match user request */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+  --radius-2xl: 8px;
+  --radius-3xl: 8px;
 
-  --font-sans: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
 
-  --animate-fade-in: fade-in 0.24s ease;
-  --animate-slide-up: slide-up 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-  --animate-am-fade-in: am-fade-in 0.18s ease;
-  --animate-am-slide-up: am-slide-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 10px -2px rgba(15, 23, 42, 0.04);
+  --shadow-soft: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+
+  --font-sans: "Nunito", "Avenir Next", "Segoe UI", sans-serif;
+
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-slide-up: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fade-in {
@@ -42,54 +51,25 @@
 
 @keyframes slide-up {
   from {
-    transform: translateY(24px);
+    transform: translateY(10px);
     opacity: 0;
   }
 
   to {
     transform: translateY(0);
     opacity: 1;
-  }
-}
-
-@keyframes am-fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes am-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
 @layer base {
   * {
+    @apply border-border;
     box-sizing: border-box;
-  }
-
-  html {
-    scroll-behavior: smooth;
   }
 
   body {
     @apply min-h-screen bg-bg font-sans text-text antialiased;
     margin: 0;
-    background-image:
-      radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 30%),
-      radial-gradient(circle at top right, rgba(217, 119, 6, 0.08), transparent 26%),
-      linear-gradient(180deg, #fcfbf8 0%, #f3f1eb 100%);
   }
 
   button,
@@ -98,39 +78,30 @@
   textarea {
     font: inherit;
   }
-
-  a {
-    @apply text-primary transition-colors hover:text-primary-hover;
-  }
 }
 
 @layer components {
   .crm-panel {
-    @apply rounded-[24px] border border-border/80 bg-surface shadow-[0_18px_48px_rgba(23,32,51,0.08)];
+    @apply rounded-default border border-border bg-surface shadow-soft transition-all;
   }
 
-  .crm-panel-muted {
-    @apply rounded-[20px] border border-border/70 bg-surface-alt shadow-[0_10px_30px_rgba(15,23,42,0.06)];
+  .crm-panel-hover {
+    @apply hover:shadow-card hover:border-slate-300;
   }
 
-  .crm-pill {
-    @apply inline-flex items-center gap-2 rounded-full border border-border/80 bg-white/80 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-text-muted backdrop-blur;
+  .crm-input {
+    @apply w-full rounded-inner border border-border bg-white px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 disabled:bg-slate-50 disabled:text-slate-400;
   }
 
-  .crm-section-label {
-    @apply text-[0.68rem] font-extrabold uppercase tracking-[0.28em] text-text-muted/80;
+  .crm-label {
+    @apply mb-1.5 block text-xs font-bold uppercase tracking-wider text-text-muted;
   }
 
-  .crm-kpi-card {
-    @apply relative overflow-hidden rounded-[24px] border border-border/80 bg-surface p-5 shadow-[0_18px_48px_rgba(23,32,51,0.08)];
+  .crm-table-container {
+    @apply overflow-hidden rounded-default border border-border bg-white shadow-soft;
   }
 
-  .crm-kpi-card::before {
-    content: "";
-    position: absolute;
-    inset: 0 auto auto 0;
-    height: 4px;
-    width: 100%;
-    background: linear-gradient(90deg, rgba(15, 118, 110, 0.95), rgba(13, 148, 136, 0.2));
+  .crm-card-grid {
+    @apply grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
   }
 }

@@ -10,6 +10,8 @@ import BusinessGrowthChart from '../pages/Reports/BusinessGrowthChart';
 import PayoutGraph from '../pages/Reports/PayoutGraph';
 import ReturnEntryAccountWise from '../components/layout/ReturnEntryAccountWise';
 import PickUpEntry from '../components/layout/PickUpEntry';
+import DailyImport from '../pages/DailyImport';
+import AccountPage from '../pages/Account';
 import AllOrders from '../pages/Orders/AllOrders';
 import BankCreditStatement from '../pages/Orders/BankCreditStatement';
 import CancelledOrders from '../pages/Orders/CancelledOrders';
@@ -42,6 +44,8 @@ export default function AppRoutes() {
       <Route path="/payout-graph" element={<ProtectedRoute><PayoutGraph /></ProtectedRoute>} />
       <Route path="/return-entry-account-wise" element={<ProtectedRoute><ReturnEntryAccountWise /></ProtectedRoute>} />
       <Route path="/pick-up-entry" element={<ProtectedRoute><PickUpEntry /></ProtectedRoute>} />
+      <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
+      <Route path="/daily-import" element={<ProtectedRoute><DailyImport /></ProtectedRoute>} />
       <Route path="/all-orders" element={<ProtectedRoute><AllOrders /></ProtectedRoute>} />
       <Route path="/bank-credit-statement" element={<ProtectedRoute><BankCreditStatement /></ProtectedRoute>} />
       <Route path="/cancel-pickup" element={<ProtectedRoute><CancelPickup /></ProtectedRoute>} />
@@ -58,7 +62,7 @@ export default function AppRoutes() {
       <Route path="/return-in-transit" element={<ProtectedRoute><ReturnInTransit /></ProtectedRoute>} />
       <Route path="/unsettled-pickup" element={<ProtectedRoute><UnsettledPickup /></ProtectedRoute>} />
       <Route path="/ready-to-ship" element={<ProtectedRoute><ReadyToShip /></ProtectedRoute>} />
-      <Route path="/shipped" element={<ProtectedRoute><Shipped /></ProtectedRoute>} />  
+      <Route path="/shipped" element={<ProtectedRoute><Shipped /></ProtectedRoute>} />
       <Route path="/approve-claim" element={<ProtectedRoute><ApproveClaim /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -269,33 +269,36 @@ export default function BankCreditStatement() {
 
         <div className="grid gap-4 xl:grid-cols-2 h-auto">
           <div className="flex flex-col gap-3 flex-1 ">
-            <Card title="Month Wise Bank Credit" subtitle={`${monthWise.length} months available`} contentClassName="p-0">
+            <Card title="Month Wise Bank Credit" subtitle={`${monthWise.length} months available`} contentClassName="p-0" noHeaderBorder>
               <CreditTable rows={monthWise} dateField="month_year" loading={loading} />
             </Card>
 
-            <Card title="Day Wise Bank Credit" subtitle={`${dayWise.length} days available`} contentClassName="p-0">
+            <Card title="Day Wise Bank Credit" subtitle={`${dayWise.length} days available`} contentClassName="p-0" noHeaderBorder>
               <CreditTable rows={dayWise} dateField="date" loading={loading} />
             </Card>
           </div>
-           <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3">
             <Card title="Types Of Settlements" subtitle="Settlement breakdown by type">
               {loading ? (
                 <div className="flex h-16 items-center justify-center text-sm text-text-muted">Loading...</div>
               ) : settlementTypeEntries.length === 0 ? (
                 <div className="py-6 text-center text-sm text-text-muted">No settlement type data.</div>
               ) : (
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                   {settlementTypeEntries.map((item) => (
-                    <div key={item.title} className={`rounded-[18px] border ${item.colors.border} ${item.colors.bg} p-4`}>
-                      <div className={`text-xs font-extrabold uppercase tracking-[0.16em] ${item.colors.text}`}>{item.title}</div>
-                      <div className="mt-3 flex items-end justify-between">
-                        <div>
-                          <div className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-text-muted">Amount</div>
-                          <div className={`text-xl font-black ${Number(item.amount) < 0 ? 'text-rose-600' : item.colors.text}`}>{item.amount}</div>
+                    <div key={item.title} className={`rounded-[20px] border ${item.colors.border} ${item.colors.bg} p-4 shadow-sm transition-all hover:shadow-md`}>
+                      <div className={`text-[0.6rem] font-black uppercase tracking-[0.2em] ${item.colors.text} opacity-80`}>{item.title}</div>
+
+                      <div className="mt-4 space-y-3">
+                        <div className="flex flex-col">
+                          <div className="text-[0.55rem] font-extrabold uppercase tracking-widest text-slate-400">Total Amount</div>
+                          <div className={`mt-1 text-[1.1rem] font-black tracking-tight leading-tight break-words ${Number(item.amount) < 0 ? 'text-rose-600' : 'text-slate-900'}`}>
+                            {item.amount}
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-text-muted">Count</div>
-                          <div className={`text-2xl font-black ${item.colors.text}`}>{item.count}</div>
+                        <div className="flex items-center justify-between border-t border-slate-200/50 pt-2.5">
+                          <div className="text-[0.55rem] font-extrabold uppercase tracking-widest text-slate-400">Count</div>
+                          <div className={`text-[1.3rem] font-black leading-none tracking-tighter opacity-90 ${item.colors.text}`}>{item.count}</div>
                         </div>
                       </div>
                     </div>
@@ -308,6 +311,7 @@ export default function BankCreditStatement() {
               title="Received Settlements"
               subtitle={`${filteredSettlements.length} settlement entries found`}
               contentClassName="p-0"
+              noHeaderBorder
               action={(
                 <div className="flex items-center gap-3">
                   <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}

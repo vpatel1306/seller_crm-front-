@@ -23,13 +23,30 @@ export default function Dashboard() {
   return (
     <AppShell mainClassName="pt-4 lg:pt-5">
       <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-        <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)] xl:items-start 2xl:gap-6 2xl:grid-cols-[360px_minmax(0,1fr)]">
-          <div className="min-w-0 self-start space-y-4">
-            <Sidebar accountDetails={accountDetails}/>
-            <DashboardMetricsRow metrics={metrics} />
+        <div className="space-y-8 max-w-[1700px] mx-auto">
+          {/* TOP CONTROL & EXECUTIVE BAR */}
+          <div className="grid gap-6 lg:grid-cols-[400px_1fr] items-start">
+            <div className="space-y-6">
+              <Sidebar accountDetails={accountDetails} />
+            </div>
+
+            <div className="min-w-0">
+              <DashboardCards
+                viewMode="executive"
+                onMetricsReady={setMetrics}
+                onAccountDetail={setAccountDetails}
+              />
+              <DashboardMetricsRow metrics={metrics} />
+            </div>
           </div>
-          <div className="min-w-0">
-            <DashboardCards  onMetricsReady={setMetrics} onAccountDetail={setAccountDetails} />
+
+          {/* MAIN FULL-WIDTH OPERATIONAL REPOSITORY */}
+          <div className="w-full">
+            <DashboardCards
+              viewMode="operational"
+              onMetricsReady={setMetrics}
+              onAccountDetail={setAccountDetails}
+            />
           </div>
         </div>
       </motion.div>

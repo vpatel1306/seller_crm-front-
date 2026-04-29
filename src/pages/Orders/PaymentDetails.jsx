@@ -159,6 +159,7 @@ export default function PaymentDetails() {
           title="Payment Transactions"
           subtitle="Detailed payment ledger for the selected platform order."
           contentClassName="p-0"
+          noHeaderBorder
         >
           <DataTable
             mobileCardView={false}

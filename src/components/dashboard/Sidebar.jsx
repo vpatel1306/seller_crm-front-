@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { FiRefreshCw, FiEdit2, FiPlus } from 'react-icons/fi';
+import { FiRefreshCw, FiEdit2, FiPlus, FiTrendingUp } from 'react-icons/fi';
+
 import { FaChartBar, FaClipboardList, FaCog } from 'react-icons/fa';
 import { FaMoneyBillTrendUp } from 'react-icons/fa6';
 import api from '../../services/api';
@@ -11,8 +12,19 @@ import SearchButton from '../layout/SearchButton';
 import { useAuth } from '../../context/AuthContext';
 import DateSectionModal from '../layout/DateSectionModal';
 import ReturnModal from '../layout/ReturnModal';
-import ImportDataModal from '../layout/ImportDataModal';
 import Button from '../ui/Button';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  RadialBarChart,
+  RadialBar,
+} from 'recharts';
+
 
 const fmtDate = (d) => {
   if (!d) return null;
@@ -32,7 +44,6 @@ export default function Sidebar({ accountDetails = null }) {
   const [showAccountSelectModal, setShowAccountSelectModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
   const [showDateModal, setShowDateModal] = useState(false);
   const navigate = useNavigate();
   const activeAccountRef = useRef(activeAccount);
@@ -72,14 +83,12 @@ export default function Sidebar({ accountDetails = null }) {
       setShowAccountSelectModal(false);
       setShowReportModal(false);
       setShowReturnModal(false);
-      setShowImportModal(false);
       setShowDateModal(false);
     } else if (requiresAccountSelection) {
       setShowAccountSelectModal(true);
       setModal(null);
       setShowReportModal(false);
       setShowReturnModal(false);
-      setShowImportModal(false);
       setShowDateModal(false);
     }
   }, [requiresAccountSetup, requiresAccountSelection]);
@@ -131,11 +140,16 @@ export default function Sidebar({ accountDetails = null }) {
                   <div className="text-[0.7rem] font-semibold uppercase tracking-wider text-gray-500">GST: {fmt(currentAccount.gst_no || 'N/A')}</div>
                   {requiresAccountSetup ? <div className="text-[0.7rem] font-bold uppercase tracking-wider text-amber-600">Create your first account to continue</div> : null}
                 </div>
-                <div className="flex flex-shrink-0 flex-col items-end gap-2">
+                <div className="flex flex-shrink-0 flex-row items-center gap-2">
                   {canEditAccount ? (
-                    <Button variant="edit" size="sm" onClick={() => setModal('edit')}>
-                      <FiEdit2 size={12} /> Edit
-                    </Button>
+                    <>
+                      <Button variant="secondary" size="sm" onClick={() => navigate('/account')}>
+                        <FiRefreshCw size={12} /> Change Account
+                      </Button>
+                      <Button variant="edit" size="sm" onClick={() => setModal('edit')}>
+                        <FiEdit2 size={12} />
+                      </Button>
+                    </>
                   ) : null}
                 </div>
               </div>
@@ -158,39 +172,98 @@ export default function Sidebar({ accountDetails = null }) {
                 </Button>
               </div>
 
-              <div className="space-y-3.5 rounded-xl border border-gray-100 bg-gray-50/50 p-4 shadow-inner">
-                <span className="block border-b border-gray-100 pb-2 text-sm font-bold uppercase tracking-widest text-gray-900">Account Status</span>
-                <div className="space-y-3">
-                  <div className="flex items-end justify-between">
-                    <h5 className="text-sm font-bold text-green-600">Sales Profits</h5>
-                    <h5 className="text-lg font-extrabold leading-none text-green-700">{fmtAmt(salesProfit)}</h5>
+                <div className="space-y-3.5 rounded-xl border border-gray-100 bg-gray-50/50 p-4 shadow-inner">
+                  <span className="block border-b border-gray-100 pb-2 text-sm font-bold uppercase tracking-widest text-gray-900">Account Analysis</span>
+                  
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="text-[0.6rem] font-black text-slate-400 uppercase tracking-widest">Net Profit Margin</div>
+                      <div className="mt-1 text-2xl font-black text-emerald-600">{netProfitPct}%</div>
+                    </div>
+                    <div className="h-16 w-16">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadialBarChart 
+                          innerRadius="60%" 
+                          outerRadius="100%" 
+                          data={[{ name: 'Profit', value: netProfitPct, fill: '#10b981' }]} 
+                          startAngle={90} 
+                          endAngle={90 + (3.6 * netProfitPct)}
+                        >
+                          <RadialBar background dataKey="value" cornerRadius={10} />
+                        </RadialBarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between text-[11px] font-bold">
-                    <span className="text-gray-500">Advertisement</span>
-                    <span className="text-red-500">{fmtAmt(advertisement)}</span>
+
+                  <div className="h-px bg-gray-200/50" />
+
+                  <div>
+                    <div className="mb-3 text-[0.6rem] font-black text-slate-400 uppercase tracking-widest">Loss Breakdown</div>
+                    <div className="h-[180px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          layout="vertical"
+                          data={lossRows.filter(r => (Number(r.v) || 0) > 0)}
+                          margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
+                        >
+                          <XAxis type="number" hide />
+                          <YAxis 
+                            dataKey="l" 
+                            type="category" 
+                            hide
+                          />
+                          <Tooltip 
+                            cursor={{ fill: 'rgba(15, 23, 42, 0.05)' }}
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length) {
+                                return (
+                                  <div className="rounded-xl bg-slate-900/95 backdrop-blur-md px-4 py-3 text-[0.65rem] font-bold text-white shadow-2xl border border-white/10 animate-in fade-in zoom-in duration-200">
+                                    <div className="mb-2 opacity-50 uppercase tracking-[0.2em]">{payload[0].payload.l}</div>
+                                    <div className="text-base font-black text-white">₹{fmtAmt(payload[0].value)}</div>
+                                    <div className="mt-2 flex items-center gap-2">
+                                      <div className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                      <span className="text-[0.6rem] opacity-70 tracking-widest uppercase">{payload[0].payload.c} Total Issues</span>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+
+                          <Bar dataKey="v" radius={[0, 4, 4, 0]} barSize={12}>
+                            {lossRows.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={index === 0 ? '#f43f5e' : '#fb7185'} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-2 space-y-1.5">
+                      {lossRows.slice(0, 3).map((row, idx) => (
+                        <div key={row.l} className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400">
+                          <div className="flex items-center gap-1.5 overflow-hidden">
+                            <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${idx === 0 ? 'bg-rose-500' : 'bg-rose-300'}`} />
+                            <span className="truncate">{row.l}</span>
+                          </div>
+                          <span className="shrink-0 text-rose-500">₹{fmtAmt(row.v)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-gray-200/50" />
+                  
+                  <div className="flex items-center justify-between rounded-lg border border-green-100 bg-green-50 p-2.5">
+                    <div>
+                      <h5 className="text-[0.6rem] font-black uppercase tracking-wider text-green-700">Net Profits</h5>
+                      <h5 className="mt-0.5 text-lg font-black leading-none text-green-800">₹{fmtAmt(netProfit)}</h5>
+                    </div>
+                    <div className="h-8 w-8 rounded-full bg-green-200/50 flex items-center justify-center">
+                      <FiTrendingUp className="text-green-700" size={16} />
+                    </div>
                   </div>
                 </div>
-                <div className="h-px bg-gray-200/50" />
-                <div className="space-y-3">
-                  <div className="flex items-end justify-between">
-                    <h5 className="text-sm font-bold text-green-600">Gross Profits</h5>
-                    <h5 className="text-lg font-extrabold leading-none text-green-700">{fmtAmt(grossProfit)}</h5>
-                  </div>
-                  <div className="space-y-3.5 pt-2">
-                    {lossRows.map((row) => (
-                      <div key={row.l} className="flex justify-between text-[11px] font-bold uppercase text-gray-400">
-                        <span>{row.l} <span className="text-gray-300">({row.c})</span></span>
-                        <span className="text-red-400">{fmtAmt(row.v)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="h-px bg-gray-200/50" />
-                <div className="flex items-center justify-between rounded-lg border border-green-100 bg-green-50 p-2">
-                  <h5 className="text-sm font-bold text-green-700">Net Profits ({netProfitPct}%)</h5>
-                  <h5 className="text-lg font-extrabold text-green-800">{fmtAmt(netProfit)}</h5>
-                </div>
-              </div>
 
               <div className="pt-2">
                 <Button
@@ -206,7 +279,7 @@ export default function Sidebar({ accountDetails = null }) {
 
               <div className="space-y-3 pt-4">
                 <div className="flex flex-wrap items-center justify-between gap-1">
-                  <SearchButton onSearch={() => {}} onClear={() => {}} />
+                  <SearchButton onSearch={() => { }} onClear={() => { }} />
                   <div className={`rounded-lg border border-gray-100 p-2 shadow-sm transition-colors ${requiresAccountSetup ? 'opacity-40' : 'hover:bg-gray-50'}`}><FaMoneyBillTrendUp size={20} className="text-green-600" /></div>
                   <div className={`rounded-lg border border-gray-100 p-2 shadow-sm transition-colors ${requiresAccountSetup ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-gray-50'}`} onClick={() => !requiresAccountSetup && navigate('/business-growth-chart')}><FaChartBar size={20} className="text-gray-600" /></div>
                   <div className={`rounded-lg border border-gray-100 p-2 shadow-sm transition-colors ${requiresAccountSetup ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-gray-50'}`} onClick={() => !requiresAccountSetup && setShowReportModal(true)}><FaClipboardList size={20} className="text-gray-600" /></div>
@@ -221,7 +294,7 @@ export default function Sidebar({ accountDetails = null }) {
                     <Button variant="warning" size="sm" onClick={() => setShowReturnModal(true)} disabled={requiresAccountSetup}>RETURN ENTRY</Button>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="warning" size="sm" className="flex-1" onClick={() => setShowImportModal(true)} disabled={requiresAccountSetup}>DAILY IMPORT FLOW</Button>
+                    <Button variant="warning" size="sm" className="flex-1" onClick={() => navigate('/daily-import')} disabled={requiresAccountSetup}>DAILY IMPORT FLOW</Button>
                     <Button variant="cancel" size="sm">...</Button>
                   </div>
                 </div>
@@ -243,15 +316,14 @@ export default function Sidebar({ accountDetails = null }) {
       {showReportModal ? <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} /> : null}
       {showReturnModal ? <ReturnModal isOpen={showReturnModal} onClose={() => setShowReturnModal(false)} /> : null}
       {showDateModal ? <DateSectionModal isOpen={showDateModal} onClose={() => setShowDateModal(false)} onDateSelect={() => setShowDateModal(false)} /> : null}
-      <ImportDataModal isOpen={showImportModal} onClose={() => setShowImportModal(false)} />
       {showAccountSelectModal ? (
-        <AccountSelectModal 
-          isOpen={showAccountSelectModal} 
+        <AccountSelectModal
+          isOpen={showAccountSelectModal}
           onClose={() => {
             if (!requiresAccountSelection) {
               setShowAccountSelectModal(false);
             }
-          }} 
+          }}
         />
       ) : null}
     </>

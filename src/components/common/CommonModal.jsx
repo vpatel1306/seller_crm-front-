@@ -4,20 +4,20 @@ import { FiX } from 'react-icons/fi';
 import Button from '../ui/Button';
 
 const sizeClasses = {
-  sm: 'max-w-[440px]',
-  md: 'max-w-[560px]',
-  lg: 'max-w-[860px]',
-  xl: 'max-w-[1180px]',
-  full: 'h-[90vh] max-w-[1400px]',
+  sm: 'max-w-[480px]',
+  md: 'max-w-[640px]',
+  lg: 'max-w-[900px]',
+  xl: 'max-w-[1240px]',
+  full: 'h-[92vh] max-w-[1540px]',
 };
 
 const headerStyleClasses = {
-  default: 'border-b border-border bg-surface text-text',
-  gradient: 'bg-gradient-to-r from-primary to-teal-600 text-white',
-  danger: 'bg-gradient-to-r from-red-600 to-red-700 text-white',
-  success: 'bg-gradient-to-r from-emerald-600 to-green-700 text-white',
-  warning: 'bg-gradient-to-r from-amber-500 to-orange-600 text-white',
-  dark: 'bg-gradient-to-r from-slate-900 to-slate-800 text-white',
+  default: 'border-b border-slate-100 bg-white text-slate-900',
+  gradient: 'bg-primary text-white',
+  danger: 'bg-error text-white',
+  success: 'bg-success text-white',
+  warning: 'bg-warning text-white',
+  dark: 'bg-dark text-white',
 };
 
 export default function CommonModal({
@@ -34,8 +34,8 @@ export default function CommonModal({
   showHeader = true,
   showFooter = true,
   customClass = '',
-  onOpen = () => {},
-  onAfterClose = () => {},
+  onOpen = () => { },
+  onAfterClose = () => { },
 }) {
   useEffect(() => {
     if (!isOpen) {
@@ -65,36 +65,34 @@ export default function CommonModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[1150] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[1150] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fade-in"
       onClick={(event) => {
         if (closeOnOverlayClick && event.target === event.currentTarget) {
           onClose();
         }
       }}
     >
-      <div className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-[10px] border border-white/40 bg-surface shadow-[0_30px_80px_rgba(15,23,42,0.28)] animate-slide-up ${sizeClasses[size]} ${customClass}`}>
+      <div className={`flex max-h-[92vh] w-full flex-col overflow-hidden rounded-default bg-surface shadow-card animate-slide-up ${sizeClasses[size]} ${customClass}`}>
         {showHeader ? (
-          <div className={`flex items-center justify-between gap-4 px-6 py-4 ${headerStyleClasses[headerStyle]}`}>
-            <h3 className="text-lg font-extrabold tracking-tight">{title}</h3>
+          <div className={`flex items-center justify-between gap-4 px-6 py-5 ${headerStyleClasses[headerStyle]}`}>
+            <h3 className="text-xl font-bold tracking-tight">{title}</h3>
             {showCloseButton ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="border border-black/5 bg-white/10 text-current hover:bg-black/10"
+              <button
+                className="group flex h-10 w-10 items-center justify-center rounded-inner transition-colors hover:bg-black/5"
                 onClick={onClose}
               >
-                <FiX size={18} />
-              </Button>
+                <FiX size={20} className="opacity-60 group-hover:opacity-100" />
+              </button>
             ) : null}
           </div>
         ) : null}
 
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-track]:bg-transparent">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200">
           {children}
         </div>
 
         {showFooter ? (
-          <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border/80 bg-surface-alt px-5 py-4 sm:px-6">
+          <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/50 px-6 py-5">
             {footerButtons.length > 0 ? (
               footerButtons.map((button, index) => {
                 const handleClick = () => {
