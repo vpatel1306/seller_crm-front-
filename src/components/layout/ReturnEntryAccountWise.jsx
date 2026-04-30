@@ -146,7 +146,7 @@ export default function ReturnEntryAccountWise() {
                 emptyText="Waiting for scans..."
                 mobileCardView={false}
                 showIndex
-                wrapperClassName="rounded-b-[24px]"
+                wrapperClassName="rounded-b-default"
                 tableClassName="min-w-[700px]"
                 headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
                 headerCellClassName="px-3 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap border-b border-border"
@@ -284,7 +284,7 @@ export default function ReturnEntryAccountWise() {
             selectedId={selectedOrder?.platform_order_id || selectedOrder?.order_id}
             getRowId={(row) => row.platform_order_id || row.order_id}
             onRowClick={handleRowSelect}
-            wrapperClassName="rounded-b-[24px]"
+            wrapperClassName="rounded-b-default"
             tableClassName="min-w-[1000px]"
             headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
             headerCellClassName="px-3 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap border-b border-border"

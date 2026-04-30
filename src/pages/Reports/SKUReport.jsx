@@ -253,7 +253,7 @@ export default function SKUReport() {
         <OrdersPageHeader
           breadcrumbs={[
             { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-            { label: 'Reports'},
+            { label: 'Reports' },
             { label: 'SKU Report', current: true },
           ]}
           actions={(
@@ -264,7 +264,7 @@ export default function SKUReport() {
             </>
           )}
         />
-  
+
 
         <OrdersFilterSection
           title="Filters"
@@ -337,7 +337,7 @@ export default function SKUReport() {
           />
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border px-4 py-3">
+            <div className="flex items-center justify-between px-4 py-3">
               <span className="text-sm font-bold text-text-muted">
                 {total === 0 ? 0 : ((currentPage - 1) * perPage) + 1}-{Math.min(currentPage * perPage, total)} of {total}
               </span>

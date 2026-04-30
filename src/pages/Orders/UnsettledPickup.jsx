@@ -104,7 +104,7 @@ const COLUMNS = [
 ];
 
 const summaryTableProps = {
-  containerClassName: 'overflow-hidden rounded-[22px] border border-border bg-white shadow-sm',
+  containerClassName: 'overflow-hidden rounded-default border border-border bg-white shadow-sm',
   titleClassName: 'bg-surface-alt px-4 py-3 text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-text',
   headRowClassName: 'bg-white text-text-muted',
   headerCellClassName: 'border-b border-border px-4 py-3 text-left text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap',

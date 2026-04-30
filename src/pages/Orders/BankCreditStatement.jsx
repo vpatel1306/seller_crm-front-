@@ -187,19 +187,19 @@ export default function BankCreditStatement() {
         <div className="relative">
           <FiSearch size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search settlements"
-            className="w-full rounded-[16px] border border-border bg-white py-3 pl-11 pr-11 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10" />
+            className="w-full rounded-default border border-border bg-white py-3 pl-11 pr-11 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10" />
           {search ? <button type="button" onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text"><FiX size={14} /></button> : null}
         </div>
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">From Date</label>
         <input type="date" value={dateDraft.from} onChange={(e) => setDateDraft((prev) => ({ ...prev, from: e.target.value }))}
-          className="h-[50px] rounded-[16px] border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+          className="h-[50px] rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">To Date</label>
         <input type="date" value={dateDraft.to} onChange={(e) => setDateDraft((prev) => ({ ...prev, to: e.target.value }))}
-          className="h-[50px] rounded-[16px] border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+          className="h-[50px] rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
       </div>
       <Button
         variant="primary"
@@ -286,7 +286,7 @@ export default function BankCreditStatement() {
               ) : (
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                   {settlementTypeEntries.map((item) => (
-                    <div key={item.title} className={`rounded-[20px] border ${item.colors.border} ${item.colors.bg} p-4 shadow-sm transition-all hover:shadow-md`}>
+                    <div key={item.title} className={`rounded-default border ${item.colors.border} ${item.colors.bg} p-4 shadow-sm transition-all hover:shadow-md`}>
                       <div className={`text-[0.6rem] font-black uppercase tracking-[0.2em] ${item.colors.text} opacity-80`}>{item.title}</div>
 
                       <div className="mt-4 space-y-3">
@@ -315,7 +315,7 @@ export default function BankCreditStatement() {
               action={(
                 <div className="flex items-center gap-3">
                   <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                    className="rounded-[14px] border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary">
+                    className="rounded-inner border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary">
                     {PER_PAGE_OPTIONS.map((o) => <option key={o} value={o}>{o} / page</option>)}
                   </select>
                   <Button variant="secondary" size="sm" onClick={fetchData}><FiRefreshCw size={14} /></Button>
@@ -332,7 +332,7 @@ export default function BankCreditStatement() {
                 showIndex
                 selectedId={selectedId}
                 onRowClick={(row) => setSelectedId((prev) => (prev === row.id ? null : row.id))}
-                wrapperClassName="rounded-b-[24px]"
+                wrapperClassName="rounded-b-default"
                 tableClassName="min-w-[860px]"
                 headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
                 headerCellClassName="px-4 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap border-b border-border"
@@ -343,11 +343,11 @@ export default function BankCreditStatement() {
               />
 
               {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-border px-4 py-3">
+                <div className="flex items-center justify-between px-4 py-3">
                   <span className="text-sm font-bold text-text-muted">
                     {((currentPage - 1) * perPage) + 1}–{Math.min(currentPage * perPage, filteredSettlements.length)} of {filteredSettlements.length}
                   </span>
-                  <nav className="flex items-center overflow-x-auto rounded-[18px] border border-border bg-white shadow-sm">
+                  <nav className="flex items-center overflow-x-auto rounded-default border border-border bg-white shadow-sm">
                     <button className={`p-3 transition-colors hover:bg-surface-alt ${currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-text'}`}
                       onClick={() => currentPage > 1 && setCurrentPage((p) => p - 1)} disabled={currentPage === 1}>
                       <FiChevronLeft size={16} />

@@ -53,7 +53,7 @@ function formatDate(value) {
 
 function DetailMetric({ label, value, tone = 'text-text' }) {
   return (
-    <div className="rounded-[20px] border border-border bg-white px-4 py-4 shadow-sm">
+    <div className="rounded-default border border-border bg-white px-4 py-4 shadow-sm">
       <div className="text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-text-muted">{label}</div>
       <div className={`mt-2 text-xl font-extrabold ${tone}`}>{value}</div>
     </div>
@@ -169,7 +169,7 @@ export default function PaymentDetails() {
             loadingText="Loading payment details..."
             emptyText="No payment records found."
             showIndex={false}
-            wrapperClassName="rounded-b-[24px] pb-2"
+            wrapperClassName="rounded-b-default pb-2"
             tableClassName="min-w-[780px]"
             headClassName="top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
             headerCellClassName="border-b border-border px-4 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap"

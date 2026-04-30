@@ -133,7 +133,7 @@ function mapReceivedPaymentResponse(payload, { page, limit }) {
 
 function MetricCard({ label, value, tone = 'text-text' }) {
   return (
-    <div className="rounded-[20px] border border-border bg-white px-4 py-4 shadow-sm">
+    <div className="rounded-default border border-border bg-white px-4 py-4 shadow-sm">
       <div className="text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-text-muted">{label}</div>
       <div className={`mt-2 text-2xl font-extrabold ${tone}`}>{value}</div>
     </div>
@@ -265,7 +265,7 @@ export default function PendingPaymentOrders() {
             <select
               value={filters.order_filter}
               onChange={(event) => setFilters((prev) => ({ ...prev, order_filter: event.target.value }))}
-              className="h-[45px] w-full appearance-none rounded-[15px] border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
+              className="h-[45px] w-full appearance-none rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
             >
               <option value="All">All</option>
               <option value="Profit">Profit</option>
