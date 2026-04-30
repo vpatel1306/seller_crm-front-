@@ -239,7 +239,6 @@ export default function BankCreditStatement() {
           actions={(
             <>
               <Button variant="secondary" size="sm" onClick={fetchData}><FiRefreshCw size={14} />Refresh</Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}><FiX size={14} />Cancel</Button>
             </>
           )}
         />

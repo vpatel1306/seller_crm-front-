@@ -133,9 +133,6 @@ export default function PickUpEntry() {
                 <FiUploadCloud size={14} />
                 {isUploading ? 'Uploading...' : 'Upload Label'}
               </Button>
-              <Button variant="secondary" size="sm" onClick={() => navigate('/dashboard')}>
-                Cancel
-              </Button>
             </div>
           }
         />

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     FiEdit2,
     FiMonitor,
@@ -9,6 +10,7 @@ import {
     FiX,
     FiCheckCircle
 } from 'react-icons/fi';
+import OrdersPageHeader from '../orders/OrdersPageHeader';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import DataTable from '../ui/DataTable';
@@ -285,25 +287,28 @@ export default function AccountList({ isStandalone = false }) {
         },
     ];
 
+    const navigate = useNavigate();
+
     return (
         <div className={`flex flex-col h-full ${isStandalone ? 'p-2' : ''}`}>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
-                <div>
-                    <h1 className="text-xl font-black text-slate-900 tracking-tight">Marketplace Accounts</h1>
-                    <p className="text-xs font-semibold text-slate-500 mt-0.5">Manage credentials and sync status for {accounts.length} linked accounts</p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <Button variant="refresh" size='sm' onClick={fetchAccounts} isLoading={loading}>
-                        <FiRefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-                        <span className="ml-1">Sync List</span>
-                    </Button>
-                    <Button variant="create" size='sm' onClick={() => setIsAddModalOpen(true)}>
-                        <FiPlus size={16} />
-                        <span className="ml-1">New Account</span>
-                    </Button>
-                </div>
-            </div>
+            <OrdersPageHeader 
+                breadcrumbs={[
+                    { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+                    { label: 'Accounts Identity Master', current: true }
+                ]}
+                actions={
+                    <>
+                        <Button variant="refresh" size='sm' onClick={fetchAccounts} isLoading={loading}>
+                            <FiRefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                            <span className="ml-1">Sync List</span>
+                        </Button>
+                        <Button variant="create" size='sm' onClick={() => setIsAddModalOpen(true)}>
+                            <FiPlus size={16} />
+                            <span className="ml-1">New Account</span>
+                        </Button>
+                    </>
+                }
+            />
 
             <div className="flex-1 flex flex-col min-h-0 bg-white rounded-default border border-slate-200 overflow-hidden shadow-soft">
                 <div className="p-4 border-b border-slate-100 bg-slate-50/30">

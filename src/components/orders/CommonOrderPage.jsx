@@ -141,7 +141,6 @@ function buildDefaultFooterActions(navigate) {
     // { key: 'export', label: 'Export CSV', icon: FiDownload, variant: 'success', className: 'shadow-sm' },
     // { key: 'analytics', label: 'Analytics', icon: MdOutlineBarChart, variant: 'info', className: 'shadow-sm' },
     // { key: 'pickup-files', label: 'Pickup Files', icon: FiFileText, variant: 'warning', className: 'shadow-sm' },
-    { key: 'Cancel', label: 'Cancel', icon: FiX, variant: 'secondary', className: 'shadow-sm', onClick: () => navigate('/dashboard') },
   ];
 }
 
@@ -640,7 +639,6 @@ export default function CommonOrderPage({
         />
 
         <OrdersFilterSection
-          title="Quick Filters"
           mobileTitle="Apply Order Filters"
           mobileDescription="Refine the order list, then apply to update the records."
           activeCount={activeQuickFilterCount}

@@ -4,7 +4,7 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 
 export default function OrdersFilterSection({
-  title = 'Filters',
+  title = null,
   mobileTitle = 'Apply Filters',
   mobileDescription = 'Refine the records, then apply to update the list.',
   activeCount = 0,
@@ -65,8 +65,10 @@ export default function OrdersFilterSection({
         </CommonModal>
       ) : null}
 
-      <Card title={title} muted className={desktopOnly ? '' : 'hidden xl:block'}>
-        {children}
+      <Card muted className={desktopOnly ? '' : 'hidden xl:block'} contentClassName="p-0">
+        <div className="px-4 py-3.5">
+          {children}
+        </div>
       </Card>
     </>
   );

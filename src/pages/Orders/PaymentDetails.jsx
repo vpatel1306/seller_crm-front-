@@ -121,10 +121,6 @@ export default function PaymentDetails() {
             { label: 'Payment Details', current: true },
           ]}
           actions={[
-            <Button key="back" type="button" variant="secondary" size="sm" onClick={() => navigate(-1)}>
-              <FiArrowLeft size={14} />
-              <span>Back</span>
-            </Button>,
             <Button key="refresh" type="button" variant="secondary" size="sm" onClick={() => window.location.reload()}>
               <FiRefreshCw size={14} />
               <span>Refresh</span>

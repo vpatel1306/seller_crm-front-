@@ -2,8 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiAlertCircle, FiArrowRight, FiCheck, FiClock, FiFileText, FiUploadCloud } from 'react-icons/fi';
 import Button from '../components/ui/Button';
+import OrdersPageHeader from '../components/orders/OrdersPageHeader';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import AppShell from '../components/layout/AppShell';
 
 export default function DailyImport() {
     const navigate = useNavigate();
@@ -183,12 +185,14 @@ export default function DailyImport() {
     };
 
     return (
-        <div className="min-h-full p-4 lg:p-8 bg-gray-50 flex justify-center">
-            <div className="w-full max-w-6xl">
-                <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Daily Import Data</h2>
-                    <p className="text-sm text-gray-500 mt-1">Select an import type and upload your daily files for processing.</p>
-                </div>
+        <AppShell>
+            <div className="w-full max-w-6xl mx-auto py-6 px-4">
+                <OrdersPageHeader 
+                    breadcrumbs={[
+                        { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+                        { label: 'Daily Import Suite', current: true }
+                    ]}
+                />
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
@@ -366,6 +370,6 @@ export default function DailyImport() {
 
                 </div>
             </div>
-        </div>
+        </AppShell>
     );
 }

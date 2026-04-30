@@ -71,11 +71,6 @@ export default function BusinessGrowthChart() {
             { label: 'Dashboard', onClick: () => navigate('/dashboard') },
             { label: 'Business Growth Chart', current: true },
           ]}
-          actions={
-            <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
-              <FiX size={14} /> Cancel
-            </Button>
-          }
         />
 
 

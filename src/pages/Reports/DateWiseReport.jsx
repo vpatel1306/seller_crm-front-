@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { FiCalendar, FiDownload, FiPercent, FiBox, FiRefreshCw, FiX, FiArrowRight, FiChevronLeft, FiChevronRight, FiTrendingUp } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
+import OrdersPageHeader from "../../components/orders/OrdersPageHeader";
 
 const DateWiseReport = () => {
   const navigate = useNavigate();
@@ -40,27 +41,20 @@ const DateWiseReport = () => {
     <div className="min-h-screen bg-bg p-4 lg:p-8 flex flex-col gap-6 font-sans">
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white px-8 py-6 rounded-default shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
-
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -mr-32 -mt-32" />
-
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="bg-primary/20 p-3 rounded-2xl border border-white/5">
-            <FiCalendar size={28} className="text-primary" />
+      <OrdersPageHeader 
+        breadcrumbs={[
+          { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+          { label: 'Date Wise Report', current: true }
+        ]}
+        actions={
+          <div className="flex items-center gap-2 bg-slate-900/50 px-4 py-2 rounded-2xl border border-white/10 text-white relative z-10 group hover:border-primary/30 transition-all cursor-default">
+            <span className="text-[0.6rem] font-black text-gray-400 uppercase tracking-widest">Active Period</span>
+            <span className="text-xs font-mono font-bold">JAN 2025</span>
+            <FiArrowRight size={12} className="text-primary group-hover:translate-x-1 transition-transform" />
+            <span className="text-xs font-mono font-bold">DEC 2025</span>
           </div>
-          <div>
-            <h1 className="text-2xl font-black tracking-tight leading-tight">Date Wise Order Report</h1>
-            <p className="text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.4em]">Analytics Engine - {accountName}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-2xl border border-white/10 relative z-10 group hover:border-primary/30 transition-all cursor-default">
-          <span className="text-[0.6rem] font-black text-gray-500 uppercase tracking-widest">Active Period</span>
-          <span className="text-xs font-mono font-bold">JAN 2025</span>
-          <FiArrowRight size={12} className="text-primary group-hover:translate-x-1 transition-transform" />
-          <span className="text-xs font-mono font-bold">DEC 2025</span>
-        </div>
-      </div>
+        }
+      />
 
       <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 flex-1 overflow-hidden">
 

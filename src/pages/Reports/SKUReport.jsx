@@ -260,14 +260,12 @@ export default function SKUReport() {
             <>
               {/* <Button variant="success" size="sm" onClick={exportCSV}><FiDownload size={14} />Export CSV</Button> */}
               <Button variant="secondary" size="sm" onClick={fetchData}><FiRefreshCw size={14} />Refresh</Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}><FiX size={14} />Cancel</Button>
             </>
           )}
         />
 
 
         <OrdersFilterSection
-          title="Filters"
           mobileTitle="SKU Report Filters"
           mobileDescription="Filter SKU report by P/L status and date range."
           activeCount={[plFilter !== 'all', dateDraft.from, dateDraft.to].filter(Boolean).length}

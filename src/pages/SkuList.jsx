@@ -20,6 +20,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import DataTable from '../components/ui/DataTable';
+import OrdersPageHeader from '../components/orders/OrdersPageHeader';
 
 const FILTER_FIELDS = [
   { key: 'keyword1', label: 'SKU Keyword' },
@@ -614,55 +615,23 @@ export default function SkuList() {
   return (
     <AppShell>
       <div className="space-y-5 sm:space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="shrink-0">
-            <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
-              <FiArrowLeft size={16} />
-              Back
-            </Button>
-          </div>
-          <div className="ml-auto flex flex-wrap items-center justify-end gap-2.5">
+        <OrdersPageHeader 
+          breadcrumbs={[
+            { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+            { label: 'SKU Master', current: true }
+          ]}
+          actions={
             <Button
               variant="create"
               size="sm"
               className="h-10 rounded-default border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm"
-
               onClick={() => { resetAddSkuForm(); setShowAddSkuModal(true); }}
             >
               <FiPlus size={16} />
               Add SKU
             </Button>
-            {/* <Button
-              variant="info"
-              size="sm"
-              className="h-10 rounded-default px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-sky-600/20"
-
-            >
-              <FiSettings size={16} />
-              Bulk Update
-            </Button>
-            <Button
-              variant="warning"
-              size="sm"
-              className="h-10 rounded-default px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-accent/20"
-
-              onClick={exportToCSV}
-            >
-              <FiDownload size={16} />
-              Export
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="h-10 rounded-default border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm"
-
-            >
-              <FiUpload size={16} />
-              Import
-            </Button> */}
-
-          </div>
-        </div>
+          }
+        />
 
         <div className="xl:hidden">
           <Button variant="secondary" className="w-full justify-between" onClick={() => setShowMobileFilters(true)}>
@@ -712,11 +681,13 @@ export default function SkuList() {
 
         <div className="space-y-5 xl:space-y-6">
           <Card
-            title="Apply Quick Filters"
             muted
             className="hidden xl:block"
+            contentClassName="p-0"
           >
-            {filterPanelContent}
+            <div className="px-4 py-3.5">
+              {filterPanelContent}
+            </div>
           </Card>
 
           <div className="min-w-0 space-y-5 xl:space-y-6">

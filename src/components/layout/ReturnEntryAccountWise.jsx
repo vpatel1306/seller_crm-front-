@@ -200,9 +200,6 @@ export default function ReturnEntryAccountWise() {
                 <FiArchive size={14} className="text-primary" />
                 Session: <span className="text-primary font-black ml-1">{acceptedList.length}</span>
               </div>
-              <Button variant="secondary" size="sm" className="bg-white border-slate-300 text-slate-700 font-bold px-4" onClick={() => navigate('/dashboard')}>
-                Close
-              </Button>
             </div>
           }
         />

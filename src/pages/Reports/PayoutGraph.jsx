@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { FiX, FiInfo, FiTrendingUp, FiCreditCard, FiActivity } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
+import OrdersPageHeader from "../../components/orders/OrdersPageHeader";
 
 const MONTHLY_DATA = [
   { month: "08/2025", claim: 180, recovery: 90, compensation: 4200, advertisement: 110, bankReceived: 54200 },
@@ -65,30 +66,18 @@ export default function PayoutGraph() {
     <div className="min-h-screen bg-bg p-4 lg:p-8 flex flex-col gap-6 font-sans">
 
       {/* Header Info */}
-      <div className="bg-white rounded-default p-8 shadow-xl shadow-primary/5 border border-gray-100/50 flex flex-col lg:flex-row justify-between items-center gap-6 relative overflow-hidden">
-
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
-
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="bg-indigo-500/10 p-3 rounded-2xl border border-indigo-500/5">
-            <FiCreditCard size={28} className="text-indigo-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black tracking-tight leading-tight">Payout Velocity Analytics</h1>
-            <p className="text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.4em]">Settlement Engine - {accountName}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 relative z-10">
+      <OrdersPageHeader 
+        breadcrumbs={[
+          { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+          { label: 'Payout Performance', current: true }
+        ]}
+        actions={
           <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-2xl border border-indigo-100 text-indigo-700 text-[0.65rem] font-bold italic">
             <FiActivity size={14} className="animate-pulse" />
             Index Sync: 12 Dec 2025
           </div>
-          <button className="w-12 h-12 flex items-center justify-center rounded-2xl bg-gray-900 text-white hover:bg-black transition-all active:scale-90 shadow-lg" onClick={() => navigate(-1)}>
-            <FiX size={20} />
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 flex-1">
 
