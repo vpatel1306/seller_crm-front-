@@ -68,7 +68,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-[100] w-full border-b border-slate-100 bg-white/80 backdrop-blur-md">
       <div className="flex h-16 w-full items-center justify-between px-6 sm:px-8">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 lg:text-2xl">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 lg:text-xl">
             {pageTitle}
           </h1>
         </div>

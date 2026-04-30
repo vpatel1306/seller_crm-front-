@@ -36,11 +36,8 @@ export default function AppSidebar() {
     return (
         <aside className="w-64 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
 
-            <div className="flex items-center px-5 py-1.5 border-b border-slate-100 bg-white">
-
-                <img src={logoImage} alt="MeeMatrix logo" className="w-32 object-contain" />
-
-
+            <div className="flex h-16 items-center px-5 border-b border-slate-100 bg-white">
+                <img src={logoImage} alt="MeeMatrix logo" className="h-8 object-contain" />
             </div>
 
             <div className="flex-1 overflow-y-auto pb-6 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-slate-200">
