@@ -498,7 +498,7 @@ export default function CommonOrderPage({
               value={filters.platform_order_id}
               onChange={(event) => setFilters((prev) => ({ ...prev, platform_order_id: event.target.value }))}
               placeholder={`Search ${orderSearchLabel.toLowerCase()}`}
-              className="h-[45px] w-full rounded-default border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 shadow-sm"
+              className="h-9 w-full rounded-default border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 shadow-sm"
 
             />
           </div>
@@ -513,7 +513,7 @@ export default function CommonOrderPage({
               value={filters.sku}
               onChange={(event) => setFilters((prev) => ({ ...prev, sku: event.target.value }))}
               placeholder="Search SKU"
-              className="h-[45px] w-full rounded-default border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 shadow-sm"
+              className="h-9 w-full rounded-default border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 shadow-sm"
 
             />
           </div>
@@ -527,7 +527,7 @@ export default function CommonOrderPage({
                 <select
                   value={filters.order_status}
                   onChange={(event) => setFilters((prev) => ({ ...prev, order_status: event.target.value }))}
-                  className="h-[45px] w-full appearance-none rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
+                  className="h-9 w-full appearance-none rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
 
                 >
                   <option value="all">All Order Status</option>
@@ -558,7 +558,7 @@ export default function CommonOrderPage({
                 <select
                   value={filters.payment_status}
                   onChange={(event) => setFilters((prev) => ({ ...prev, payment_status: event.target.value }))}
-                  className="h-[45px] w-full appearance-none rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
+                  className="h-9 w-full appearance-none rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
 
                 >
                   <option value="all">All Payment Status</option>
@@ -580,7 +580,7 @@ export default function CommonOrderPage({
             type="date"
             value={dateDraft.from}
             onChange={(event) => setDateDraft((prev) => ({ ...prev, from: event.target.value }))}
-            className="h-[45px] w-full rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm"
+            className="h-9 w-full rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm"
 
           />
         </div>
@@ -591,7 +591,7 @@ export default function CommonOrderPage({
             type="date"
             value={dateDraft.to}
             onChange={(event) => setDateDraft((prev) => ({ ...prev, to: event.target.value }))}
-            className="h-[45px] w-full rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm"
+            className="h-9 w-full rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm"
 
           />
         </div>
@@ -601,7 +601,7 @@ export default function CommonOrderPage({
             type="button"
             variant="primary"
             size="md"
-            className="h-[45px] rounded-default px-5"
+            className="!h-9 rounded-default px-5"
 
             onClick={handleApplyFilters}
             title="Apply Filters"
@@ -612,7 +612,7 @@ export default function CommonOrderPage({
             type="button"
             variant="secondary"
             size="icon"
-            className="h-[45px] w-[45px] rounded-default"
+            className="!h-9 !w-9 rounded-default"
 
             onClick={clearFilters}
             title="Clear Filters"

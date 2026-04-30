@@ -517,6 +517,7 @@ export default function SkuList() {
             value={quickFilters[field.key]}
             onChange={(event) => setQuickFilters((prev) => ({ ...prev, [field.key]: event.target.value }))}
             placeholder={`Search ${field.label.toLowerCase()}`}
+            inputClassName="h-9"
             containerClassName={field.key === 'keyword1' ? 'xl:min-w-[304px] xl:flex-[1.5_1_0]' : 'xl:min-w-[200px] xl:flex-[1_1_0]'}
           />
         ))}
@@ -555,8 +556,7 @@ export default function SkuList() {
             <select
               value={skuFilter}
               onChange={(event) => setSkuFilter(event.target.value)}
-              className="w-full appearance-none rounded-default border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
-
+              className="h-9 w-full appearance-none rounded-default border border-border bg-white px-4 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
             >
               <option value="all">All SKUs</option>
               <option value="without-cost">Without Cost</option>
@@ -575,8 +575,7 @@ export default function SkuList() {
                 setAccountFilter(event.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full appearance-none rounded-default border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
-
+              className="h-9 w-full appearance-none rounded-default border border-border bg-white px-4 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
             >
               <option value="this-account">This Account</option>
               <option value="all-accounts">All Accounts</option>
@@ -591,7 +590,7 @@ export default function SkuList() {
             <Button
               type="button"
               variant="primary"
-              className="h-[50px] flex-1 min-w-[52px] px-0"
+              className="!h-9 flex-1 min-w-[52px] px-0"
               onClick={() => fetchSkuList(1, perPage)}
               title="Apply Filters"
             >
@@ -600,7 +599,7 @@ export default function SkuList() {
             <Button
               type="button"
               variant="secondary"
-              className="h-[50px] flex-1 min-w-[52px] px-0"
+              className="!h-9 flex-1 min-w-[52px] px-0"
               onClick={handleClearFilters}
               title="Clear Filters"
             >

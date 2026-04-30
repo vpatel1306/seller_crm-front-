@@ -53,10 +53,10 @@ export default function OrdersFilterSection({
 
             {(onClear || onApply) ? (
               <div className="grid grid-cols-2 gap-3 border-t border-border bg-white/90 pt-4">
-                <Button variant="secondary" className="w-full" onClick={onClear}>
+                <Button variant="secondary" className="!h-9 w-full" onClick={onClear}>
                   Clear
                 </Button>
-                <Button variant="primary" className="w-full" onClick={onApply}>
+                <Button variant="primary" className="!h-9 w-full" onClick={onApply}>
                   Apply Filters
                 </Button>
               </div>

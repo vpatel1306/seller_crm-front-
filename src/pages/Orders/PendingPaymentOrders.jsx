@@ -265,7 +265,7 @@ export default function PendingPaymentOrders() {
             <select
               value={filters.order_filter}
               onChange={(event) => setFilters((prev) => ({ ...prev, order_filter: event.target.value }))}
-              className="h-[45px] w-full appearance-none rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
+              className="h-9 w-full appearance-none rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
             >
               <option value="All">All</option>
               <option value="Profit">Profit</option>

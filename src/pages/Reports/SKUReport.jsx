@@ -223,7 +223,7 @@ export default function SKUReport() {
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">P/L Filter</label>
         <select value={plFilter} onChange={(e) => setPlFilter(e.target.value)}
-          className="w-full rounded-default border border-border bg-white px-4 py-3 text-sm font-medium text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10">
+          className="h-9 w-full rounded-default border border-border bg-white px-4 text-sm font-medium text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10">
 
           <option value="all">All SKUs</option>
           <option value="profit">Profit Only</option>
@@ -233,17 +233,17 @@ export default function SKUReport() {
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">From Date</label>
         <input type="date" value={dateDraft.from} onChange={(e) => setDateDraft((prev) => ({ ...prev, from: e.target.value }))}
-          className="h-[50px] rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+          className="h-9 rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
 
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">To Date</label>
         <input type="date" value={dateDraft.to} onChange={(e) => setDateDraft((prev) => ({ ...prev, to: e.target.value }))}
-          className="h-[50px] rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+          className="h-9 rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
 
       </div>
-      <Button variant="primary" className="h-[50px] w-full px-0 self-end" onClick={handleApply} title="Apply Filters"><FiSearch size={18} /></Button>
-      <Button variant="secondary" className="h-[50px] w-full px-0 self-end" onClick={handleClear} title="Clear Filters"><FiX size={18} /></Button>
+      <Button variant="primary" className="!h-9 w-full px-0 self-end" onClick={handleApply} title="Apply Filters"><FiSearch size={18} /></Button>
+      <Button variant="secondary" className="!h-9 w-full px-0 self-end" onClick={handleClear} title="Clear Filters"><FiX size={18} /></Button>
     </div>
   );
 
