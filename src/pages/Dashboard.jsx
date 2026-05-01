@@ -25,6 +25,7 @@ export default function Dashboard() {
   const [accountDetails, setAccountDetails] = useState(null);
   const [showDateModal, setShowDateModal] = useState(false);
   const [accounts, setAccounts] = useState([]);
+  const [loadingAccounts, setLoadingAccounts] = useState(true);
   const [modal, setModal] = useState(null);
   const [showAccountSelectModal, setShowAccountSelectModal] = useState(false);
 
@@ -33,7 +34,7 @@ export default function Dashboard() {
       const res = await api.get('/accounts-list/?skip=0&limit=100');
       const list = res.data?.data || [];
       setAccounts(list);
-
+  
       if (!activeAccount) {
         const savedId = localStorage.getItem('activeAccountId');
         const matched = savedId ? list.find((acc) => String(acc.id) === savedId) : null;
@@ -44,6 +45,8 @@ export default function Dashboard() {
       }
     } catch (err) {
       console.error('Failed to fetch accounts', err);
+    } finally {
+      setLoadingAccounts(false);
     }
   }, [activeAccount, setActiveAccount]);
 
@@ -51,8 +54,8 @@ export default function Dashboard() {
     fetchAccounts();
   }, [fetchAccounts]);
 
-  const requiresAccountSetup = !loading && accounts.length === 0;
-  const requiresAccountSelection = !loading && accounts.length > 0 && !activeAccount;
+  const requiresAccountSetup = !loading && !loadingAccounts && accounts.length === 0;
+  const requiresAccountSelection = !loading && !loadingAccounts && accounts.length > 0 && !activeAccount;
 
   useEffect(() => {
     if (requiresAccountSetup) {

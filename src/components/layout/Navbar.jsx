@@ -100,7 +100,6 @@ export default function Navbar() {
       };
       setActiveAccount(updatedAcc);
       setAccountMenuOpen(false);
-      navigate('/account');
     } catch (error) {
       console.error('Error setting active account:', error);
     }
