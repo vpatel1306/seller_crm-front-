@@ -20,6 +20,11 @@ export default function Sidebar({ accountDetails = null }) {
     { l: 'Missing Returns', v: accountStatus.return_not_received_loss, c: lossBreakdown.return_not_received_loss?.count ?? 0 },
   ].sort((a, b) => (Number(b.v) || 0) - (Number(a.v) || 0));
 
+  const alerts = [
+    { l: 'Payment Issues', c: lossBreakdown.payment_loss?.count ?? 0, color: 'text-amber-600' },
+    { l: 'Missing Returns', c: lossBreakdown.return_not_received_loss?.count ?? 0, color: 'text-rose-600' },
+  ].filter(a => a.c > 10);
+
   const fmtAmt = (v) => Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
   return (
@@ -57,37 +62,58 @@ export default function Sidebar({ accountDetails = null }) {
 
           {/* KEY METRICS SECTION */}
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-lg bg-white/50 p-2 border border-white/50">
+            <div className="rounded-lg bg-white p-2 shadow-sm border border-slate-100">
               <div className="text-[0.55rem] font-bold text-slate-400 uppercase tracking-tight">Settlement</div>
               <div className="text-xs font-black text-slate-900">₹{fmtAmt(accountStatus.total_settlement)}</div>
             </div>
-            <div className="rounded-lg bg-white/50 p-2 border border-white/50">
-              <div className="text-[0.55rem] font-bold text-slate-400 uppercase tracking-tight">Active SKUs</div>
-              <div className="text-xs font-black text-slate-900">{accountStatus.total_sku || 0}</div>
+            <div className="rounded-lg bg-white p-2 shadow-sm border border-slate-100">
+              <div className="text-[0.55rem] font-bold text-slate-400 uppercase tracking-tight">Total Losses</div>
+              <div className="text-xs font-black text-rose-600">₹{fmtAmt(accountStatus.total_losses)}</div>
             </div>
           </div>
+
+          {/* ALERTS / ACTION ITEMS */}
+          {alerts.length > 0 && (
+            <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-100 space-y-1.5">
+              <div className="text-[0.6rem] font-black text-amber-700 uppercase tracking-widest flex items-center gap-1.5">
+                <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                Action Alerts
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {alerts.map(a => (
+                  <div key={a.l} className="flex items-center gap-1.5 bg-white/50 rounded p-1">
+                    <span className="text-xs font-black text-slate-900 leading-none">{a.c}</span>
+                    <span className={`text-[9px] font-bold uppercase leading-none ${a.color}`}>{a.l}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="h-px bg-gray-200/50" />
 
           <div>
             <div className="mb-1.5 text-[0.65rem] font-black text-slate-400 uppercase tracking-widest">Loss Breakdown</div>
 
-            <div className="mt-1 space-y-1">
+            <div className="mt-1 space-y-1.5">
               {lossRows.filter(r => (Number(r.v) || 0) > 0).slice(0, 3).map((row, idx) => (
-                <div key={row.l} className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400">
-                  <div className="flex items-center gap-1 overflow-hidden">
-                    <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${idx === 0 ? 'bg-rose-500' : 'bg-rose-300'}`} />
+                <div key={row.l} className="flex items-center justify-between text-[11px] font-bold uppercase text-slate-400">
+                  <div className="flex items-center gap-1.5 overflow-hidden">
+                    <div className={`h-2 w-2 shrink-0 rounded-full ${idx === 0 ? 'bg-rose-500' : 'bg-rose-300'}`} />
                     <span className="truncate">{row.l}</span>
                   </div>
-                  <span className="shrink-0 text-rose-500">₹{fmtAmt(row.v)}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] font-bold text-slate-300">({row.c})</span>
+                    <span className="text-rose-500 font-black">₹{fmtAmt(row.v)}</span>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="h-px bg-gray-200/50" />
+          <div className="h-px bg-gray-200/50 mt-auto" />
           
-          <div className="flex items-center justify-between rounded-lg border border-green-100 bg-green-50 p-2 mt-auto">
+          <div className="flex items-center justify-between rounded-lg border border-green-100 bg-green-50 p-2">
             <div>
               <h5 className="text-[0.65rem] font-black uppercase tracking-wider text-green-700">Net Profits</h5>
               <h5 className="mt-0.5 text-lg font-black leading-none text-green-800">₹{fmtAmt(netProfit)}</h5>
