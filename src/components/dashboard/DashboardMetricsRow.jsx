@@ -1,9 +1,6 @@
 import { FiTarget } from 'react-icons/fi';
 
 export default function DashboardMetricsRow({ metrics = [], className = '', mode = 'all' }) {
-  // Separate metrics into groups
-  const averageMetrics = metrics.filter(m => m.label.includes('Avg'));
-
   return (
     <div className={`flex flex-col gap-3 h-full ${className}`.trim()}>
 
@@ -17,9 +14,9 @@ export default function DashboardMetricsRow({ metrics = [], className = '', mode
             <span className="text-xs font-black uppercase tracking-widest text-slate-500 leading-none">Averages Overview</span>
           </div>
           <div className="flex flex-col gap-2">
-            {averageMetrics.map(m => (
+            {metrics.map(m => (
               <div key={m.label} className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:shadow-sm">
-                <div className="text-[0.7rem] font-bold text-slate-500 uppercase tracking-tight">{m.label.replace('Avg.', '').trim()}</div>
+                <div className="text-[0.7rem] font-bold text-slate-500 uppercase tracking-tight">{m.label}</div>
                 <div className="text-sm font-black text-slate-900">{m.value}</div>
               </div>
             ))}
