@@ -86,8 +86,9 @@ const FULFILMENT_CARDS = [
   { key: 'delivered', status: 'Delivered Orders', title: 'Delivered', route: '/delivered-orders', tone: 'border-emerald-200 bg-emerald-50', icon: FiCheckCircle },
   { key: 'shipped', status: 'Shipped Out For Delivery', title: 'Dispatched', route: '/shipped', tone: 'border-indigo-200 bg-indigo-50', icon: FiBox },
   { key: 'cancelled', status: 'Cancelled Orders', title: 'Cancelled', route: '/cancelled-orders', tone: 'border-slate-300 bg-slate-100', icon: FiXCircle },
-  { key: 'return_received', status: 'Return Received', title: 'Returns', route: '/received-returns', tone: 'border-rose-200 bg-rose-50', icon: FiTrendingDown },
+  { key: 'all_returns', status: 'Returns', title: 'Returns', route: '/received-returns', tone: 'border-rose-200 bg-rose-50', icon: FiTrendingDown },
   { key: 'ready_to_ship', status: 'Processing', title: 'Processing (Ready)', route: '/ready-to-ship', tone: 'border-blue-200 bg-blue-50', icon: FiClock },
+  { key: 'others', status: 'Others', title: 'Other / New', route: null, tone: 'border-slate-200 bg-slate-50', icon: FiBox },
 ];
 
 const RETURNS_CARDS = [
@@ -520,12 +521,37 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail, viewMo
         >
           <div className="space-y-6">
             {FULFILMENT_CARDS.map((c, index) => {
-              const live = dashboardCards[c.key] || summaryMap[c.status] || {};
-              const totalIncoming = dashboardCards.all_orders?.total_orders || summaryMap['Total Orders']?.count || 1;
-              const percentage = Math.round((Number(live.total_orders || 0) / totalIncoming) * 100);
-              const barColors = ['bg-teal-500', 'bg-emerald-500', 'bg-indigo-500', 'bg-slate-400', 'bg-rose-500', 'bg-blue-500'];
-              const textColors = ['group-hover:text-teal-600', 'group-hover:text-emerald-600', 'group-hover:text-indigo-600', 'group-hover:text-slate-600', 'group-hover:text-rose-600', 'group-hover:text-blue-600'];
-              const iconBgColors = ['group-hover:bg-teal-50', 'group-hover:bg-emerald-50', 'group-hover:bg-indigo-50', 'group-hover:bg-slate-100', 'group-hover:bg-rose-50', 'group-hover:bg-blue-50'];
+              const totalIncoming = Number(dashboardCards.all_orders?.total_orders || 0);
+              const breakdown = dashboardCards.all_orders?.breakdown || {};
+              
+              let live = dashboardCards[c.key] || summaryMap[c.status] || {};
+              
+              // Custom handling for 'all_returns' (sum of all return related statuses)
+              if (c.key === 'all_returns') {
+                const returnCount = (Number(breakdown.return_received || 0) + Number(breakdown.return_in_transit || 0) + Number(breakdown.return_not_received || 0));
+                live = { total_orders: returnCount, route: '/received-returns' };
+              }
+              
+              // Custom handling for 'others' (remaining orders)
+              if (c.key === 'others') {
+                const knownSum = (
+                  Number(breakdown.ready_to_ship || 0) + 
+                  Number(breakdown.shipped || 0) + 
+                  Number(breakdown.out_for_delivery || 0) + 
+                  Number(breakdown.delivered || 0) + 
+                  Number(breakdown.cancelled || 0) + 
+                  Number(breakdown.return_in_transit || 0) + 
+                  Number(breakdown.return_received || 0) + 
+                  Number(breakdown.return_not_received || 0)
+                );
+                const otherCount = Math.max(0, totalIncoming - knownSum);
+                live = { total_orders: otherCount };
+              }
+
+              const percentage = totalIncoming > 0 ? Math.round((Number(live.total_orders || 0) / totalIncoming) * 100) : 0;
+              const barColors = ['bg-teal-500', 'bg-emerald-500', 'bg-indigo-500', 'bg-slate-500', 'bg-rose-500', 'bg-blue-500', 'bg-slate-300'];
+              const textColors = ['group-hover:text-teal-600', 'group-hover:text-emerald-600', 'group-hover:text-indigo-600', 'group-hover:text-slate-600', 'group-hover:text-rose-600', 'group-hover:text-blue-600', 'group-hover:text-slate-500'];
+              const iconBgColors = ['group-hover:bg-teal-50', 'group-hover:bg-emerald-50', 'group-hover:bg-indigo-50', 'group-hover:bg-slate-100', 'group-hover:bg-rose-50', 'group-hover:bg-blue-50', 'group-hover:bg-slate-50'];
 
               return (
                 <div key={c.key} className="space-y-1 group cursor-pointer" onClick={() => (live.route || c.route) && navigate(live.route || c.route)}>
