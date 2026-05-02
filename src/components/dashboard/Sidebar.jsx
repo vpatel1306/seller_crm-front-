@@ -43,11 +43,16 @@ export default function Sidebar({ accountDetails = null }) {
                 <RadialBarChart 
                   innerRadius="60%" 
                   outerRadius="100%" 
-                  data={[{ name: 'Profit', value: netProfitPct, fill: '#10b981' }]} 
+                  barSize={10} 
+                  data={[{ name: 'Profit', value: netProfitPct || 0, fill: '#10b981' }]} 
                   startAngle={90} 
-                  endAngle={90 + (3.6 * netProfitPct)}
+                  endAngle={90 + (3.6 * (netProfitPct || 0))}
                 >
-                  <RadialBar background dataKey="value" cornerRadius={10} />
+                  <RadialBar 
+                    background={{ fill: '#f1f5f9' }} 
+                    dataKey="value" 
+                    cornerRadius={10} 
+                  />
                 </RadialBarChart>
               </ResponsiveContainer>
             </div>
@@ -57,41 +62,48 @@ export default function Sidebar({ accountDetails = null }) {
 
           <div>
             <div className="mb-1.5 text-[0.65rem] font-black text-slate-400 uppercase tracking-widest">Loss Breakdown</div>
-            <div className="h-[120px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  layout="vertical"
-                  data={lossRows.filter(r => (Number(r.v) || 0) > 0)}
-                  margin={{ top: 0, right: 20, left: 0, bottom: 0 }}
-                >
-                  <XAxis type="number" hide />
-                  <YAxis 
-                    dataKey="l" 
-                    type="category" 
-                    hide
-                  />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(15, 23, 42, 0.05)' }}
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="rounded-lg bg-slate-900/95 backdrop-blur-md px-3 py-2 text-[0.65rem] font-bold text-white shadow-2xl border border-white/10">
-                            <div className="mb-1 opacity-50 uppercase tracking-widest">{payload[0].payload.l}</div>
-                            <div className="text-sm font-black text-white">₹{fmtAmt(payload[0].value)}</div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
+            <div className="h-[120px] w-full flex items-center justify-center">
+              {lossRows.filter(r => (Number(r.v) || 0) > 0).length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    layout="vertical"
+                    data={lossRows.filter(r => (Number(r.v) || 0) > 0)}
+                    margin={{ top: 0, right: 20, left: 0, bottom: 0 }}
+                  >
+                    <XAxis type="number" hide />
+                    <YAxis 
+                      dataKey="l" 
+                      type="category" 
+                      hide
+                    />
+                    <Tooltip 
+                      cursor={{ fill: 'rgba(15, 23, 42, 0.05)' }}
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="rounded-lg bg-slate-900/95 backdrop-blur-md px-3 py-2 text-[0.65rem] font-bold text-white shadow-2xl border border-white/10">
+                              <div className="mb-1 opacity-50 uppercase tracking-widest">{payload[0].payload.l}</div>
+                              <div className="text-sm font-black text-white">₹{fmtAmt(payload[0].value)}</div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
 
-                  <Bar dataKey="v" radius={[0, 4, 4, 0]} barSize={8}>
-                    {lossRows.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? '#f43f5e' : '#fb7185'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                    <Bar dataKey="v" radius={[0, 4, 4, 0]} barSize={8}>
+                      {lossRows.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={index === 0 ? '#f43f5e' : '#fb7185'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-slate-400 opacity-60">
+                  <div className="text-[0.65rem] font-black uppercase tracking-widest">No Loss Data</div>
+                  <div className="text-[10px] font-medium mt-1">Excellent account health</div>
+                </div>
+              )}
             </div>
             <div className="mt-1 space-y-1">
               {lossRows.slice(0, 3).map((row, idx) => (

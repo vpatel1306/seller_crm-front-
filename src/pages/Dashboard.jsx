@@ -101,23 +101,44 @@ export default function Dashboard() {
             }
           />
 
-          {/* HIGH-DENSITY COMMAND CENTER GRID */}
-          <div className="grid gap-3 xl:grid-cols-4 items-stretch">
+          {/* PRIMARY ANALYSIS ROW: ACCOUNT, RETURNS, FULFILMENT */}
+          <div className="grid gap-3 xl:grid-cols-3 items-stretch">
             {/* COLUMN 1: ACCOUNT ANALYSIS */}
             <Sidebar accountDetails={accountDetails} />
 
-            {/* COLUMN 2: FINANCIAL HEALTH */}
+            {/* COLUMN 2: RETURNS DISTRIBUTION */}
+            <DashboardCards
+              viewMode="returns-distribution"
+              onMetricsReady={setMetrics}
+              onAccountDetail={setAccountDetails}
+            />
+
+            {/* COLUMN 3: FULFILMENT LIFECYCLE */}
+            <DashboardCards
+              viewMode="fulfilment-lifecycle"
+              onMetricsReady={setMetrics}
+              onAccountDetail={setAccountDetails}
+            />
+          </div>
+
+          {/* SECONDARY INSIGHTS ROW: FINANCIALS, AVERAGES, PAYMENTS */}
+          <div className="grid gap-3 xl:grid-cols-3 items-stretch">
+            {/* FINANCIAL HEALTH (PIE CHART) */}
             <DashboardCards
               viewMode="executive-charts"
               onMetricsReady={setMetrics}
               onAccountDetail={setAccountDetails}
             />
 
-            {/* COLUMN 3: BUSINESS PROFILE (RADAR) */}
+            {/* AVERAGES OVERVIEW */}
             <DashboardMetricsRow metrics={metrics} mode="radar" />
 
-            {/* COLUMN 4: TODAY'S PULSE (BARS) */}
-            <DashboardMetricsRow metrics={metrics} mode="pulse" />
+            {/* PAYMENT STATUS */}
+            <DashboardCards
+              viewMode="payment-cycle"
+              onMetricsReady={setMetrics}
+              onAccountDetail={setAccountDetails}
+            />
           </div>
 
           <div className="space-y-3">

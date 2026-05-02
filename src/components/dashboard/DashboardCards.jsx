@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FiAlertCircle,
@@ -12,6 +12,7 @@ import {
   FiTrendingUp,
   FiRefreshCw,
   FiXCircle,
+  FiChevronRight,
 } from 'react-icons/fi';
 import Card from '../ui/Card';
 import { useAuth } from '../../context/AuthContext';
@@ -29,6 +30,7 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  LabelList,
 } from 'recharts';
 
 
@@ -80,32 +82,32 @@ const KPI_CONFIG = [
 ];
 
 const FULFILMENT_CARDS = [
-  { key: 'all_orders', status: 'All Received Orders', title: 'Total Incoming', route: '/all-orders', tone: 'border-teal-200 bg-teal-50', icon: FiLayers },
-  { key: 'ready_to_ship', status: 'Processing', title: 'Processing (Ready)', route: '/ready-to-ship', tone: 'border-blue-200 bg-blue-50', icon: FiClock },
+  { key: 'all_orders', status: 'All Received Orders', title: 'All Orders', route: '/all-orders', tone: 'border-teal-200 bg-teal-50', icon: FiLayers },
+  { key: 'delivered', status: 'Delivered Orders', title: 'Delivered', route: '/delivered-orders', tone: 'border-emerald-200 bg-emerald-50', icon: FiCheckCircle },
   { key: 'shipped', status: 'Shipped Out For Delivery', title: 'Dispatched', route: '/shipped', tone: 'border-indigo-200 bg-indigo-50', icon: FiBox },
-  { key: 'out_for_delivery', status: 'Out For Delivery', title: 'Out for Delivery', route: '/out-for-delivery', tone: 'border-emerald-200 bg-emerald-50', icon: FiCheckCircle },
   { key: 'cancelled', status: 'Cancelled Orders', title: 'Cancelled', route: '/cancelled-orders', tone: 'border-slate-300 bg-slate-100', icon: FiXCircle },
+  { key: 'return_received', status: 'Return Received', title: 'Returns', route: '/received-returns', tone: 'border-rose-200 bg-rose-50', icon: FiTrendingDown },
+  { key: 'ready_to_ship', status: 'Processing', title: 'Processing (Ready)', route: '/ready-to-ship', tone: 'border-blue-200 bg-blue-50', icon: FiClock },
 ];
 
 const RETURNS_CARDS = [
-  { key: 'return_in_transit', status: 'Return In Transit', title: 'In-Transit Returns', route: '/return-in-transit', tone: 'border-amber-200 bg-amber-50', icon: FiRefreshCw },
-  { key: 'return_received', status: 'Return Received', title: 'Returns Received', route: '/received-returns', tone: 'border-teal-200 bg-teal-50', icon: FiCheckCircle },
-  { key: 'return_not_received', status: 'Return Not Received', title: 'Missing Returns', route: '/returns-not-received', tone: 'border-rose-300 bg-rose-50', icon: FiAlertCircle },
-  { key: 'return_mismatch', status: 'Return Mismatch', title: 'Mismatch Issues', route: '/return-mismatch', tone: 'border-red-300 bg-red-50', icon: FiAlertCircle },
+  { key: 'return_in_transit', status: 'Return In Transit', title: 'In Transit', route: '/return-in-transit', color: '#f59e0b' },
+  { key: 'return_received', status: 'Return Received', title: 'Received', route: '/received-returns', color: '#10b981' },
+  { key: 'return_not_received', status: 'Return Not Received', title: 'Not Received', route: '/returns-not-received', color: '#f43f5e' },
+  { key: 'return_mismatch', status: 'Return Mismatch', title: 'Mismatch', route: '/return-mismatch', color: '#ef4444' },
 ];
 
-const SETTLEMENT_CARDS = [
-  { key: 'received_payment', status: 'Received Payment', title: 'Settled Payments', route: '/received-payment-orders', tone: 'border-emerald-200 bg-emerald-50', icon: FiCreditCard },
-  { key: 'pending_payment', status: 'Pending Payment', title: 'Payment Pending', route: '/pending-payment-orders', tone: 'border-amber-200 bg-amber-50', icon: FiClock },
-  { key: 'payment_mismatch', status: 'Payment Mismatch', title: 'Amount Mismatch', route: '/payment-mismatch', tone: 'border-red-300 bg-red-50', icon: FiAlertCircle },
+const SEPARATE_CARDS = [
   { key: 'unsettled_pickup', status: 'Unsettled Pickup', title: 'Unsettled Pickup', route: '/unsettled-pickup', tone: 'border-violet-200 bg-violet-50', icon: FiBox },
   { key: 'cancel_pickup', status: 'Cancel Pickup', title: 'Cancelled Pickup', route: '/cancel-pickup', tone: 'border-fuchsia-200 bg-fuchsia-50', icon: FiXCircle },
+  { key: 'approved_claims', status: 'Approved Claims', title: 'Approved Claims', route: '/approve-claim', tone: 'border-emerald-200 bg-emerald-50', icon: FiCheckCircle },
+  { key: 'pending_claims', status: 'Pending Claims', title: 'Pending Claims', route: '/approve-claim', tone: 'border-amber-200 bg-amber-50', icon: FiClock },
 ];
 
 function SectionHeader({ title, subtitle, action }) {
   return (
     <div className="flex items-center justify-between mb-2.5">
-    <div>
+      <div>
         <h3 className="text-lg font-black text-slate-950 uppercase tracking-tight">{title}</h3>
         {subtitle && <p className="text-xs font-medium text-slate-500">{subtitle}</p>}
       </div>
@@ -140,34 +142,7 @@ function KpiCard({ item, onClick }) {
   );
 }
 
-function ActionCard({ item, onOpen }) {
-  const isCritical = item.tone === 'critical';
-  const toneClasses = isCritical
-    ? 'border-red-100 bg-white text-red-600 hover:border-red-200'
-    : 'border-orange-100 bg-white text-orange-600 hover:border-orange-200';
 
-  return (
-    <button
-      type="button"
-      onClick={() => item.route && onOpen(item.route)}
-      className={`group w-full rounded-default border p-4 text-left shadow-soft transition-all hover:shadow-card hover:-translate-y-0.5 ${toneClasses}`}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <div className="text-[0.65rem] font-bold uppercase tracking-[0.12em] text-slate-400">{item.title}</div>
-          <div className="mt-1 text-sm font-bold text-slate-900">{formatCount(item.count)} orders</div>
-        </div>
-        <div className={`rounded-inner p-1.5 ${isCritical ? 'bg-red-50 text-red-500' : 'bg-orange-50 text-orange-500'}`}>
-          <FiAlertCircle size={16} />
-        </div>
-      </div>
-      <div className="mt-4 pt-3 border-t border-slate-50 flex items-center justify-between">
-        <div className="text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Impact</div>
-        <div className="text-sm font-black text-slate-900">Rs. {formatAmount(item.amount)}</div>
-      </div>
-    </button>
-  );
-}
 
 function StatusCard({ title, count, amount, tone, icon: Icon, onClick }) {
   // Extract colors from tone to apply to specific elements
@@ -328,7 +303,7 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail, viewMo
   }, [activeAccount?.id, selectedDateRange?.from, selectedDateRange?.to, onMetricsReady, onAccountDetail]);
 
   const headlineMetrics = overview.headline_metrics || {};
-  const actionNeeded = Array.isArray(overview.action_needed) ? overview.action_needed : [];
+
 
   const kpiCards = useMemo(() => KPI_CONFIG.map((config) => ({
     ...config,
@@ -372,6 +347,39 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail, viewMo
 
   return (
     <div className="space-y-3">
+      {/* INDEPENDENT PAYMENT CYCLE (Used in executive grid) */}
+      {viewMode === 'payment-cycle' && (
+        <Card title="Payment Cycle" subtitle="Financial settlement status" className="h-full" contentClassName="p-3.5 space-y-2.5">
+          {[
+            { key: 'received_payment', status: 'Received Payment', title: 'Received', color: 'text-emerald-600', icon: FiCheckCircle, bg: 'bg-emerald-50', route: '/received-payment-orders' },
+            { key: 'pending_payment', status: 'Pending Payment', title: 'Pending', color: 'text-amber-600', icon: FiClock, bg: 'bg-amber-50', route: '/pending-payment-orders' },
+            { key: 'payment_mismatch', status: 'Payment Mismatch', title: 'Mismatch', color: 'text-rose-600', icon: FiAlertCircle, bg: 'bg-rose-50', route: '/payment-mismatch' },
+            { key: 'received', valueKey: 'received_bank_amount', title: 'Bank Credit', color: 'text-blue-600', icon: FiCreditCard, bg: 'bg-blue-50', route: '/bank-credit-statement' },
+          ].map(p => {
+            const live = p.key === 'received'
+              ? { total_orders: headlineMetrics.received_payment_orders, total_cost: headlineMetrics.received_bank_amount }
+              : dashboardCards[p.key] || summaryMap[p.status] || {};
+
+            return (
+              <div key={p.key} onClick={() => p.route && navigate(p.route)} className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:shadow-md hover:border-slate-200 transition-all cursor-pointer group">
+                <div className="flex items-center gap-2.5">
+                  <div className={`p-1.5 rounded-lg ${p.bg} ${p.color}`}>
+                    <p.icon size={16} />
+                  </div>
+                  <div>
+                    <div className="text-[0.55rem] font-bold uppercase tracking-widest text-slate-400 leading-none">{p.title}</div>
+                    <div className="mt-1 text-xs font-black text-slate-900 leading-none">{formatCount(live.total_orders)}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className={`text-xs font-black ${p.color}`}>₹{formatAmount(live.total_cost)}</div>
+                </div>
+              </div>
+            );
+          })}
+        </Card>
+      )}
+
       {/* SECTION 1: EXECUTIVE OVERVIEW CARDS */}
       {(viewMode === 'all' || viewMode === 'executive' || viewMode === 'executive-cards') && (
         <section className="space-y-3">
@@ -392,35 +400,48 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail, viewMo
       {(viewMode === 'all' || viewMode === 'executive' || viewMode === 'executive-charts') && (
         <section className="h-full flex flex-col">
           <Card className="flex-1 flex flex-col" title="Financial Health" contentClassName="flex-1 flex flex-col p-4">
-            <div className="flex-1 min-h-[180px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Net Profit', value: Math.max(0, Number(accountStatus.net_profit || 0)), color: '#10b981' },
-                      { name: 'Ad Spend', value: Number(headlineMetrics.advertisement_cost || 0), color: '#f59e0b' },
-                      { name: 'Return Loss', value: Number(accountStatus.return_not_received_loss || 0), color: '#ef4444' },
-                      { name: 'Payment Loss', value: Number(accountStatus.payment_loss || 0), color: '#f43f5e' },
-                      { name: 'Other Costs', value: Math.max(0, Number(headlineMetrics.total_sales_amount || 0) - Number(accountStatus.net_profit || 0) - Number(headlineMetrics.advertisement_cost || 0) - Number(accountStatus.return_not_received_loss || 0) - Number(accountStatus.payment_loss || 0)), color: '#94a3b8' },
-                    ].filter(d => d.value > 0)}
-                    innerRadius={55}
-                    outerRadius={85}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {[
-                      '#10b981', '#f59e0b', '#ef4444', '#f43f5e', '#94a3b8'
-                    ].map((color, index) => (
-                      <Cell key={`cell-${index}`} fill={color} stroke="none" />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(val) => `Rs. ${formatAmount(val)}`}
-                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', border: 'none', color: '#fff', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)' }}
-                    itemStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#fff' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="flex-1 min-h-[180px] w-full flex items-center justify-center">
+              {[
+                { name: 'Net Profit', value: Math.max(0, Number(accountStatus.net_profit || 0)), color: '#10b981' },
+                { name: 'Ad Spend', value: Number(headlineMetrics.advertisement_cost || 0), color: '#f59e0b' },
+                { name: 'Return Loss', value: Number(accountStatus.return_not_received_loss || 0), color: '#ef4444' },
+                { name: 'Payment Loss', value: Number(accountStatus.payment_loss || 0), color: '#f43f5e' },
+                { name: 'Other Costs', value: Math.max(0, Number(headlineMetrics.total_sales_amount || 0) - Number(accountStatus.net_profit || 0) - Number(headlineMetrics.advertisement_cost || 0) - Number(accountStatus.return_not_received_loss || 0) - Number(accountStatus.payment_loss || 0)), color: '#94a3b8' },
+              ].filter(d => d.value > 0).length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Net Profit', value: Math.max(0, Number(accountStatus.net_profit || 0)), color: '#10b981' },
+                        { name: 'Ad Spend', value: Number(headlineMetrics.advertisement_cost || 0), color: '#f59e0b' },
+                        { name: 'Return Loss', value: Number(accountStatus.return_not_received_loss || 0), color: '#ef4444' },
+                        { name: 'Payment Loss', value: Number(accountStatus.payment_loss || 0), color: '#f43f5e' },
+                        { name: 'Other Costs', value: Math.max(0, Number(headlineMetrics.total_sales_amount || 0) - Number(accountStatus.net_profit || 0) - Number(headlineMetrics.advertisement_cost || 0) - Number(accountStatus.return_not_received_loss || 0) - Number(accountStatus.payment_loss || 0)), color: '#94a3b8' },
+                      ].filter(d => d.value > 0)}
+                      innerRadius={55}
+                      outerRadius={85}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {[
+                        '#10b981', '#f59e0b', '#ef4444', '#f43f5e', '#94a3b8'
+                      ].map((color, index) => (
+                        <Cell key={`cell-${index}`} fill={color} stroke="none" />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(val) => `Rs. ${formatAmount(val)}`}
+                      contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', border: 'none', color: '#fff', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)' }}
+                      itemStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#fff' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-slate-400 opacity-60">
+                  <FiTrendingUp size={32} className="mb-2 opacity-20" />
+                  <div className="text-[0.65rem] font-black uppercase tracking-widest">Awaiting Data</div>
+                </div>
+              )}
             </div>
             <div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1">
               {[
@@ -455,131 +476,110 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail, viewMo
         </section>
       )}
 
+      {/* RETURNS DISTRIBUTION CHART (Standalone) */}
+      {viewMode === 'returns-distribution' && (
+        <Card
+          title="Returns Distribution"
+          subtitle="Volume by return status"
+          className="h-full flex flex-col"
+          contentClassName="p-4 flex-1 flex flex-col min-h-[300px]"
+        >
+          <div className="flex-1 min-h-0 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={RETURNS_CARDS.map(r => {
+                  const live = dashboardCards[r.key] || summaryMap[r.status] || {};
+                  return { name: r.title, count: Number(live.total_orders || 0), color: r.color };
+                })}
+                margin={{ top: 20, right: 10, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#64748b' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                <Tooltip
+                  cursor={{ fill: '#f8fafc' }}
+                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', border: 'none', color: '#fff' }}
+                  itemStyle={{ color: '#fff', fontSize: '11px', fontWeight: '800' }}
+                />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={32}>
+                  {RETURNS_CARDS.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
+
+      {/* FULFILMENT LIFECYCLE PROGRESS (Standalone) */}
+      {viewMode === 'fulfilment-lifecycle' && (
+        <Card
+          title="Fulfilment Lifecycle"
+          subtitle="Stage performance"
+          className="h-full flex flex-col"
+          contentClassName="p-4 flex-1 flex flex-col justify-center"
+        >
+          <div className="space-y-6">
+            {FULFILMENT_CARDS.map((c, index) => {
+              const live = dashboardCards[c.key] || summaryMap[c.status] || {};
+              const totalIncoming = dashboardCards.all_orders?.total_orders || summaryMap['Total Orders']?.count || 1;
+              const percentage = Math.round((Number(live.total_orders || 0) / totalIncoming) * 100);
+              const barColors = ['bg-teal-500', 'bg-emerald-500', 'bg-indigo-500', 'bg-slate-400', 'bg-rose-500', 'bg-blue-500'];
+              const textColors = ['group-hover:text-teal-600', 'group-hover:text-emerald-600', 'group-hover:text-indigo-600', 'group-hover:text-slate-600', 'group-hover:text-rose-600', 'group-hover:text-blue-600'];
+              const iconBgColors = ['group-hover:bg-teal-50', 'group-hover:bg-emerald-50', 'group-hover:bg-indigo-50', 'group-hover:bg-slate-100', 'group-hover:bg-rose-50', 'group-hover:bg-blue-50'];
+
+              return (
+                <div key={c.key} className="space-y-1 group cursor-pointer" onClick={() => (live.route || c.route) && navigate(live.route || c.route)}>
+                  <div className="flex items-center justify-between px-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <div className={`p-1 rounded-md bg-slate-50 text-slate-400 transition-all ${iconBgColors[index]} ${textColors[index]}`}>
+                        <c.icon size={11} />
+                      </div>
+                      <span className={`text-[11px] font-black text-slate-700 uppercase tracking-tight transition-colors ${textColors[index]}`}>{c.title}</span>
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[0.65rem] font-black text-slate-900">{formatCount(live.total_orders)}</span>
+                      <span className={`text-[0.55rem] font-black ml-0.5 ${textColors[index].replace('group-hover:', '')}`}>({percentage}%)</span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div className={`h-full transition-all duration-1000 ease-out ${barColors[index]}`} style={{ width: `${percentage}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
       {/* SECTION 2 & 3: OPERATIONAL COMMAND CENTER */}
       {(viewMode === 'all' || viewMode === 'operational') && (
-        <section className="space-y-3 border-t border-slate-200 pt-4">
-          <SectionHeader title="Operational Command Center" subtitle="Real-time anomalies & lifecycle insights" />
+        <section className="space-y-4 border-t border-slate-200 pt-2">
+          <SectionHeader title="Operational Insights" subtitle="Logistics and claim management" />
 
-          <div className="grid gap-3 xl:grid-cols-[1fr_3fr]">
-            {/* LEFT: Anomalies (Vertical) */}
-            <div className="flex flex-col">
-              <Card
-                className="h-full border-orange-100 bg-orange-50/20 shadow-none"
-                title="System Anomalies"
-                subtitle="Issues requiring attention"
-                contentClassName="p-3 space-y-3 flex-1 overflow-y-auto max-h-[600px] [scrollbar-width:thin]"
-                action={
-                  <button type="button" className="text-[0.65rem] font-bold text-orange-600 uppercase tracking-widest hover:underline" onClick={() => navigate('/payment-mismatch')}>
-                    Review All
-                  </button>
-                }
-              >
-                {actionNeeded.length > 0 ? (
-                  actionNeeded.map((item) => (
-                    <ActionCard key={item.status} item={item} onOpen={navigate} />
-                  ))
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-12 text-center opacity-60">
-                    <div className="h-12 w-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 mb-3">
-                      <FiCheckCircle size={24} />
-                    </div>
-                    <div className="text-xs font-bold text-slate-500">No anomalies detected</div>
-                  </div>
-                )}
-              </Card>
-            </div>
+          {/* SEPARATE STATUS CARDS GRID */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-2">
+            {SEPARATE_CARDS.map((item) => {
+              const live = item.key === 'approved_claims'
+                ? { total_orders: summaryMap.Claim?.approved_count, total_cost: summaryMap.Claim?.approved_amount }
+                : item.key === 'pending_claims'
+                  ? { total_orders: summaryMap.Claim?.pending_count, total_cost: summaryMap.Claim?.pending_amount }
+                  : dashboardCards[item.key] || summaryMap[item.status] || {};
 
-            {/* RIGHT: Charts & Insights */}
-            <div className="space-y-3">
-              <div className="grid gap-3 lg:grid-cols-[2fr_1fr]">
-                {/* Main Lifecycle Chart */}
-                <Card title="Order Lifecycle" subtitle="Volume vs Value" contentClassName="p-5 flex flex-col h-full">
-                  <div className="h-[420px] w-full mt-2">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={[...FULFILMENT_CARDS, ...RETURNS_CARDS, ...SETTLEMENT_CARDS].map(c => {
-                          const live = dashboardCards[c.key] || summaryMap[c.status] || {};
-                          return {
-                            name: c.title,
-                            orders: Number(live.total_orders || 0),
-                            amount: Number(live.total_cost || 0),
-                            route: c.route
-                          };
-                        }).filter(d => d.orders > 0)}
-                        margin={{ top: 20, right: 30, left: 10, bottom: 70 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis
-                          dataKey="name"
-                          angle={-45}
-                          textAnchor="end"
-                          interval={0}
-                          height={90}
-                          tick={{ fontSize: 11, fontWeight: 'bold', fill: '#475569' }}
-                        />
-                        <YAxis yAxisId="left" orientation="left" stroke="#6366f1" tick={{ fontSize: 11 }} />
-                        <YAxis yAxisId="right" orientation="right" stroke="#10b981" tick={{ fontSize: 11 }} />
-                        <Tooltip
-                          contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', border: 'none', color: '#fff', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)' }}
-                        />
-                        <Bar yAxisId="left" dataKey="orders" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={40} onClick={(data) => data.route && navigate(data.route)} />
-                        <Bar yAxisId="right" dataKey="amount" fill="#10b981" radius={[6, 6, 0, 0]} barSize={40} onClick={(data) => data.route && navigate(data.route)} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="mt-2 pb-2 flex justify-center gap-6 border-t border-slate-50 pt-4">
-                    <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 rounded-full bg-indigo-500" />
-                      <span className="text-[0.65rem] font-black text-slate-500 uppercase">Order Count</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 rounded-full bg-emerald-500" />
-                      <span className="text-[0.65rem] font-black text-slate-500 uppercase">Total Valuation</span>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Side Insights */}
-                <div className="space-y-3 flex flex-col h-full">
-                  <Card title="Quick Volume" subtitle="Key indicators" className="flex-1">
-                    <div className="h-[200px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          layout="vertical"
-                          data={businessTiles}
-                          margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
-                        >
-                          <XAxis type="number" hide />
-                          <YAxis dataKey="label" type="category" axisLine={false} tickLine={false} width={70} tick={{ fontSize: 10, fontWeight: 900, fill: '#475569' }} />
-                          <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', border: 'none', color: '#fff' }} />
-                          <Bar dataKey="value" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={24} label={{ position: 'right', fill: '#64748b', fontSize: 11, fontWeight: 'bold' }}>
-                            {businessTiles.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.label === 'Delivered' ? '#10b981' : entry.label === 'RTO' ? '#f43f5e' : '#6366f1'} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </Card>
-
-                  <Card title="Claim Status" subtitle="Pending/Approved" className="flex-1">
-                    <div className="grid grid-cols-2 gap-2 h-full content-center">
-                      <div className="rounded-xl border border-violet-100 bg-violet-50/30 p-3 text-center hover:bg-violet-50 transition-colors cursor-pointer" onClick={() => navigate('/approve-claim')}>
-                        <div className="text-[0.55rem] font-black text-violet-400 uppercase tracking-widest mb-1">Approved</div>
-                        <div className="text-lg font-black text-violet-700">{formatCount(dashboardCards.approved_claims?.total_orders ?? summaryMap.Claim?.approved_count)}</div>
-                        <div className="text-[0.6rem] font-bold text-violet-500 mt-1">₹{formatAmount(dashboardCards.approved_claims?.total_cost ?? summaryMap.Claim?.approved_amount)}</div>
-                      </div>
-                      <div className="rounded-xl border border-fuchsia-100 bg-fuchsia-50/30 p-3 text-center hover:bg-fuchsia-50 transition-colors cursor-pointer" onClick={() => navigate('/approve-claim')}>
-                        <div className="text-[0.55rem] font-black text-fuchsia-400 uppercase tracking-widest mb-1">Pending</div>
-                        <div className="text-lg font-black text-fuchsia-700">{formatCount(dashboardCards.pending_claims?.total_orders ?? summaryMap.Claim?.pending_count)}</div>
-                        <div className="text-[0.6rem] font-bold text-fuchsia-500 mt-1">₹{formatAmount(dashboardCards.pending_claims?.total_cost ?? summaryMap.Claim?.pending_amount)}</div>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              </div>
-            </div>
+              return (
+                <StatusCard
+                  key={item.key}
+                  title={item.title}
+                  count={live.total_orders}
+                  amount={live.total_cost}
+                  tone={item.tone}
+                  icon={item.icon}
+                  onClick={() => navigate(item.route)}
+                />
+              );
+            })}
           </div>
+
+
         </section>
       )}
 
