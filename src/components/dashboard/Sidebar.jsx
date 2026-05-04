@@ -12,13 +12,13 @@ export default function Sidebar({ accountDetails = null }) {
   const lossBreakdown = accountStatus.loss_breakdown || {};
 
   const lossRows = [
-    { l: 'Customer Returns', v: accountStatus.customer_return_charge_pending, c: lossBreakdown.customer_return_pending?.count ?? 0 },
+    { l: 'Customer Returns Pending', v: accountStatus.customer_return_charge_pending, c: lossBreakdown.customer_return_pending?.count ?? 0 },
     { l: 'Ad Spend', v: accountStatus.advertisement, c: lossBreakdown.advertisement?.count ?? 0 },
-    { l: 'RTO Packaging', v: accountStatus.rto_packaging_loss, c: lossBreakdown.rto_packaging_loss?.count ?? 0 },
+    { l: 'RTO Packaging loss', v: accountStatus.rto_packaging_loss, c: lossBreakdown.rto_packaging_loss?.count ?? 0 },
     { l: 'Payment Loss', v: accountStatus.payment_loss, c: lossBreakdown.payment_loss?.count ?? 0 },
-    { l: 'Return Mismatch', v: accountStatus.wrong_damage_missing_returns, c: lossBreakdown.wrong_damage_missing_returns?.count ?? 0 },
-    { l: 'Missing Returns', v: accountStatus.return_not_received_loss, c: lossBreakdown.return_not_received_loss?.count ?? 0 },
-  ].sort((a, b) => (Number(b.v) || 0) - (Number(a.v) || 0));
+    { l: 'Wrong Damange missing returns', v: accountStatus.wrong_damage_missing_returns, c: lossBreakdown.wrong_damage_missing_returns?.count ?? 0 },
+    { l: 'Return Not Received loss', v: accountStatus.return_not_received_loss, c: lossBreakdown.return_not_received_loss?.count ?? 0 },
+  ].map(r => ({...r,  v: Number(r.v) || 0 })).sort((a, b) => b.v - a.v); 
 
   const alerts = [
     { l: 'Payment Issues', c: lossBreakdown.payment_loss?.count ?? 0, color: 'text-amber-600' },
@@ -72,7 +72,7 @@ export default function Sidebar({ accountDetails = null }) {
             </div>
           </div>
 
-          {/* ALERTS / ACTION ITEMS */}
+          {/* ALERTS / ACTION ITEMS
           {alerts.length > 0 && (
             <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-100 space-y-1.5">
               <div className="text-[0.6rem] font-black text-amber-700 uppercase tracking-widest flex items-center gap-1.5">
@@ -88,7 +88,7 @@ export default function Sidebar({ accountDetails = null }) {
                 ))}
               </div>
             </div>
-          )}
+          )} */}
 
           <div className="h-px bg-gray-200/50" />
 
@@ -96,7 +96,7 @@ export default function Sidebar({ accountDetails = null }) {
             <div className="mb-1.5 text-[0.65rem] font-black text-slate-400 uppercase tracking-widest">Loss Breakdown</div>
 
             <div className="mt-1 space-y-1.5">
-              {lossRows.filter(r => (Number(r.v) || 0) > 0).slice(0, 3).map((row, idx) => (
+              {lossRows.slice(0, 6).map((row, idx) => (
                 <div key={row.l} className="flex items-center justify-between text-[11px] font-bold uppercase text-slate-400">
                   <div className="flex items-center gap-1.5 overflow-hidden">
                     <div className={`h-2 w-2 shrink-0 rounded-full ${idx === 0 ? 'bg-rose-500' : 'bg-rose-300'}`} />

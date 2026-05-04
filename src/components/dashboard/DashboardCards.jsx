@@ -32,6 +32,7 @@ import {
   Area,
   LabelList,
 } from 'recharts';
+import { b } from 'framer-motion/client';
 
 
 const formatAmount = (value) =>
@@ -84,11 +85,11 @@ const KPI_CONFIG = [
 const FULFILMENT_CARDS = [
   { key: 'all_orders', status: 'All Received Orders', title: 'All Orders', route: '/all-orders', tone: 'border-teal-200 bg-teal-50', icon: FiLayers },
   { key: 'delivered', status: 'Delivered Orders', title: 'Delivered', route: '/delivered-orders', tone: 'border-emerald-200 bg-emerald-50', icon: FiCheckCircle },
-  { key: 'shipped', status: 'Shipped Out For Delivery', title: 'Dispatched', route: '/shipped', tone: 'border-indigo-200 bg-indigo-50', icon: FiBox },
+  { key: 'shipped', status: 'Shipped Out For Delivery', title: 'Shipped', route: '/shipped', tone: 'border-indigo-200 bg-indigo-50', icon: FiBox },
   { key: 'cancelled', status: 'Cancelled Orders', title: 'Cancelled', route: '/cancelled-orders', tone: 'border-slate-300 bg-slate-100', icon: FiXCircle },
-  { key: 'all_returns', status: 'Returns', title: 'Returns', route: '/received-returns', tone: 'border-rose-200 bg-rose-50', icon: FiTrendingDown },
-  { key: 'ready_to_ship', status: 'Processing', title: 'Processing (Ready)', route: '/ready-to-ship', tone: 'border-blue-200 bg-blue-50', icon: FiClock },
-  { key: 'others', status: 'Others', title: 'Other / New', route: null, tone: 'border-slate-200 bg-slate-50', icon: FiBox },
+  { key: 'all_returns', status: 'Returns', title: 'Returns', route: '/returns-orders', tone: 'border-rose-200 bg-rose-50', icon: FiTrendingDown },
+  { key: 'ready_to_ship', status: 'Ready To Ship', title: 'Ready To Ship', route: '/ready-to-ship', tone: 'border-blue-200 bg-blue-50', icon: FiClock },
+  { key: 'other', status: 'Others', title: 'Pending / New', route: '/others-orders', tone: 'border-slate-200 bg-slate-50', icon: FiBox },
 ];
 
 const RETURNS_CARDS = [
@@ -267,42 +268,13 @@ export function useAccountDetails(accountStatus) {
   ];
 }
 
-export default function DashboardCards({ onMetricsReady, onAccountDetail, viewMode = 'all', extraAction = null }) {
+export default function DashboardCards({ dashboardData, viewMode = 'all', extraAction = null }) {
   const navigate = useNavigate();
-  const [summaryMap, setSummaryMap] = useState({});
-  const [dashboardCards, setDashboardCards] = useState({});
-  const [accountStatus, setAccountStatus] = useState({});
-  const [businessInsights, setBusinessInsights] = useState({});
-  const [averages, setAverages] = useState({});
-  const [overview, setOverview] = useState({ headline_metrics: {}, action_needed: [] });
-  const { activeAccount, selectedDateRange } = useAuth();
 
-  useEffect(() => {
-    if (!activeAccount?.id || !selectedDateRange?.from || !selectedDateRange?.to) return;
-
-    api.post('/get-dashboard-summary', {
-      start_date: selectedDateRange.from,
-      end_date: selectedDateRange.to,
-    }, {
-      headers: { account: activeAccount.id },
-    })
-      .then((res) => {
-        const payload = res.data || {};
-        const map = {};
-        (payload.data || []).forEach((item) => { map[item.status] = item; });
-        setSummaryMap(map);
-        setDashboardCards(payload.dashboard_cards || {});
-        setAccountStatus(payload.account_status || {});
-        setBusinessInsights(payload.business_insights || {});
-        setOverview(payload.overview || { headline_metrics: {}, action_needed: [] });
-        const resolvedAverages = payload.averages || {};
-        setAverages(resolvedAverages);
-        onMetricsReady?.(useDashboardMetrics(resolvedAverages));
-        onAccountDetail?.(payload.account_status || {});
-      })
-      .catch(() => { });
-  }, [activeAccount?.id, selectedDateRange?.from, selectedDateRange?.to, onMetricsReady, onAccountDetail]);
-
+  const dashboardCards = dashboardData?.dashboard_cards || {};
+  const accountStatus = dashboardData?.account_status || {};
+  const businessInsights = dashboardData?.business_insights || {};
+  const overview = dashboardData?.overview || { headline_metrics: {}, action_needed: [] };
   const headlineMetrics = overview.headline_metrics || {};
 
 
@@ -330,7 +302,7 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail, viewMo
   const renderStatusGrid = (items, cols = 'sm:grid-cols-2 xl:grid-cols-3') => (
     <div className={`grid gap-3 ${cols}`}>
       {items.map((item) => {
-        const live = dashboardCards[item.key] || summaryMap[item.status] || {};
+        const live = dashboardCards[item.key] || {};
         return (
           <StatusCard
             key={item.key || item.status}
@@ -359,7 +331,7 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail, viewMo
           ].map(p => {
             const live = p.key === 'received'
               ? { total_orders: headlineMetrics.received_payment_orders, total_cost: headlineMetrics.received_bank_amount }
-              : dashboardCards[p.key] || summaryMap[p.status] || {};
+              : dashboardCards[p.key] || {};
 
             return (
               <div key={p.key} onClick={() => p.route && navigate(p.route)} className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:shadow-md hover:border-slate-200 transition-all cursor-pointer group">
@@ -489,8 +461,8 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail, viewMo
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={RETURNS_CARDS.map(r => {
-                  const live = dashboardCards[r.key] || summaryMap[r.status] || {};
-                  return { name: r.title, count: Number(live.total_orders || 0), color: r.color };
+                  const live = dashboardCards[r.key] || {};
+                  return { name: r.title, count: Number(live.total_orders || 0), color: r.color, route: r.route };
                 })}
                 margin={{ top: 20, right: 10, left: 0, bottom: 0 }}
               >
@@ -502,7 +474,17 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail, viewMo
                   contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', border: 'none', color: '#fff' }}
                   itemStyle={{ color: '#fff', fontSize: '11px', fontWeight: '800' }}
                 />
-                <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={32}>
+                <Bar 
+                  dataKey="count" 
+                  radius={[4, 4, 0, 0]} 
+                  barSize={32}
+                  onClick={(data) => {
+                    if (data && data.route) {
+                      navigate(data.route);
+                    }
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
                   {RETURNS_CARDS.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                 </Bar>
               </BarChart>
@@ -524,28 +506,15 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail, viewMo
               const totalIncoming = Number(dashboardCards.all_orders?.total_orders || 0);
               const breakdown = dashboardCards.all_orders?.breakdown || {};
               
-              let live = dashboardCards[c.key] || summaryMap[c.status] || {};
-              
-              // Custom handling for 'all_returns' (sum of all return related statuses)
+              let live = dashboardCards[c.key] || {};
+
               if (c.key === 'all_returns') {
-                const returnCount = (Number(breakdown.return_received || 0) + Number(breakdown.return_in_transit || 0) + Number(breakdown.return_not_received || 0));
-                live = { total_orders: returnCount, route: '/received-returns' };
+                live = { total_orders: breakdown.all_returns || 0, route: '/returns-orders' };
               }
               
               // Custom handling for 'others' (remaining orders)
-              if (c.key === 'others') {
-                const knownSum = (
-                  Number(breakdown.ready_to_ship || 0) + 
-                  Number(breakdown.shipped || 0) + 
-                  Number(breakdown.out_for_delivery || 0) + 
-                  Number(breakdown.delivered || 0) + 
-                  Number(breakdown.cancelled || 0) + 
-                  Number(breakdown.return_in_transit || 0) + 
-                  Number(breakdown.return_received || 0) + 
-                  Number(breakdown.return_not_received || 0)
-                );
-                const otherCount = Math.max(0, totalIncoming - knownSum);
-                live = { total_orders: otherCount };
+              if (c.key === 'other') {
+                live = { total_orders: breakdown.other || 0, route: '/others-orders' };
               }
 
               const percentage = totalIncoming > 0 ? Math.round((Number(live.total_orders || 0) / totalIncoming) * 100) : 0;
@@ -585,11 +554,7 @@ export default function DashboardCards({ onMetricsReady, onAccountDetail, viewMo
           {/* SEPARATE STATUS CARDS GRID */}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-2">
             {SEPARATE_CARDS.map((item) => {
-              const live = item.key === 'approved_claims'
-                ? { total_orders: summaryMap.Claim?.approved_count, total_cost: summaryMap.Claim?.approved_amount }
-                : item.key === 'pending_claims'
-                  ? { total_orders: summaryMap.Claim?.pending_count, total_cost: summaryMap.Claim?.pending_amount }
-                  : dashboardCards[item.key] || summaryMap[item.status] || {};
+              const live = dashboardCards[item.key] || {};
 
               return (
                 <StatusCard

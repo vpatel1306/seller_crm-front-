@@ -11,6 +11,7 @@ import AccountModal from '../components/layout/AccountModal';
 import AccountSelectModal from '../components/layout/AccountSelectModal';
 import api from '../services/api';
 import { FiCalendar, FiChevronDown } from 'react-icons/fi';
+import { useDashboardMetrics } from '../components/dashboard/DashboardCards';
 
 const fmtDate = (d) => {
   if (!d) return null;
@@ -21,13 +22,33 @@ const fmtDate = (d) => {
 export default function Dashboard() {
   const { user, fetchUser, activeAccount, setActiveAccount, selectedDateRange } = useAuth();
   const [loading, setLoading] = useState(!user);
-  const [metrics, setMetrics] = useState([]);
-  const [accountDetails, setAccountDetails] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
   const [showDateModal, setShowDateModal] = useState(false);
   const [accounts, setAccounts] = useState([]);
   const [loadingAccounts, setLoadingAccounts] = useState(true);
   const [modal, setModal] = useState(null);
   const [showAccountSelectModal, setShowAccountSelectModal] = useState(false);
+
+  const fetchDashboardData = useCallback(async () => {
+    if (!activeAccount?.id || !selectedDateRange?.from || !selectedDateRange?.to) return;
+
+    try {
+      const res = await api.post('/get-dashboard-summary', {
+        start_date: selectedDateRange.from,
+        end_date: selectedDateRange.to,
+      }, {
+        headers: { account: activeAccount.id },
+      });
+      setDashboardData(res.data || {});
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+      setDashboardData({});
+    }
+  }, [activeAccount?.id, selectedDateRange?.from, selectedDateRange?.to]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const fetchAccounts = useCallback(async (preserveActive = false) => {
     try {
@@ -73,6 +94,9 @@ export default function Dashboard() {
 
   if (loading) return <Loader />;
 
+  const metrics = dashboardData ? useDashboardMetrics(dashboardData.averages || {}) : [];
+  const accountDetails = dashboardData?.account_status || null;
+
   return (
     <AppShell mainClassName="pt-4 lg:pt-5">
       <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
@@ -80,8 +104,7 @@ export default function Dashboard() {
           {/* EXECUTIVE OVERVIEW CARDS - OUTSIDE THE GRID */}
           <DashboardCards
             viewMode="executive-cards"
-            onMetricsReady={setMetrics}
-            onAccountDetail={setAccountDetails}
+            dashboardData={dashboardData}
             extraAction={
               <button 
                 onClick={() => setShowDateModal(true)}
@@ -109,15 +132,13 @@ export default function Dashboard() {
             {/* COLUMN 2: RETURNS DISTRIBUTION */}
             <DashboardCards
               viewMode="returns-distribution"
-              onMetricsReady={setMetrics}
-              onAccountDetail={setAccountDetails}
+              dashboardData={dashboardData}
             />
 
             {/* COLUMN 3: FULFILMENT LIFECYCLE */}
             <DashboardCards
               viewMode="fulfilment-lifecycle"
-              onMetricsReady={setMetrics}
-              onAccountDetail={setAccountDetails}
+              dashboardData={dashboardData}
             />
           </div>
 
@@ -126,8 +147,7 @@ export default function Dashboard() {
             {/* FINANCIAL HEALTH (PIE CHART) */}
             <DashboardCards
               viewMode="executive-charts"
-              onMetricsReady={setMetrics}
-              onAccountDetail={setAccountDetails}
+              dashboardData={dashboardData}
             />
 
             {/* AVERAGES OVERVIEW */}
@@ -136,16 +156,14 @@ export default function Dashboard() {
             {/* PAYMENT STATUS */}
             <DashboardCards
               viewMode="payment-cycle"
-              onMetricsReady={setMetrics}
-              onAccountDetail={setAccountDetails}
+              dashboardData={dashboardData}
             />
           </div>
 
           <div className="space-y-3">
             <DashboardCards
               viewMode="operational"
-              onMetricsReady={setMetrics}
-              onAccountDetail={setAccountDetails}
+              dashboardData={dashboardData}
             />
           </div>
         </div>

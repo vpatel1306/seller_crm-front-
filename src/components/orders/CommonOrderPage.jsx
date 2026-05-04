@@ -234,6 +234,10 @@ export default function CommonOrderPage({
       if (filters.platform_order_id.trim()) filterData[orderSearchFieldKey] = filters.platform_order_id.trim();
       if (requestFromDate) filterData.start_date = requestFromDate;
       if (requestToDate) filterData.end_date = requestToDate;
+      
+      if (fixedFilterData.status && Array.isArray(fixedFilterData.status)) {
+        filterData.status = fixedFilterData.status;
+      }
       const finalFilterData = extraFilterData ? extraFilterData(filterData) : filterData;
       const requestPayload = buildRequestPayload({
         filterData: finalFilterData,
@@ -282,11 +286,14 @@ export default function CommonOrderPage({
     } finally {
       setLoading(false);
     }
-  }, [activeAccount?.id, buildRequestPayload, dateRange, endpoint, extraFilterData, filters, fixedFilterData, mapResponse, orderSearchFieldKey, perPage, requestMethod, showStatusAndPaymentFilters]);
+  }, [activeAccount?.id, buildRequestPayload, endpoint, extraFilterData, filters, fixedFilterData, mapResponse, orderSearchFieldKey, perPage, requestMethod, showStatusAndPaymentFilters, dateRange]);
 
   useEffect(() => {
     if (!activeAccount?.id) return;
-    loadOrders();
+    const timeoutId = setTimeout(() => {
+      loadOrders();
+    }, 0);
+    return () => clearTimeout(timeoutId);
   }, [activeAccount?.id, loadOrders]);
 
   useEffect(() => {
