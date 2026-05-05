@@ -90,6 +90,9 @@ export default function SkuList() {
   const [skuFilter, setSkuFilter] = useState('all');
   const [accountFilter, setAccountFilter] = useState('this-account');
   const [quickFilters, setQuickFilters] = useState(initialQuickFilters);
+  const [showImportExportModal, setShowImportExportModal] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
 
   const accountName = activeAccount?.account_name || 'No account selected';
   const activeAccountId = activeAccount?.id;
@@ -242,34 +245,76 @@ export default function SkuList() {
     }
   };
 
-  const exportToCSV = () => {
-    const headers = ['SKU ID', 'Size', 'Orders', 'Selling', 'Basic Cost', 'GST %', 'Packing', 'Final Cost', 'Last Update'];
-    const csvData = skuList.map((item) => [
-      item.sku_id || '-',
-      item.box_size || 'Free Size',
-      item.orders || 0,
-      item.selling || 0,
-      item.basic_cost || 0,
-      item.gst_percentage || 0,
-      item.packing_charge || 0,
-      calculateFinalCost(item).toFixed(2),
-      item.updated_at || '-',
-    ]);
+const exportToCSV = async () => {
+  try {
+    const response = await api.post(
+      '/export-sku-data',
+      {
+        filter_data: {},
+        page_no: 1,
+        limit: 100,
+      },
+      {
+        headers: {
+          account: accountHeaderValue,
+        },
+        responseType: 'blob', 
+      }
+    );
 
-    const csvContent = [headers, ...csvData]
-      .map((row) => row.map((cell) => `"${cell}"`).join(','))
-      .join('\n');
+    const blob = new Blob([response.data], { type: 'text/csv' });
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `sku_list_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
+
+    link.href = url;
+    link.download = `sku_list_${new Date().toISOString().split('T')[0]}.csv`;
+
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-  };
+    link.remove();
+
+  } catch (err) {
+    console.error('Export error:', err);
+  }
+};
+
+const handleImportFile = async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  setImporting(true);
+  setImportResult(null);
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.post(
+      '/import-sku',
+      formData,
+      {
+        headers: {
+          account: accountHeaderValue,
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    if (response.data?.status) {
+      setImportResult(response.data);
+      fetchSkuList(1, perPage);
+    }
+  } catch (err) {
+    console.error('Import error:', err);
+    setImportResult({
+      status: false,
+      message: err.response?.data?.message || 'Import failed',
+    });
+  } finally {
+    setImporting(false);
+    event.target.value = '';
+  }
+};
 
   const handleAddSkuInputChange = (key, value) => {
     setAddSkuForm((prev) => ({ ...prev, [key]: value }));
@@ -619,17 +664,27 @@ export default function SkuList() {
             { label: 'Dashboard', onClick: () => navigate('/dashboard') },
             { label: 'SKU Master', current: true }
           ]}
-          actions={
+        actions={
+          <>
+            <Button variant="secondary" size="sm" onClick={() => setShowImportExportModal(true)} className="h-10 rounded-default border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm">
+              <FiFilter size={16} />
+              Import
+            </Button>
+
             <Button
               variant="create"
               size="sm"
               className="h-10 rounded-default border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm"
-              onClick={() => { resetAddSkuForm(); setShowAddSkuModal(true); }}
+              onClick={() => {
+                resetAddSkuForm();
+                setShowAddSkuModal(true);
+              }}
             >
               <FiPlus size={16} />
               Add SKU
             </Button>
-          }
+          </>
+        }
         />
 
         <div className="xl:hidden">
@@ -908,6 +963,90 @@ export default function SkuList() {
             </div>
           </div>
         ) : null}
+      </CommonModal>
+
+      <CommonModal
+        isOpen={showImportExportModal}
+        onClose={() => {
+          setShowImportExportModal(false);
+          setImporting(false);
+          setImportResult(null);
+        }}
+        title="Import / Export SKU Data"
+        size="md"
+        headerStyle="default"
+        showFooter={false}
+      >
+        <div className="space-y-5">
+          {importResult && (
+            <div className={`rounded-default border px-4 py-3 ${importResult.status ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50'}`}>
+              <div className={`text-sm font-bold ${importResult.status ? 'text-emerald-700' : 'text-red-600'}`}>
+                {importResult.message}
+              </div>
+              {importResult.summary && (
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded bg-white/50 px-3 py-2">
+                    <div className="font-bold text-text-muted">Total</div>
+                    <div className="mt-1 text-lg font-extrabold text-text">{importResult.summary.total}</div>
+                  </div>
+                  <div className="rounded bg-white/50 px-3 py-2">
+                    <div className="font-bold text-emerald-600">Inserted</div>
+                    <div className="mt-1 text-lg font-extrabold text-emerald-700">{importResult.summary.inserted}</div>
+                  </div>
+                  <div className="rounded bg-white/50 px-3 py-2">
+                    <div className="font-bold text-blue-600">Updated</div>
+                    <div className="mt-1 text-lg font-extrabold text-blue-700">{importResult.summary.updated}</div>
+                  </div>
+                  <div className="rounded bg-white/50 px-3 py-2">
+                    <div className="font-bold text-red-600">Failed</div>
+                    <div className="mt-1 text-lg font-extrabold text-red-700">{importResult.summary.failed}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <div className="flex flex-col gap-3 rounded-default border border-border bg-surface-alt/50 p-4">
+              <div className="flex items-center gap-2">
+                <FiFilter size={18} className="text-primary" />
+                <h3 className="font-bold text-text">Export SKU Data</h3>
+              </div>
+              <p className="text-sm text-text-muted">Download all SKU records as a CSV file.</p>
+              <Button
+                variant="primary"
+                className="w-full"
+                onClick={exportToCSV}
+              >
+                Download CSV
+              </Button>
+            </div>
+
+            <div className="flex flex-col gap-3 rounded-default border border-border bg-surface-alt/50 p-4">
+              <div className="flex items-center gap-2">
+                <FiPlus size={18} className="text-emerald-600" />
+                <h3 className="font-bold text-text">Import SKU Data</h3>
+              </div>
+              <p className="text-sm text-text-muted">Upload a CSV file to import SKU records.</p>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleImportFile}
+                disabled={importing}
+                className="hidden"
+                id="sku-import-file"
+              />
+              <Button
+                variant="success"
+                className="w-full"
+                disabled={importing}
+                onClick={() => document.getElementById('sku-import-file').click()}
+              >
+                {importing ? 'Importing...' : 'Upload CSV'}
+              </Button>
+            </div>
+          </div>
+        </div>
       </CommonModal>
     </AppShell>
   );

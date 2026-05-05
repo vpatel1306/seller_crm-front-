@@ -89,7 +89,7 @@ const FULFILMENT_CARDS = [
   { key: 'cancelled', status: 'Cancelled Orders', title: 'Cancelled', route: '/cancelled-orders', tone: 'border-slate-300 bg-slate-100', icon: FiXCircle },
   { key: 'all_returns', status: 'Returns', title: 'Returns', route: '/returns-orders', tone: 'border-rose-200 bg-rose-50', icon: FiTrendingDown },
   { key: 'ready_to_ship', status: 'Ready To Ship', title: 'Ready To Ship', route: '/ready-to-ship', tone: 'border-blue-200 bg-blue-50', icon: FiClock },
-  { key: 'other', status: 'Others', title: 'Pending / New', route: '/others-orders', tone: 'border-slate-200 bg-slate-50', icon: FiBox },
+  { key: 'other', status: 'Others', title: 'Pending / Hold', route: '/others-orders', tone: 'border-slate-200 bg-slate-50', icon: FiBox },
 ];
 
 const RETURNS_CARDS = [
@@ -319,10 +319,10 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
   );
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* INDEPENDENT PAYMENT CYCLE (Used in executive grid) */}
       {viewMode === 'payment-cycle' && (
-        <Card title="Payment Cycle" subtitle="Financial settlement status" className="h-full" contentClassName="p-3.5 space-y-2.5">
+        <Card title="Payment Cycle" subtitle="Financial settlement status" className="h-full" contentClassName="p-3.5 space-y-3">
           {[
             { key: 'received_payment', status: 'Received Payment', title: 'Received', color: 'text-emerald-600', icon: FiCheckCircle, bg: 'bg-emerald-50', route: '/received-payment-orders' },
             { key: 'pending_payment', status: 'Pending Payment', title: 'Pending', color: 'text-amber-600', icon: FiClock, bg: 'bg-amber-50', route: '/pending-payment-orders' },
@@ -334,13 +334,13 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
               : dashboardCards[p.key] || {};
 
             return (
-              <div key={p.key} onClick={() => p.route && navigate(p.route)} className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:shadow-md hover:border-slate-200 transition-all cursor-pointer group">
+              <div key={p.key} onClick={() => p.route && navigate(p.route)} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:shadow-md hover:border-slate-200 transition-all cursor-pointer group">
                 <div className="flex items-center gap-2.5">
                   <div className={`p-1.5 rounded-lg ${p.bg} ${p.color}`}>
                     <p.icon size={16} />
                   </div>
                   <div>
-                    <div className="text-[0.55rem] font-bold uppercase tracking-widest text-slate-400 leading-none">{p.title}</div>
+                    <div className="text-[0.75rem] font-bold uppercase tracking-widest text-slate-400 leading-none">{p.title}</div>
                     <div className="mt-1 text-xs font-black text-slate-900 leading-none">{formatCount(live.total_orders)}</div>
                   </div>
                 </div>
@@ -379,7 +379,7 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
                 { name: 'Ad Spend', value: Number(headlineMetrics.advertisement_cost || 0), color: '#f59e0b' },
                 { name: 'Return Loss', value: Number(accountStatus.return_not_received_loss || 0), color: '#ef4444' },
                 { name: 'Payment Loss', value: Number(accountStatus.payment_loss || 0), color: '#f43f5e' },
-                { name: 'Other Costs', value: Math.max(0, Number(headlineMetrics.total_sales_amount || 0) - Number(accountStatus.net_profit || 0) - Number(headlineMetrics.advertisement_cost || 0) - Number(accountStatus.return_not_received_loss || 0) - Number(accountStatus.payment_loss || 0)), color: '#94a3b8' },
+                // { name: 'Other Costs', value: Math.max(0, Number(headlineMetrics.total_sales_amount || 0) - Number(accountStatus.net_profit || 0) - Number(headlineMetrics.advertisement_cost || 0) - Number(accountStatus.return_not_received_loss || 0) - Number(accountStatus.payment_loss || 0)), color: '#94a3b8' },
               ].filter(d => d.value > 0).length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -389,7 +389,7 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
                         { name: 'Ad Spend', value: Number(headlineMetrics.advertisement_cost || 0), color: '#f59e0b' },
                         { name: 'Return Loss', value: Number(accountStatus.return_not_received_loss || 0), color: '#ef4444' },
                         { name: 'Payment Loss', value: Number(accountStatus.payment_loss || 0), color: '#f43f5e' },
-                        { name: 'Other Costs', value: Math.max(0, Number(headlineMetrics.total_sales_amount || 0) - Number(accountStatus.net_profit || 0) - Number(headlineMetrics.advertisement_cost || 0) - Number(accountStatus.return_not_received_loss || 0) - Number(accountStatus.payment_loss || 0)), color: '#94a3b8' },
+                        // { name: 'Other Costs', value: Math.max(0, Number(headlineMetrics.total_sales_amount || 0) - Number(accountStatus.net_profit || 0) - Number(headlineMetrics.advertisement_cost || 0) - Number(accountStatus.return_not_received_loss || 0) - Number(accountStatus.payment_loss || 0)), color: '#94a3b8' },
                       ].filter(d => d.value > 0)}
                       innerRadius={55}
                       outerRadius={85}
@@ -422,7 +422,7 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
                 { l: 'Ads', c: 'bg-amber-500' },
                 { l: 'Returns', c: 'bg-red-500' },
                 { l: 'Payments', c: 'bg-rose-500' },
-                { l: 'Others', c: 'bg-slate-400' }
+                // { l: 'Others', c: 'bg-slate-400' }
               ].map(leg => (
                 <div key={leg.l} className="flex items-center gap-1.5">
                   <div className={`h-2 w-2 rounded-full ${leg.c}`} />
@@ -480,6 +480,7 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
                   barSize={32}
                   onClick={(data) => {
                     if (data && data.route) {
+                      console.log('Navigating to:', data.route);
                       navigate(data.route);
                     }
                   }}
