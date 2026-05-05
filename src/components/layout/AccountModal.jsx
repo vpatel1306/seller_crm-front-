@@ -19,6 +19,7 @@ import CommonModal from '../common/CommonModal';
 import api from '../../services/api';
 import StatusMessage from '../ui/StatusMessage';
 import Button from '../ui/Button';
+import { useToast } from '../../context/ToastContext';
 
 const EMPTY = {
   supplier_id: '',
@@ -94,6 +95,8 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
   };
 
 
+  const { success, error } = useToast();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFeedback({ type: '', message: '' });
@@ -110,25 +113,22 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
         label_text_file_folder: form.label_text_file_folder || null,
       };
 
+      let res;
       if (mode === 'edit') {
-        await api.post(`/account-edit/${initialData.id}`, payload);
+        res = await api.post(`/account-edit/${initialData.id}`, payload);
       } else {
-        await api.post('/account-register', payload);
+        res = await api.post('/account-register', payload);
       }
-
-      setFeedback({
-        type: 'success',
-        message: mode === 'edit' ? 'Account updated successfully.' : 'Account added successfully.',
-      });
 
       setTimeout(() => {
         onSuccess?.(payload);
         onClose();
       }, 900);
     } catch (err) {
+      const errMsg = err.response?.data?.message || err.response?.data?.detail || 'Something went wrong. Please try again.';
       setFeedback({
         type: 'error',
-        message: err.response?.data?.message || err.response?.data?.detail || 'Something went wrong. Please try again.',
+        message: errMsg,
       });
     } finally {
       setLoading(false);
