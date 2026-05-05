@@ -17,6 +17,7 @@ import DataTable from '../ui/DataTable';
 import Button from '../ui/Button';
 import AccountModal from '../layout/AccountModal';
 import ConfirmModal from '../common/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 
 const fmtDate = (d) => {
@@ -60,6 +61,7 @@ function ActiveStatusToggle({ isActive, onClick }) {
 }
 
 export default function AccountList({ isStandalone = false }) {
+    const { success, error } = useToast();
     const { activeAccount, setActiveAccount } = useAuth();
     const activeAccountId = activeAccount?.id || null;
     const [accounts, setAccounts] = useState([]);
@@ -142,12 +144,16 @@ export default function AccountList({ isStandalone = false }) {
     const handleAccountStatusToggle = async (acc) => {
         if (!acc?.id) return;
         const nextStatus = Number(acc.is_active) === 1 ? 0 : 1;
-        await api.post(`/account-status/${acc.id}`, { is_active: nextStatus });
-        setAccounts((prev) => prev.map((item) => (
-            item.id === acc.id ? { ...item, is_active: nextStatus } : item
-        )));
-        if (activeAccountId === acc.id) {
-            setActiveAccount({ ...acc, is_active: nextStatus });
+        try {
+            await api.post(`/account-status/${acc.id}`, { is_active: nextStatus });
+            setAccounts((prev) => prev.map((item) => (
+                item.id === acc.id ? { ...item, is_active: nextStatus } : item
+            )));
+            if (activeAccountId === acc.id) {
+                setActiveAccount({ ...acc, is_active: nextStatus });
+            }
+        } catch (err) {
+            // Error is handled by global interceptor toast
         }
     };
 
@@ -163,6 +169,8 @@ export default function AccountList({ isStandalone = false }) {
             }
             setChecked(new Set());
             await fetchAccounts();
+        } catch (err) {
+            // Error is handled by global interceptor toast
         } finally {
             setDeleting(false);
             setAccountToDelete(null);

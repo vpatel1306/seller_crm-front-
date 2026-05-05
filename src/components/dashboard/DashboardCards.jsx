@@ -322,7 +322,7 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
     <div className="space-y-3">
       {/* INDEPENDENT PAYMENT CYCLE (Used in executive grid) */}
       {viewMode === 'payment-cycle' && (
-        <Card title="Payment Cycle" subtitle="Financial settlement status" className="h-full" contentClassName="p-3.5 space-y-2.5">
+        <Card title="Payment Cycle" subtitle="Financial settlement status" className="h-full" contentClassName="p-3 flex-1 flex flex-col justify-between space-y-3">
           {[
             { key: 'received_payment', status: 'Received Payment', title: 'Received', color: 'text-emerald-600', icon: FiCheckCircle, bg: 'bg-emerald-50', route: '/received-payment-orders' },
             { key: 'pending_payment', status: 'Pending Payment', title: 'Pending', color: 'text-amber-600', icon: FiClock, bg: 'bg-amber-50', route: '/pending-payment-orders' },
@@ -334,18 +334,18 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
               : dashboardCards[p.key] || {};
 
             return (
-              <div key={p.key} onClick={() => p.route && navigate(p.route)} className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:shadow-md hover:border-slate-200 transition-all cursor-pointer group">
-                <div className="flex items-center gap-2.5">
-                  <div className={`p-1.5 rounded-lg ${p.bg} ${p.color}`}>
-                    <p.icon size={16} />
+              <div key={p.key} onClick={() => p.route && navigate(p.route)} className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:shadow-lg hover:border-slate-200 transition-all cursor-pointer group flex-1">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-xl ${p.bg} ${p.color} shadow-sm group-hover:scale-110 transition-transform`}>
+                    <p.icon size={20} />
                   </div>
                   <div>
-                    <div className="text-[0.55rem] font-bold uppercase tracking-widest text-slate-400 leading-none">{p.title}</div>
-                    <div className="mt-1 text-xs font-black text-slate-900 leading-none">{formatCount(live.total_orders)}</div>
+                    <div className="text-[0.6rem] font-bold uppercase tracking-widest text-slate-400 leading-none">{p.title}</div>
+                    <div className="mt-1.5 text-sm font-black text-slate-900 leading-none">{formatCount(live.total_orders)}</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className={`text-xs font-black ${p.color}`}>₹{formatAmount(live.total_cost)}</div>
+                  <div className={`text-sm font-black ${p.color}`}>₹{formatAmount(live.total_cost)}</div>
                 </div>
               </div>
             );
@@ -474,9 +474,9 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
                   contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', border: 'none', color: '#fff' }}
                   itemStyle={{ color: '#fff', fontSize: '11px', fontWeight: '800' }}
                 />
-                <Bar 
-                  dataKey="count" 
-                  radius={[4, 4, 0, 0]} 
+                <Bar
+                  dataKey="count"
+                  radius={[4, 4, 0, 0]}
                   barSize={32}
                   onClick={(data) => {
                     if (data && data.route) {
@@ -505,13 +505,13 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
             {FULFILMENT_CARDS.map((c, index) => {
               const totalIncoming = Number(dashboardCards.all_orders?.total_orders || 0);
               const breakdown = dashboardCards.all_orders?.breakdown || {};
-              
+
               let live = dashboardCards[c.key] || {};
 
               if (c.key === 'all_returns') {
                 live = { total_orders: breakdown.all_returns || 0, route: '/returns-orders' };
               }
-              
+
               // Custom handling for 'others' (remaining orders)
               if (c.key === 'other') {
                 live = { total_orders: breakdown.other || 0, route: '/others-orders' };
