@@ -11,11 +11,15 @@ import {
   FiSave,
   FiShield,
   FiUser,
+  FiEye,
+  FiEyeOff,
 } from 'react-icons/fi';
+
 import CommonModal from '../common/CommonModal';
 import api from '../../services/api';
 import StatusMessage from '../ui/StatusMessage';
 import Button from '../ui/Button';
+import { useToast } from '../../context/ToastContext';
 
 const EMPTY = {
   supplier_id: '',
@@ -41,7 +45,7 @@ const mainFields = [
   { key: 'mobile_no', label: 'Mobile No', icon: <FiPhone size={13} />, type: 'number', required: true },
   { key: 'person_name', label: 'Contact Person', icon: <FiUser size={13} />, type: 'text', required: true },
   { key: 'order_data_from', label: 'Order Data From', icon: <FiCalendar size={13} />, type: 'date', required: true },
-  { key: 'label_text_file_folder', label: 'Label / File Folder', icon: <FiFileText size={13} />, type: 'text', required: false },
+  /* { key: 'label_text_file_folder', label: 'Label / File Folder', icon: <FiFileText size={13} />, type: 'text', required: false }, */
   { key: 'address', label: 'Address', icon: <FiMapPin size={13} />, type: 'text', required: false, textarea: true },
 ];
 
@@ -57,13 +61,16 @@ const normalizeInitialData = (data) => Object.entries({ ...EMPTY, ...(data || {}
   [key]: value ?? '',
 }), {});
 
-const fieldClassName = 'w-full rounded-[16px] border border-border bg-white px-3.5 py-3 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10';
+const fieldClassName = 'w-full rounded-default border border-border bg-white px-3.5 py-3 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10';
+
 const textareaClassName = `${fieldClassName} min-h-[108px] resize-none`;
 
 export default function AccountModal({ mode = 'add', initialData = null, onClose, onSuccess, disableClose = false }) {
   const [form, setForm] = useState(mode === 'edit' && initialData ? normalizeInitialData(initialData) : EMPTY);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
+
 
   useEffect(() => {
     setForm(mode === 'edit' && initialData ? normalizeInitialData(initialData) : EMPTY);
@@ -75,11 +82,20 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
     if (feedback.message) {
       setFeedback({ type: '', message: '' });
     }
+    
+    let processedValue = value;
+    if (name === 'gst_no') processedValue = value.toUpperCase();
+    if (name === 'mobile_no') processedValue = value.replace(/\D/g, '').slice(0, 10);
+    if (name === 'bank_account_no') processedValue = value.replace(/\D/g, '');
+
     setForm((prev) => ({
       ...prev,
-      [name]: name === 'gst_no' ? value.toUpperCase() : value,
+      [name]: processedValue,
     }));
   };
+
+
+  const { success, error } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -97,25 +113,22 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
         label_text_file_folder: form.label_text_file_folder || null,
       };
 
+      let res;
       if (mode === 'edit') {
-        await api.post(`/account-edit/${initialData.id}`, payload);
+        res = await api.post(`/account-edit/${initialData.id}`, payload);
       } else {
-        await api.post('/account-register', payload);
+        res = await api.post('/account-register', payload);
       }
-
-      setFeedback({
-        type: 'success',
-        message: mode === 'edit' ? 'Account updated successfully.' : 'Account added successfully.',
-      });
 
       setTimeout(() => {
         onSuccess?.(payload);
         onClose();
       }, 900);
     } catch (err) {
+      const errMsg = err.response?.data?.message || err.response?.data?.detail || 'Something went wrong. Please try again.';
       setFeedback({
         type: 'error',
-        message: err.response?.data?.message || err.response?.data?.detail || 'Something went wrong. Please try again.',
+        message: errMsg,
       });
     } finally {
       setLoading(false);
@@ -142,20 +155,30 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
         />
       ) : (
         <>
+        <div className="relative">
           <input
-            className={fieldClassName}
-            type={type}
+            className={`${fieldClassName} ${type === 'password' ? 'pr-12' : ''}`}
+            type={type === 'password' ? (showPassword ? 'text' : 'password') : (type === 'number' ? 'text' : type)}
             name={key}
             value={form[key]}
             onChange={handleChange}
             required={required}
             placeholder={key === 'gst_no' ? 'Enter GST No.' : label}
             autoComplete={type === 'password' ? 'new-password' : 'off'}
-            maxLength={key === 'gst_no' ? 15 : key === 'mobile_no' ? 10 : undefined}
           />
+          {type === 'password' && (
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary transition-colors"
+            >
+              {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+            </button>
+          )}
           {key === 'gst_no' ? (
             <p className="mt-1 text-[11px] text-text-muted">Format example: `24ABCDE1234F1Z5`</p>
           ) : null}
+        </div>
         </>
       )}
     </div>
@@ -171,27 +194,28 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
       isOpen
       onClose={disableClose ? () => {} : onClose}
       title={title}
-      size="xl"
+      size="lg"
       headerStyle="gradient"
       showFooter={false}
       showCloseButton={!disableClose}
       closeOnEsc={!disableClose}
       closeOnOverlayClick={!disableClose}
-      customClass="max-w-[1220px]"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
 
         <StatusMessage type={feedback.type} message={feedback.message} className="mb-0" />
 
         {disableClose ? (
-          <div className="flex items-start gap-3 rounded-[20px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+          <div className="flex items-start gap-3 rounded-default border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+
             <FiShield size={18} className="mt-0.5 shrink-0" />
             <span>Create your first account to continue using the dashboard.</span>
           </div>
         ) : null}
 
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.9fr)]">
-          <section className="rounded-[24px] border border-border bg-white shadow-sm">
+        <div className="grid gap-5">
+          <section className="rounded-default border border-border bg-white shadow-sm">
+
             <div className="border-b border-border px-5 py-4">
               <h3 className="text-base font-extrabold text-text">Primary Account Details</h3>
               <p className="mt-1 text-sm text-text-muted">Core information used for account registration and operations.</p>
@@ -201,8 +225,9 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
             </div>
           </section>
 
-          <section className="space-y-5">
-            <div className="rounded-[24px] border border-border bg-surface-alt shadow-sm">
+          {/* <section className="space-y-5">
+            <div className="rounded-default border border-border bg-surface-alt shadow-sm">
+
               <div className="border-b border-border px-5 py-4">
                 <h3 className="text-base font-extrabold text-text">Optional Access Details</h3>
                 <p className="mt-1 text-sm text-text-muted">Add credentials and bank details if they are available right now.</p>
@@ -212,7 +237,7 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
               </div>
             </div>
 
-          </section>
+          </section> */}
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-5">

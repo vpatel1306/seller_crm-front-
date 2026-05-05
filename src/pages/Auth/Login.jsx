@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
+
 import logoImage from '../../assets/favicon.png';
 
 const validate = ({ email, password }) => {
@@ -17,7 +19,9 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
 
   if (token) return <Navigate to="/dashboard" replace />;
 
@@ -94,15 +98,24 @@ export default function Login() {
 
               <div className="space-y-2">
                 <label className="ml-1 text-sm font-extrabold text-text">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  className={`w-full rounded-[18px] border bg-[#fffdfa] px-4 py-3.5 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:ring-4 focus:ring-primary/10 ${errors.password ? 'border-red-400 bg-red-50' : 'border-border focus:border-primary'}`}
-                  disabled={loading}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                    className={`w-full rounded-[18px] border bg-[#fffdfa] pl-4 pr-12 py-3.5 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:ring-4 focus:ring-primary/10 ${errors.password ? 'border-red-400 bg-red-50' : 'border-border focus:border-primary'}`}
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary transition-colors"
+                  >
+                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </button>
+                </div>
                 {errors.password && <span className="ml-1 text-xs font-bold text-red-500">{errors.password}</span>}
               </div>
 

@@ -20,6 +20,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import DataTable from '../components/ui/DataTable';
+import OrdersPageHeader from '../components/orders/OrdersPageHeader';
 
 const FILTER_FIELDS = [
   { key: 'keyword1', label: 'SKU Keyword' },
@@ -89,6 +90,9 @@ export default function SkuList() {
   const [skuFilter, setSkuFilter] = useState('all');
   const [accountFilter, setAccountFilter] = useState('this-account');
   const [quickFilters, setQuickFilters] = useState(initialQuickFilters);
+  const [showImportExportModal, setShowImportExportModal] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
 
   const accountName = activeAccount?.account_name || 'No account selected';
   const activeAccountId = activeAccount?.id;
@@ -241,34 +245,76 @@ export default function SkuList() {
     }
   };
 
-  const exportToCSV = () => {
-    const headers = ['SKU ID', 'Size', 'Orders', 'Selling', 'Basic Cost', 'GST %', 'Packing', 'Final Cost', 'Last Update'];
-    const csvData = skuList.map((item) => [
-      item.sku_id || '-',
-      item.box_size || 'Free Size',
-      item.orders || 0,
-      item.selling || 0,
-      item.basic_cost || 0,
-      item.gst_percentage || 0,
-      item.packing_charge || 0,
-      calculateFinalCost(item).toFixed(2),
-      item.updated_at || '-',
-    ]);
+const exportToCSV = async () => {
+  try {
+    const response = await api.post(
+      '/export-sku-data',
+      {
+        filter_data: {},
+        page_no: 1,
+        limit: 100,
+      },
+      {
+        headers: {
+          account: accountHeaderValue,
+        },
+        responseType: 'blob', 
+      }
+    );
 
-    const csvContent = [headers, ...csvData]
-      .map((row) => row.map((cell) => `"${cell}"`).join(','))
-      .join('\n');
+    const blob = new Blob([response.data], { type: 'text/csv' });
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `sku_list_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
+
+    link.href = url;
+    link.download = `sku_list_${new Date().toISOString().split('T')[0]}.csv`;
+
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-  };
+    link.remove();
+
+  } catch (err) {
+    console.error('Export error:', err);
+  }
+};
+
+const handleImportFile = async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  setImporting(true);
+  setImportResult(null);
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.post(
+      '/import-sku',
+      formData,
+      {
+        headers: {
+          account: accountHeaderValue,
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    if (response.data?.status) {
+      setImportResult(response.data);
+      fetchSkuList(1, perPage);
+    }
+  } catch (err) {
+    console.error('Import error:', err);
+    setImportResult({
+      status: false,
+      message: err.response?.data?.message || 'Import failed',
+    });
+  } finally {
+    setImporting(false);
+    event.target.value = '';
+  }
+};
 
   const handleAddSkuInputChange = (key, value) => {
     setAddSkuForm((prev) => ({ ...prev, [key]: value }));
@@ -423,7 +469,7 @@ export default function SkuList() {
       key: 'box_size',
       label: 'Size',
       className: 'min-w-[92px]',
-      render: (row) => <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-text">{row.box_size || 'Free Size'}</span>,
+      render: (row) => <span className="text-nowrap rounded-full bg-surface-alt px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-text">{row.box_size || 'Free Size'}</span>,
     },
     {
       key: 'orders',
@@ -516,10 +562,11 @@ export default function SkuList() {
             value={quickFilters[field.key]}
             onChange={(event) => setQuickFilters((prev) => ({ ...prev, [field.key]: event.target.value }))}
             placeholder={`Search ${field.label.toLowerCase()}`}
+            inputClassName="h-9"
             containerClassName={field.key === 'keyword1' ? 'xl:min-w-[304px] xl:flex-[1.5_1_0]' : 'xl:min-w-[200px] xl:flex-[1_1_0]'}
           />
         ))}
-{/* 
+        {/* 
         <Input
           label="Min Selling"
           type="number"
@@ -554,7 +601,7 @@ export default function SkuList() {
             <select
               value={skuFilter}
               onChange={(event) => setSkuFilter(event.target.value)}
-              className="w-full appearance-none rounded-[16px] border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+              className="h-9 w-full appearance-none rounded-default border border-border bg-white px-4 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
             >
               <option value="all">All SKUs</option>
               <option value="without-cost">Without Cost</option>
@@ -573,7 +620,7 @@ export default function SkuList() {
                 setAccountFilter(event.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full appearance-none rounded-[16px] border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+              className="h-9 w-full appearance-none rounded-default border border-border bg-white px-4 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
             >
               <option value="this-account">This Account</option>
               <option value="all-accounts">All Accounts</option>
@@ -588,7 +635,7 @@ export default function SkuList() {
             <Button
               type="button"
               variant="primary"
-              className="h-[50px] flex-1 min-w-[52px] px-0"
+              className="!h-9 flex-1 min-w-[52px] px-0"
               onClick={() => fetchSkuList(1, perPage)}
               title="Apply Filters"
             >
@@ -597,7 +644,7 @@ export default function SkuList() {
             <Button
               type="button"
               variant="secondary"
-              className="h-[50px] flex-1 min-w-[52px] px-0"
+              className="!h-9 flex-1 min-w-[52px] px-0"
               onClick={handleClearFilters}
               title="Clear Filters"
             >
@@ -612,51 +659,33 @@ export default function SkuList() {
   return (
     <AppShell>
       <div className="space-y-5 sm:space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="shrink-0">
-             <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
-              <FiArrowLeft size={16} />
-              Back
+        <OrdersPageHeader 
+          breadcrumbs={[
+            { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+            { label: 'SKU Master', current: true }
+          ]}
+        actions={
+          <>
+            <Button variant="secondary" size="sm" onClick={() => setShowImportExportModal(true)} className="h-10 rounded-default border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm">
+              <FiFilter size={16} />
+              Import
             </Button>
-          </div>
-          <div className="ml-auto flex flex-wrap items-center justify-end gap-2.5">
+
             <Button
               variant="create"
               size="sm"
-              className="h-10 rounded-[14px] px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-primary/20 sm:w-auto"
-              onClick={() => { resetAddSkuForm(); setShowAddSkuModal(true); }}
+              className="h-10 rounded-default border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm"
+              onClick={() => {
+                resetAddSkuForm();
+                setShowAddSkuModal(true);
+              }}
             >
               <FiPlus size={16} />
               Add SKU
             </Button>
-            {/* <Button
-              variant="info"
-              size="sm"
-              className="h-10 rounded-[14px] px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-sky-600/20"
-            >
-              <FiSettings size={16} />
-              Bulk Update
-            </Button>
-            <Button
-              variant="warning"
-              size="sm"
-              className="h-10 rounded-[14px] px-4 text-[0.72rem] tracking-[0.18em] shadow-md shadow-accent/20"
-              onClick={exportToCSV}
-            >
-              <FiDownload size={16} />
-              Export
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="h-10 rounded-[14px] border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm"
-            >
-              <FiUpload size={16} />
-              Import
-            </Button> */}
-           
-          </div>
-        </div>
+          </>
+        }
+        />
 
         <div className="xl:hidden">
           <Button variant="secondary" className="w-full justify-between" onClick={() => setShowMobileFilters(true)}>
@@ -706,16 +735,19 @@ export default function SkuList() {
 
         <div className="space-y-5 xl:space-y-6">
           <Card
-            title="Apply Quick Filters"
             muted
             className="hidden xl:block"
+            contentClassName="p-0"
           >
-            {filterPanelContent}
+            <div className="px-4 py-3.5">
+              {filterPanelContent}
+            </div>
           </Card>
 
           <div className="min-w-0 space-y-5 xl:space-y-6">
             <Card
               title="SKU Records"
+              noHeaderBorder
               action={(
                 <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
                   <select
@@ -725,14 +757,15 @@ export default function SkuList() {
                       setPerPage(nextPerPage);
                       fetchSkuList(1, nextPerPage);
                     }}
-                    className="w-full rounded-[14px] border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary sm:w-auto"
+                    className="w-full rounded-inner border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary sm:w-auto"
+
                   >
                     {[10, 25, 50, 100].map((option) => (
                       <option key={option} value={option}>
                         {option} / page
                       </option>
                     ))}
-                    
+
                   </select>
 
                   <Button variant="secondary" size="sm" className="hidden sm:inline-flex sm:w-auto" onClick={() => fetchSkuList(currentPage, perPage)}>
@@ -753,7 +786,8 @@ export default function SkuList() {
                 selectedId={selectedRowId}
                 getRowId={(row) => row.id || row.sku_id}
                 onRowClick={handleRowClick}
-                wrapperClassName="rounded-b-[24px] pb-2"
+                wrapperClassName="rounded-b-default pb-2"
+
                 tableClassName="min-w-[1160px] xl:min-w-[1260px]"
                 headClassName="top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
                 headerCellClassName="border-b border-border px-2 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap sm:px-4 sm:py-4 sm:text-[0.68rem] sm:tracking-[0.18em]"
@@ -770,7 +804,8 @@ export default function SkuList() {
                 Results {resultStart}-{resultEnd} of {totalSKUs}
               </div>
 
-              <nav className="flex max-w-full items-center overflow-x-auto rounded-[18px] border border-border bg-white shadow-sm [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300">
+              <nav className="flex max-w-full items-center overflow-x-auto rounded-default border border-border bg-white shadow-sm [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300">
+
                 <button
                   className={`p-3 transition-colors hover:bg-surface-alt ${currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-text'}`}
                   onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
@@ -824,7 +859,8 @@ export default function SkuList() {
         <div className="space-y-5">
 
           {addSkuError ? (
-            <div className="rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+            <div className="rounded-default border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+
               {addSkuError}
             </div>
           ) : null}
@@ -882,7 +918,8 @@ export default function SkuList() {
             />
           </div>
 
-          <div className="rounded-[20px] border border-emerald-200 bg-emerald-50 px-4 py-4">
+          <div className="rounded-default border border-emerald-200 bg-emerald-50 px-4 py-4">
+
             <div className="crm-section-label !text-emerald-700">Estimated Final Cost</div>
             <div className="mt-2 text-2xl font-black text-emerald-700">
               {formatCurrency(
@@ -914,17 +951,102 @@ export default function SkuList() {
       >
         {productInfoSku ? (
           <div className="space-y-4">
-            <div className="rounded-[18px] border border-primary/15 bg-primary/5 px-4 py-4">
+            <div className="rounded-default border border-primary/15 bg-primary/5 px-4 py-4">
               <div className="crm-section-label">SKU ID</div>
               <div className="mt-2 text-base font-extrabold text-text">{productInfoSku.sku_id || '-'}</div>
             </div>
 
-            <div className="rounded-[18px] border border-border bg-white px-4 py-4">
+            <div className="rounded-default border border-border bg-white px-4 py-4">
+
               <div className="crm-section-label">Product Name</div>
               <div className="mt-3 text-sm leading-7 text-text">{productInfoSku.product_name || 'Unnamed product'}</div>
             </div>
           </div>
         ) : null}
+      </CommonModal>
+
+      <CommonModal
+        isOpen={showImportExportModal}
+        onClose={() => {
+          setShowImportExportModal(false);
+          setImporting(false);
+          setImportResult(null);
+        }}
+        title="Import / Export SKU Data"
+        size="md"
+        headerStyle="default"
+        showFooter={false}
+      >
+        <div className="space-y-5">
+          {importResult && (
+            <div className={`rounded-default border px-4 py-3 ${importResult.status ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50'}`}>
+              <div className={`text-sm font-bold ${importResult.status ? 'text-emerald-700' : 'text-red-600'}`}>
+                {importResult.message}
+              </div>
+              {importResult.summary && (
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded bg-white/50 px-3 py-2">
+                    <div className="font-bold text-text-muted">Total</div>
+                    <div className="mt-1 text-lg font-extrabold text-text">{importResult.summary.total}</div>
+                  </div>
+                  <div className="rounded bg-white/50 px-3 py-2">
+                    <div className="font-bold text-emerald-600">Inserted</div>
+                    <div className="mt-1 text-lg font-extrabold text-emerald-700">{importResult.summary.inserted}</div>
+                  </div>
+                  <div className="rounded bg-white/50 px-3 py-2">
+                    <div className="font-bold text-blue-600">Updated</div>
+                    <div className="mt-1 text-lg font-extrabold text-blue-700">{importResult.summary.updated}</div>
+                  </div>
+                  <div className="rounded bg-white/50 px-3 py-2">
+                    <div className="font-bold text-red-600">Failed</div>
+                    <div className="mt-1 text-lg font-extrabold text-red-700">{importResult.summary.failed}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <div className="flex flex-col gap-3 rounded-default border border-border bg-surface-alt/50 p-4">
+              <div className="flex items-center gap-2">
+                <FiFilter size={18} className="text-primary" />
+                <h3 className="font-bold text-text">Export SKU Data</h3>
+              </div>
+              <p className="text-sm text-text-muted">Download all SKU records as a CSV file.</p>
+              <Button
+                variant="primary"
+                className="w-full"
+                onClick={exportToCSV}
+              >
+                Download CSV
+              </Button>
+            </div>
+
+            <div className="flex flex-col gap-3 rounded-default border border-border bg-surface-alt/50 p-4">
+              <div className="flex items-center gap-2">
+                <FiPlus size={18} className="text-emerald-600" />
+                <h3 className="font-bold text-text">Import SKU Data</h3>
+              </div>
+              <p className="text-sm text-text-muted">Upload a CSV file to import SKU records.</p>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleImportFile}
+                disabled={importing}
+                className="hidden"
+                id="sku-import-file"
+              />
+              <Button
+                variant="success"
+                className="w-full"
+                disabled={importing}
+                onClick={() => document.getElementById('sku-import-file').click()}
+              >
+                {importing ? 'Importing...' : 'Upload CSV'}
+              </Button>
+            </div>
+          </div>
+        </div>
       </CommonModal>
     </AppShell>
   );

@@ -9,30 +9,27 @@ const supportItems = [
 
 export default function Footer() {
   return (
-    <footer className="relative mt-10 border-t border-white/40 bg-[#111827] text-white mt-auto">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
-      <div className="grid w-full gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1.3fr_1fr] lg:px-8">
-        <div>
-          <div className="text-[0.68rem] font-extrabold uppercase tracking-[0.28em] text-primary/80">Seller Insight</div>
-          <h2 className="mt-2 text-2xl font-extrabold tracking-tight">A cleaner CRM workspace for modern marketplace operations.</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-            Unified reporting, SKU control, return handling, and payout visibility for growing seller teams.
-          </p>
-        </div>
+    <footer className="relative mt-8 border-t border-slate-200 bg-white text-slate-900">
+      <div className="mx-auto max-w-[1600px] px-4 py-4 relative z-10 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-center justify-between gap-6 lg:flex-row">
+          <div className="flex items-center gap-3">
+            <div className="h-6 w-1 rounded-full bg-primary" />
+            <span className="text-[0.65rem] font-black uppercase tracking-[0.2em] text-slate-400">Seller Insight Hub</span>
+          </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          {supportItems.map(({ icon: Icon, label }) => (
-            <div key={label} className="rounded-[18px] border border-white/10 bg-white/5 px-4 py-3">
-              <div className="flex items-center gap-3 text-sm font-medium text-slate-200">
-                <Icon size={16} className="text-primary" />
-                <span>{label}</span>
+          <div className="flex flex-wrap justify-center gap-3">
+            {supportItems.map(({ icon: Icon, label }) => (
+              <div key={label} className="group flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-1.5 transition-all hover:bg-white hover:shadow-sm">
+                <Icon size={12} className="text-primary/70" />
+                <span className="text-[0.65rem] font-bold text-slate-500">{label}</span>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <div className="text-[0.55rem] font-bold uppercase tracking-[0.1em] text-slate-400">
+            &copy; {new Date().getFullYear()} Seller Insight CRM. v2.0.4
+          </div>
         </div>
-      </div>
-      <div className="border-t border-white/10 py-4 text-center text-[0.68rem] font-bold uppercase tracking-[0.26em] text-slate-400">
-        Copyright {new Date().getFullYear()} Seller Insight CRM
       </div>
     </footer>
   );

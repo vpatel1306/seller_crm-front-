@@ -133,7 +133,7 @@ function mapReceivedPaymentResponse(payload, { page, limit }) {
 
 function MetricCard({ label, value, tone = 'text-text' }) {
   return (
-    <div className="rounded-[20px] border border-border bg-white px-4 py-4 shadow-sm">
+    <div className="rounded-default border border-border bg-white px-4 py-4 shadow-sm">
       <div className="text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-text-muted">{label}</div>
       <div className={`mt-2 text-2xl font-extrabold ${tone}`}>{value}</div>
     </div>
@@ -260,12 +260,12 @@ export default function PendingPaymentOrders() {
       orderSearchLabel="Order ID"
       renderCustomFilters={({ filters, setFilters }) => (
         <div className="flex flex-col gap-1.5 xl:w-[240px]">
-          <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Order Filter</label>
+          <label className="ml-1 text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Order Filter</label>
           <div className="relative">
             <select
               value={filters.order_filter}
               onChange={(event) => setFilters((prev) => ({ ...prev, order_filter: event.target.value }))}
-              className="w-full appearance-none rounded-[16px] border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 xl:w-[240px]"
+              className="h-9 w-full appearance-none rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
             >
               <option value="All">All</option>
               <option value="Profit">Profit</option>

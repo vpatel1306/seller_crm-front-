@@ -9,6 +9,8 @@ import {
   FiX,
 } from 'react-icons/fi';
 import CommonModal from '../common/CommonModal';
+import ConfirmModal from '../common/ConfirmModal';
+
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import DataTable from '../ui/DataTable';
@@ -35,27 +37,30 @@ const fmtNum = (val) => {
   return n === null ? '-' : n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
-function ActiveStatusToggle({ isActive, onClick }) {
+function ActiveStatusToggle({ isActive, onClick, loading }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      style={{ borderRadius: '999px' }}
-      className={`relative inline-flex h-5 w-[36px] items-center rounded-full px-1 text-[0.65rem] font-bold uppercase text-white shadow transition-all duration-200 active:scale-[0.95] ${
-        isActive
-          ? 'justify-start bg-gradient-to-b from-lime-600 to-green-700'
-          : 'justify-end bg-gradient-to-b from-red-700 to-red-900'
+      disabled={loading}
+      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 disabled:opacity-50 ${
+        isActive ? 'bg-emerald-500' : 'bg-slate-300'
       }`}
     >
       <span
-        style={{ borderRadius: '999px' }}
-        className={`pointer-events-none absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full bg-white shadow ${
-          isActive ? 'right-0.5' : 'left-0.5'
+        className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+          isActive ? 'translate-x-5' : 'translate-x-0.5'
         }`}
       />
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-2 w-2 animate-spin rounded-full border border-white/30 border-t-white" />
+        </div>
+      )}
     </button>
   );
 }
+
 
 export default function AccountSelectModal({ isOpen, onClose }) {
   const { activeAccount, setActiveAccount } = useAuth();
@@ -67,7 +72,11 @@ export default function AccountSelectModal({ isOpen, onClose }) {
   const [deleting, setDeleting] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState(null);
+  const [statusLoadingMap, setStatusLoadingMap] = useState({});
   const [pendingEditedAccountId, setPendingEditedAccountId] = useState(null);
+
+
   const activeAccountRef = useRef(activeAccount);
   const requiresSelection = !activeAccount && accounts.length > 0;
  
@@ -140,29 +149,43 @@ export default function AccountSelectModal({ isOpen, onClose }) {
   };
 
   const handleAccountStatusToggle = async (acc) => {
-    if (!acc?.id) return;
+    if (!acc?.id || statusLoadingMap[acc.id]) return;
 
     const nextStatus = Number(acc.is_active) === 1 ? 0 : 1;
-
-    await api.post(`/account-status/${acc.id}`, {
-      is_active: nextStatus,
-    });
-
+    
+    // Optimistic Update
     setAccounts((prev) => prev.map((item) => (
-      item.id === acc.id
-        ? { ...item, is_active: nextStatus }
-        : item
+      item.id === acc.id ? { ...item, is_active: nextStatus } : item
     )));
+    setStatusLoadingMap(prev => ({ ...prev, [acc.id]: true }));
 
-    if (activeAccountId === acc.id) {
-      setActiveAccount({ ...acc, is_active: nextStatus });
+    try {
+      await api.post(`/account-status/${acc.id}`, {
+        is_active: nextStatus,
+      });
+
+      if (activeAccountId === acc.id) {
+        setActiveAccount({ ...acc, is_active: nextStatus });
+      }
+    } catch (error) {
+      // Revert on error
+      setAccounts((prev) => prev.map((item) => (
+        item.id === acc.id ? { ...item, is_active: acc.is_active } : item
+      )));
+      console.error('Failed to update account status:', error);
+    } finally {
+      setStatusLoadingMap(prev => {
+        const next = { ...prev };
+        delete next[acc.id];
+        return next;
+      });
     }
   };
 
-  const handleDelete = async (account) => {
-    if (!account?.id) return;
-    const shouldDelete = window.confirm(`Delete account "${account.account_name || 'this account'}"?`);
-    if (!shouldDelete) return;
+
+  const handleDelete = async () => {
+    if (!accountToDelete?.id) return;
+    const account = accountToDelete;
 
     setDeleting(true);
     try {
@@ -176,8 +199,10 @@ export default function AccountSelectModal({ isOpen, onClose }) {
       await fetchAccounts();
     } finally {
       setDeleting(false);
+      setAccountToDelete(null);
     }
   };
+
 
   const handleEdit = (account) => {
     setEditingAccount(account);
@@ -285,20 +310,25 @@ export default function AccountSelectModal({ isOpen, onClose }) {
     },
     {
       key: 'account_active',
-      label: 'Account status',
+      label: 'Operation State',
       className: 'min-w-[150px] md:sticky md:right-[130px] md:z-20 md:border-l md:border-border md:bg-white md:shadow-[-10px_0_16px_-16px_rgba(15,23,42,0.22)]',
       headerClassName: 'min-w-[150px] md:sticky md:right-[130px] md:z-30 md:border-l md:border-border md:bg-surface-alt/95 md:shadow-[-10px_0_16px_-16px_rgba(15,23,42,0.22)]',
       render: (row) => {
         const isActive = Number(row.is_active) === 1;
         return (
-          <div className="flex justify-center">
+          <div className="flex items-center justify-center gap-3">
+            <span className={`text-[0.65rem] font-black uppercase tracking-wider ${isActive ? 'text-emerald-600' : 'text-slate-400'}`}>
+              {isActive ? 'Online' : 'Offline'}
+            </span>
             <ActiveStatusToggle
               isActive={isActive}
+              loading={statusLoadingMap[row.id]}
               onClick={(event) => {
                 event.stopPropagation();
                 handleAccountStatusToggle(row);
               }}
             />
+
           </div>
         );
       },
@@ -330,8 +360,9 @@ export default function AccountSelectModal({ isOpen, onClose }) {
               onClick={(event) => {
                 event.stopPropagation();
                 setChecked(new Set([row.id]));
-                handleDelete(row);
+                setAccountToDelete(row);
               }}
+
             >
               <FiTrash2 size={14} />
             </Button>
@@ -379,12 +410,14 @@ export default function AccountSelectModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] border border-border bg-white">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-default border border-border bg-white">
+
             <div className="border-b border-border p-4">
               <div className="relative">
                 <FiSearch size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
                 <input
-                  className="w-full rounded-[18px] border border-border bg-surface-alt py-3 pl-11 pr-11 text-sm text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+                  className="w-full rounded-inner border border-border bg-surface-alt py-3 pl-11 pr-11 text-sm text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+
                   type="text"
                   placeholder="Search by account name, marketplace, mobile or GST"
                   value={search}
@@ -414,7 +447,8 @@ export default function AccountSelectModal({ isOpen, onClose }) {
                 onRowClick={handleOpen}
                 onRowDoubleClick={handleOpen}
                 mobileCardView={false}
-                wrapperClassName="h-full rounded-[24px] border border-border bg-white"
+                wrapperClassName="h-full rounded-default border border-border bg-white"
+
                 tableClassName="min-w-[1680px]"
                 headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
                 headerCellClassName="border-b border-border px-3 py-3 text-[0.68rem] font-extrabold uppercase tracking-[0.16em] whitespace-nowrap"
@@ -445,17 +479,27 @@ export default function AccountSelectModal({ isOpen, onClose }) {
           }}
         />
       ) : null}
-
       {isAddModalOpen ? (
         <AccountModal
           mode="add"
           onClose={() => setIsAddModalOpen(false)}
           onSuccess={() => {
             setIsAddModalOpen(false);
-            fetchAccounts(true);
+            fetchAccounts(false);
           }}
         />
       ) : null}
+
+      <ConfirmModal
+        isOpen={Boolean(accountToDelete)}
+        onClose={() => setAccountToDelete(null)}
+        onConfirm={handleDelete}
+        title="Delete Account"
+        message={`Are you sure you want to delete the account "${accountToDelete?.account_name}"? All data associated with this account will be permanently removed.`}
+        confirmLabel="Delete Account"
+        variant="danger"
+      />
     </>
+
   );
 }

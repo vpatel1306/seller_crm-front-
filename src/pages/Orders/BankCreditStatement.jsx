@@ -187,19 +187,19 @@ export default function BankCreditStatement() {
         <div className="relative">
           <FiSearch size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search settlements"
-            className="w-full rounded-[16px] border border-border bg-white py-3 pl-11 pr-11 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10" />
+            className="w-full rounded-default border border-border bg-white py-3 pl-11 pr-11 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10" />
           {search ? <button type="button" onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text"><FiX size={14} /></button> : null}
         </div>
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">From Date</label>
         <input type="date" value={dateDraft.from} onChange={(e) => setDateDraft((prev) => ({ ...prev, from: e.target.value }))}
-          className="h-[50px] rounded-[16px] border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+          className="h-[50px] rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">To Date</label>
         <input type="date" value={dateDraft.to} onChange={(e) => setDateDraft((prev) => ({ ...prev, to: e.target.value }))}
-          className="h-[50px] rounded-[16px] border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+          className="h-[50px] rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
       </div>
       <Button
         variant="primary"
@@ -239,7 +239,6 @@ export default function BankCreditStatement() {
           actions={(
             <>
               <Button variant="secondary" size="sm" onClick={fetchData}><FiRefreshCw size={14} />Refresh</Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}><FiX size={14} />Cancel</Button>
             </>
           )}
         />
@@ -269,33 +268,36 @@ export default function BankCreditStatement() {
 
         <div className="grid gap-4 xl:grid-cols-2 h-auto">
           <div className="flex flex-col gap-3 flex-1 ">
-            <Card title="Month Wise Bank Credit" subtitle={`${monthWise.length} months available`} contentClassName="p-0">
+            <Card title="Month Wise Bank Credit" subtitle={`${monthWise.length} months available`} contentClassName="p-0" noHeaderBorder>
               <CreditTable rows={monthWise} dateField="month_year" loading={loading} />
             </Card>
 
-            <Card title="Day Wise Bank Credit" subtitle={`${dayWise.length} days available`} contentClassName="p-0">
+            <Card title="Day Wise Bank Credit" subtitle={`${dayWise.length} days available`} contentClassName="p-0" noHeaderBorder>
               <CreditTable rows={dayWise} dateField="date" loading={loading} />
             </Card>
           </div>
-           <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3">
             <Card title="Types Of Settlements" subtitle="Settlement breakdown by type">
               {loading ? (
                 <div className="flex h-16 items-center justify-center text-sm text-text-muted">Loading...</div>
               ) : settlementTypeEntries.length === 0 ? (
                 <div className="py-6 text-center text-sm text-text-muted">No settlement type data.</div>
               ) : (
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                   {settlementTypeEntries.map((item) => (
-                    <div key={item.title} className={`rounded-[18px] border ${item.colors.border} ${item.colors.bg} p-4`}>
-                      <div className={`text-xs font-extrabold uppercase tracking-[0.16em] ${item.colors.text}`}>{item.title}</div>
-                      <div className="mt-3 flex items-end justify-between">
-                        <div>
-                          <div className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-text-muted">Amount</div>
-                          <div className={`text-xl font-black ${Number(item.amount) < 0 ? 'text-rose-600' : item.colors.text}`}>{item.amount}</div>
+                    <div key={item.title} className={`rounded-default border ${item.colors.border} ${item.colors.bg} p-4 shadow-sm transition-all hover:shadow-md`}>
+                      <div className={`text-[0.6rem] font-black uppercase tracking-[0.2em] ${item.colors.text} opacity-80`}>{item.title}</div>
+
+                      <div className="mt-4 space-y-3">
+                        <div className="flex flex-col">
+                          <div className="text-[0.55rem] font-extrabold uppercase tracking-widest text-slate-400">Total Amount</div>
+                          <div className={`mt-1 text-[1.1rem] font-black tracking-tight leading-tight break-words ${Number(item.amount) < 0 ? 'text-rose-600' : 'text-slate-900'}`}>
+                            {item.amount}
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-text-muted">Count</div>
-                          <div className={`text-2xl font-black ${item.colors.text}`}>{item.count}</div>
+                        <div className="flex items-center justify-between border-t border-slate-200/50 pt-2.5">
+                          <div className="text-[0.55rem] font-extrabold uppercase tracking-widest text-slate-400">Count</div>
+                          <div className={`text-[1.3rem] font-black leading-none tracking-tighter opacity-90 ${item.colors.text}`}>{item.count}</div>
                         </div>
                       </div>
                     </div>
@@ -308,10 +310,11 @@ export default function BankCreditStatement() {
               title="Received Settlements"
               subtitle={`${filteredSettlements.length} settlement entries found`}
               contentClassName="p-0"
+              noHeaderBorder
               action={(
                 <div className="flex items-center gap-3">
                   <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                    className="rounded-[14px] border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary">
+                    className="rounded-inner border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary">
                     {PER_PAGE_OPTIONS.map((o) => <option key={o} value={o}>{o} / page</option>)}
                   </select>
                   <Button variant="secondary" size="sm" onClick={fetchData}><FiRefreshCw size={14} /></Button>
@@ -328,7 +331,7 @@ export default function BankCreditStatement() {
                 showIndex
                 selectedId={selectedId}
                 onRowClick={(row) => setSelectedId((prev) => (prev === row.id ? null : row.id))}
-                wrapperClassName="rounded-b-[24px]"
+                wrapperClassName="rounded-b-default"
                 tableClassName="min-w-[860px]"
                 headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
                 headerCellClassName="px-4 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap border-b border-border"
@@ -339,11 +342,11 @@ export default function BankCreditStatement() {
               />
 
               {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-border px-4 py-3">
+                <div className="flex items-center justify-between px-4 py-3">
                   <span className="text-sm font-bold text-text-muted">
                     {((currentPage - 1) * perPage) + 1}–{Math.min(currentPage * perPage, filteredSettlements.length)} of {filteredSettlements.length}
                   </span>
-                  <nav className="flex items-center overflow-x-auto rounded-[18px] border border-border bg-white shadow-sm">
+                  <nav className="flex items-center overflow-x-auto rounded-default border border-border bg-white shadow-sm">
                     <button className={`p-3 transition-colors hover:bg-surface-alt ${currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-text'}`}
                       onClick={() => currentPage > 1 && setCurrentPage((p) => p - 1)} disabled={currentPage === 1}>
                       <FiChevronLeft size={16} />

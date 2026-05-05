@@ -223,7 +223,8 @@ export default function SKUReport() {
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">P/L Filter</label>
         <select value={plFilter} onChange={(e) => setPlFilter(e.target.value)}
-          className="w-full rounded-[16px] border border-border bg-white px-4 py-3 text-sm font-medium text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10">
+          className="h-9 w-full rounded-default border border-border bg-white px-4 text-sm font-medium text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10">
+
           <option value="all">All SKUs</option>
           <option value="profit">Profit Only</option>
           <option value="loss">Loss Only</option>
@@ -232,15 +233,17 @@ export default function SKUReport() {
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">From Date</label>
         <input type="date" value={dateDraft.from} onChange={(e) => setDateDraft((prev) => ({ ...prev, from: e.target.value }))}
-          className="h-[50px] rounded-[16px] border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+          className="h-9 rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">To Date</label>
         <input type="date" value={dateDraft.to} onChange={(e) => setDateDraft((prev) => ({ ...prev, to: e.target.value }))}
-          className="h-[50px] rounded-[16px] border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+          className="h-9 rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+
       </div>
-      <Button variant="primary" className="h-[50px] w-full px-0 self-end" onClick={handleApply} title="Apply Filters"><FiSearch size={18} /></Button>
-      <Button variant="secondary" className="h-[50px] w-full px-0 self-end" onClick={handleClear} title="Clear Filters"><FiX size={18} /></Button>
+      <Button variant="primary" className="!h-9 w-full px-0 self-end" onClick={handleApply} title="Apply Filters"><FiSearch size={18} /></Button>
+      <Button variant="secondary" className="!h-9 w-full px-0 self-end" onClick={handleClear} title="Clear Filters"><FiX size={18} /></Button>
     </div>
   );
 
@@ -250,21 +253,19 @@ export default function SKUReport() {
         <OrdersPageHeader
           breadcrumbs={[
             { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-            { label: 'Reports'},
+            { label: 'Reports' },
             { label: 'SKU Report', current: true },
           ]}
           actions={(
             <>
               {/* <Button variant="success" size="sm" onClick={exportCSV}><FiDownload size={14} />Export CSV</Button> */}
               <Button variant="secondary" size="sm" onClick={fetchData}><FiRefreshCw size={14} />Refresh</Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}><FiX size={14} />Cancel</Button>
             </>
           )}
         />
-  
+
 
         <OrdersFilterSection
-          title="Filters"
           mobileTitle="SKU Report Filters"
           mobileDescription="Filter SKU report by P/L status and date range."
           activeCount={[plFilter !== 'all', dateDraft.from, dateDraft.to].filter(Boolean).length}
@@ -281,7 +282,8 @@ export default function SKUReport() {
         <Card title="Overall Performance" subtitle={`${total} SKUs total`} muted>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
             {SUMMARY_STATS.map(({ key, label, pctKey, color, isCurrency }) => (
-              <div key={key} className="rounded-[18px] border border-border/70 bg-white p-3 text-center">
+              <div key={key} className="rounded-default border border-border/70 bg-white p-3 text-center">
+
                 <div className="text-[0.62rem] font-extrabold uppercase tracking-[0.18em] text-text-muted">{label}</div>
                 <div className={`mt-2 text-lg font-black ${color}`}>
                   {isCurrency ? `Rs. ${fmt(summary[key])}` : fmtN(summary[key])}
@@ -297,10 +299,12 @@ export default function SKUReport() {
           title="SKU Records"
           subtitle={`Showing ${data.length} of ${total} SKUs`}
           contentClassName="p-0"
+          noHeaderBorder
           action={(
             <div className="flex items-center gap-3">
               <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                className="rounded-[14px] border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary">
+                className="rounded-inner border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary">
+
                 {PER_PAGE_OPTIONS.map((o) => <option key={o} value={o}>{o} / page</option>)}
               </select>
               <Button variant="secondary" size="sm" onClick={fetchData}><FiRefreshCw size={14} /></Button>
@@ -318,7 +322,8 @@ export default function SKUReport() {
             stickyFirstColumn
             selectedId={selectedId}
             onRowClick={(row) => setSelectedId((prev) => (prev === row.id ? null : row.id))}
-            wrapperClassName="rounded-b-[24px] pb-2"
+            wrapperClassName="rounded-b-default pb-2"
+
             tableClassName="min-w-[1400px]"
             headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
             headerCellClassName="px-3 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap border-b border-border sm:px-4"
@@ -330,11 +335,12 @@ export default function SKUReport() {
           />
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border px-4 py-3">
+            <div className="flex items-center justify-between px-4 py-3">
               <span className="text-sm font-bold text-text-muted">
                 {total === 0 ? 0 : ((currentPage - 1) * perPage) + 1}-{Math.min(currentPage * perPage, total)} of {total}
               </span>
-              <nav className="flex items-center overflow-x-auto rounded-[18px] border border-border bg-white shadow-sm">
+              <nav className="flex items-center overflow-x-auto rounded-default border border-border bg-white shadow-sm">
+
                 <button className={`p-3 transition-colors hover:bg-surface-alt ${currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-text'}`}
                   onClick={() => currentPage > 1 && setCurrentPage((p) => p - 1)} disabled={currentPage === 1}>
                   <FiChevronLeft size={16} />

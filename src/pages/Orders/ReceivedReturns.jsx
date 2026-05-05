@@ -199,7 +199,7 @@ function OverviewCard({ totalRows, returnDates, statuses, couriers }) {
   ];
 
   return (
-    <div className="overflow-hidden rounded-[22px] border border-border bg-white shadow-sm">
+    <div className="overflow-hidden rounded-default border border-border bg-white shadow-sm">
       <div className="border-b border-border bg-surface-alt px-4 py-3 text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-text">
         Received Return Overview
       </div>

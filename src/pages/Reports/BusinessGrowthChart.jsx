@@ -39,7 +39,7 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   const rows = payload.filter((p) => p.value > 0);
   return (
-    <div className="min-w-[220px] rounded-[20px] border border-border bg-white/95 p-4 shadow-2xl backdrop-blur-md">
+    <div className="min-w-[220px] rounded-default border border-border bg-white/95 p-4 shadow-2xl backdrop-blur-md">
       <div className="mb-3 border-b border-border pb-2 text-[0.7rem] font-black uppercase tracking-widest text-text-muted">{label} Metrics</div>
       <div className="space-y-2">
         {rows.map((p) => (
@@ -71,11 +71,6 @@ export default function BusinessGrowthChart() {
             { label: 'Dashboard', onClick: () => navigate('/dashboard') },
             { label: 'Business Growth Chart', current: true },
           ]}
-          actions={
-            <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
-              <FiX size={14} /> Cancel
-            </Button>
-          }
         />
 
 
@@ -86,7 +81,7 @@ export default function BusinessGrowthChart() {
               <button
                 key={bar.key}
                 onClick={() => toggle(bar.key)}
-                className={`flex items-center gap-2 rounded-[12px] border-2 px-3 py-1.5 text-[0.65rem] font-extrabold uppercase tracking-wide transition-all active:scale-95 ${
+                className={`flex items-center gap-2 rounded-default border-2 px-3 py-1.5 text-[0.65rem] font-extrabold uppercase tracking-wide transition-all active:scale-95 ${
                   visible[bar.key] ? 'border-border bg-white shadow-sm' : 'border-transparent bg-transparent opacity-30 grayscale'
                 }`}
               >
@@ -143,7 +138,7 @@ export default function BusinessGrowthChart() {
               <div key={i} className="flex min-w-[80px] flex-1 flex-col items-center gap-3">
                 <div className="w-full truncate px-1 text-center text-[0.65rem] font-black text-text">{d.month}</div>
                 <div className="w-full space-y-1 px-1">
-                  <div className="flex items-center justify-between rounded-[8px] bg-surface-alt px-2 py-1">
+                  <div className="flex items-center justify-between rounded-inner bg-surface-alt px-2 py-1">
                     <span className="text-[0.5rem] font-bold uppercase text-text-muted">Cost</span>
                     <span className="text-[0.6rem] font-black text-text">₹{d.addCost.toFixed(2)}</span>
                   </div>
@@ -159,7 +154,7 @@ export default function BusinessGrowthChart() {
                     <span className="text-[0.5rem] font-bold uppercase text-emerald-300">Del</span>
                     <span className="text-[0.6rem] font-black text-emerald-500">{d.dlvry}%</span>
                   </div>
-                  <div className={`mt-1 rounded-[10px] border py-1.5 text-center ${d.isLoss ? 'border-rose-100 bg-rose-50 text-rose-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600'}`}>
+                  <div className={`mt-1 rounded-default border py-1.5 text-center ${d.isLoss ? 'border-rose-100 bg-rose-50 text-rose-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600'}`}>
                     <div className="text-[0.5rem] font-black uppercase">Net {d.isLoss ? 'Loss' : 'Gain'}</div>
                     <div className="text-[0.7rem] font-black">{Math.abs(d.netProfitPct).toFixed(1)}%</div>
                   </div>
@@ -169,7 +164,7 @@ export default function BusinessGrowthChart() {
           </div>
         </Card>
 
-        <div className="flex items-center justify-center gap-2 rounded-[16px] border border-border bg-surface-alt px-4 py-3 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted">
+        <div className="flex items-center justify-center gap-2 rounded-default border border-border bg-surface-alt px-4 py-3 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted">
           <FiBarChart2 size={14} />
           Hover over chart segments to view detailed metrics
         </div>

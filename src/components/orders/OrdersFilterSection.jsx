@@ -4,7 +4,7 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 
 export default function OrdersFilterSection({
-  title = 'Filters',
+  title = null,
   mobileTitle = 'Apply Filters',
   mobileDescription = 'Refine the records, then apply to update the list.',
   activeCount = 0,
@@ -53,10 +53,10 @@ export default function OrdersFilterSection({
 
             {(onClear || onApply) ? (
               <div className="grid grid-cols-2 gap-3 border-t border-border bg-white/90 pt-4">
-                <Button variant="secondary" className="w-full" onClick={onClear}>
+                <Button variant="secondary" className="!h-9 w-full" onClick={onClear}>
                   Clear
                 </Button>
-                <Button variant="primary" className="w-full" onClick={onApply}>
+                <Button variant="primary" className="!h-9 w-full" onClick={onApply}>
                   Apply Filters
                 </Button>
               </div>
@@ -65,8 +65,10 @@ export default function OrdersFilterSection({
         </CommonModal>
       ) : null}
 
-      <Card title={title} muted className={desktopOnly ? '' : 'hidden xl:block'}>
-        {children}
+      <Card muted className={desktopOnly ? '' : 'hidden xl:block'} contentClassName="p-0">
+        <div className="px-4 py-3.5">
+          {children}
+        </div>
       </Card>
     </>
   );

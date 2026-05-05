@@ -47,7 +47,8 @@ const INITIAL_FILTERS = {
 const EMPTY_FIXED_FILTER_DATA = Object.freeze({});
 
 const summaryTableProps = {
-  containerClassName: 'overflow-hidden rounded-[22px] border border-border bg-white shadow-sm',
+  containerClassName: 'overflow-hidden rounded-default border border-border bg-white shadow-sm',
+
   titleClassName: 'bg-surface-alt px-4 py-3 text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-text',
   headRowClassName: 'bg-white text-text-muted',
   headerCellClassName: 'border-b border-border px-4 py-3 text-left text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap',
@@ -137,10 +138,9 @@ export const ORDER_COLUMNS = [
 
 function buildDefaultFooterActions(navigate) {
   return [
-     // { key: 'export', label: 'Export CSV', icon: FiDownload, variant: 'success', className: 'shadow-sm' },
+    // { key: 'export', label: 'Export CSV', icon: FiDownload, variant: 'success', className: 'shadow-sm' },
     // { key: 'analytics', label: 'Analytics', icon: MdOutlineBarChart, variant: 'info', className: 'shadow-sm' },
     // { key: 'pickup-files', label: 'Pickup Files', icon: FiFileText, variant: 'warning', className: 'shadow-sm' },
-    { key: 'Cancel', label: 'Cancel', icon: FiX, variant: 'secondary', className: 'shadow-sm', onClick: () => navigate('/dashboard') },
   ];
 }
 
@@ -234,6 +234,10 @@ export default function CommonOrderPage({
       if (filters.platform_order_id.trim()) filterData[orderSearchFieldKey] = filters.platform_order_id.trim();
       if (requestFromDate) filterData.start_date = requestFromDate;
       if (requestToDate) filterData.end_date = requestToDate;
+      
+      if (fixedFilterData.status && Array.isArray(fixedFilterData.status)) {
+        filterData.status = fixedFilterData.status;
+      }
       const finalFilterData = extraFilterData ? extraFilterData(filterData) : filterData;
       const requestPayload = buildRequestPayload({
         filterData: finalFilterData,
@@ -282,11 +286,14 @@ export default function CommonOrderPage({
     } finally {
       setLoading(false);
     }
-  }, [activeAccount?.id, buildRequestPayload, dateRange, endpoint, extraFilterData, filters, fixedFilterData, mapResponse, orderSearchFieldKey, perPage, requestMethod, showStatusAndPaymentFilters]);
+  }, [activeAccount?.id, buildRequestPayload, endpoint, extraFilterData, filters, fixedFilterData, mapResponse, orderSearchFieldKey, perPage, requestMethod, showStatusAndPaymentFilters, dateRange]);
 
   useEffect(() => {
     if (!activeAccount?.id) return;
-    loadOrders();
+    const timeoutId = setTimeout(() => {
+      loadOrders();
+    }, 0);
+    return () => clearTimeout(timeoutId);
   }, [activeAccount?.id, loadOrders]);
 
   useEffect(() => {
@@ -449,6 +456,19 @@ export default function CommonOrderPage({
     }
   };
 
+  const summaryTableProps = {
+    containerClassName: 'overflow-hidden rounded-default border border-slate-200 bg-white shadow-soft transition-all',
+    titleClassName: 'bg-slate-50 px-5 py-3 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-500',
+    headRowClassName: 'bg-white',
+    headerCellClassName: 'border-b border-slate-100 px-5 py-3 text-left text-[0.62rem] font-bold uppercase tracking-widest text-slate-400',
+    cellClassName: 'px-5 py-3.5 whitespace-nowrap text-sm font-medium text-slate-700',
+    bodyWrapperClassName: 'max-h-72 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-slate-200',
+    hoverClass: 'hover:bg-slate-50',
+    rowClassName: (_, i) => (i % 2 === 0 ? 'bg-white border-b border-slate-50/50' : 'bg-slate-50/20 border-b border-slate-50/50'),
+  };
+
+  const formatCurrency = (value) => `Rs. ${(Number(value) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
   const getPaginationNumbers = () => {
     const delta = 1;
     const range = [];
@@ -474,45 +494,48 @@ export default function CommonOrderPage({
   };
 
   const filterPanelContent = (
-    <div className="space-y-3">
-      <div className={`flex flex-wrap items-end gap-4 ${compactSingleRowFilters ? 'xl:flex-nowrap' : 'xl:flex-nowrap'}`}>
-        <div className={`flex flex-col gap-1.5 ${compactSingleRowFilters ? 'min-w-[220px] flex-[1.2_1_0]' : 'min-w-[220px] flex-[1_1_260px]'}`}>
-          <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">{orderSearchLabel}</label>
-          <div className="relative">
-            <FiSearch size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end gap-3">
+        <div className={`flex flex-col gap-1.5 ${compactSingleRowFilters ? 'min-w-[200px] flex-[1.2_1_0]' : 'min-w-[200px] flex-[1_1_240px]'}`}>
+          <label className="ml-1 text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">{orderSearchLabel}</label>
+          <div className="relative group">
+            <FiSearch size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-primary" />
             <input
               type="text"
               value={filters.platform_order_id}
               onChange={(event) => setFilters((prev) => ({ ...prev, platform_order_id: event.target.value }))}
               placeholder={`Search ${orderSearchLabel.toLowerCase()}`}
-              className="w-full rounded-[16px] border border-border bg-white py-3 pl-11 pr-4 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
+              className="h-9 w-full rounded-default border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 shadow-sm"
+
             />
           </div>
         </div>
 
-        <div className={`flex flex-col gap-1.5 ${compactSingleRowFilters ? 'min-w-[220px] flex-[1.2_1_0]' : 'min-w-[220px] flex-[1_1_260px]'}`}>
-          <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">SKU</label>
-          <div className="relative">
-            <FiSearch size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
+        <div className={`flex flex-col gap-1.5 ${compactSingleRowFilters ? 'min-w-[200px] flex-[1.2_1_0]' : 'min-w-[200px] flex-[1_1_240px]'}`}>
+          <label className="ml-1 text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">SKU</label>
+          <div className="relative group">
+            <FiSearch size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-primary" />
             <input
               type="text"
               value={filters.sku}
               onChange={(event) => setFilters((prev) => ({ ...prev, sku: event.target.value }))}
               placeholder="Search SKU"
-              className="w-full rounded-[16px] border border-border bg-white py-3 pl-11 pr-4 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
+              className="h-9 w-full rounded-default border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 shadow-sm"
+
             />
           </div>
         </div>
 
         {showStatusAndPaymentFilters ? (
           <>
-            <div className="flex min-w-[220px] flex-[0.9_1_0] flex-col gap-1.5">
-              <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Order Status</label>
+            <div className="flex min-w-[200px] flex-[0.9_1_0] flex-col gap-1.5">
+              <label className="ml-1 text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Order Status</label>
               <div className="relative">
                 <select
                   value={filters.order_status}
                   onChange={(event) => setFilters((prev) => ({ ...prev, order_status: event.target.value }))}
-                  className="w-full appearance-none rounded-[16px] border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+                  className="h-9 w-full appearance-none rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
+
                 >
                   <option value="all">All Order Status</option>
                   <option value="Unknown">Unknown</option>
@@ -532,24 +555,25 @@ export default function CommonOrderPage({
                   <option value="IN_TRANSIT">IN_TRANSIT</option>
                   <option value="SHIPPED">SHIPPED</option>
                 </select>
-                <FiChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted" />
+                <FiChevronDown size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
               </div>
             </div>
 
-            <div className="flex min-w-[220px] flex-[0.9_1_0] flex-col gap-1.5">
-              <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Payment Status</label>
+            <div className="flex min-w-[200px] flex-[0.9_1_0] flex-col gap-1.5">
+              <label className="ml-1 text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Payment Status</label>
               <div className="relative">
                 <select
                   value={filters.payment_status}
                   onChange={(event) => setFilters((prev) => ({ ...prev, payment_status: event.target.value }))}
-                  className="w-full appearance-none rounded-[16px] border border-border bg-white px-4 py-3 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+                  className="h-9 w-full appearance-none rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
+
                 >
                   <option value="all">All Payment Status</option>
                   <option value="Settled">Settled</option>
                   <option value="Pending">Pending</option>
                   <option value="Unsettled">Unsettled</option>
                 </select>
-                <FiChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted" />
+                <FiChevronDown size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
               </div>
             </div>
           </>
@@ -558,39 +582,45 @@ export default function CommonOrderPage({
         {renderCustomFilters ? renderCustomFilters({ filters, setFilters }) : null}
 
         <div className="flex w-[160px] shrink-0 flex-col gap-1.5">
-          <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">From Date</label>
+          <label className="ml-1 text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">From Date</label>
           <input
             type="date"
             value={dateDraft.from}
             onChange={(event) => setDateDraft((prev) => ({ ...prev, from: event.target.value }))}
-            className="w-full rounded-[16px] border border-border bg-white px-4 py-3 text-sm text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+            className="h-9 w-full rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm"
+
           />
         </div>
 
         <div className="flex w-[160px] shrink-0 flex-col gap-1.5">
-          <label className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">To Date</label>
+          <label className="ml-1 text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">To Date</label>
           <input
             type="date"
             value={dateDraft.to}
             onChange={(event) => setDateDraft((prev) => ({ ...prev, to: event.target.value }))}
-            className="w-full rounded-[16px] border border-border bg-white px-4 py-3 text-sm text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+            className="h-9 w-full rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm"
+
           />
         </div>
 
-        <div className="flex shrink-0 items-end gap-3 xl:self-end">
+        <div className="flex shrink-0 items-end gap-2 xl:self-end">
           <Button
             type="button"
             variant="primary"
-            className="h-[50px] min-w-[56px] px-0"
+            size="md"
+            className="!h-9 rounded-default px-5"
+
             onClick={handleApplyFilters}
             title="Apply Filters"
           >
-            <FiCalendar size={18} />
+            Apply
           </Button>
           <Button
             type="button"
             variant="secondary"
-            className="h-[50px] min-w-[56px] px-0"
+            size="icon"
+            className="!h-9 !w-9 rounded-default"
+
             onClick={clearFilters}
             title="Clear Filters"
           >
@@ -616,7 +646,6 @@ export default function CommonOrderPage({
         />
 
         <OrdersFilterSection
-          title="Quick Filters"
           mobileTitle="Apply Order Filters"
           mobileDescription="Refine the order list, then apply to update the records."
           activeCount={activeQuickFilterCount}
@@ -698,7 +727,8 @@ export default function CommonOrderPage({
             <div className="min-w-0 space-y-5 xl:space-y-6">
               <Card
                 title={recordTitle}
-                  action={(
+                noHeaderBorder
+                action={(
                   <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
                     <div className="rounded-full bg-surface-alt px-3 py-2 text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-text">
                       Total Rows {totalOrders}
@@ -710,7 +740,8 @@ export default function CommonOrderPage({
                         setPerPage(nextPerPage);
                         loadOrders(1, nextPerPage);
                       }}
-                      className="w-full rounded-[14px] border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary sm:w-auto"
+                      className="w-full rounded-inner border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary sm:w-auto"
+
                     >
                       {[10, 25, 50, 100].map((option) => (
                         <option key={option} value={option}>
@@ -744,7 +775,8 @@ export default function CommonOrderPage({
                   onSort={handleSort}
                   sortKey={sortKey}
                   sortDir={sortDir}
-                  wrapperClassName="rounded-b-[24px] pb-2"
+                  wrapperClassName="rounded-b-default pb-2"
+
                   tableClassName="min-w-[3200px]"
                   headClassName="top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
                   headerCellClassName="border-b border-border px-2 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap sm:px-4 sm:py-4 sm:text-[0.68rem] sm:tracking-[0.18em]"
@@ -761,7 +793,8 @@ export default function CommonOrderPage({
                   Results {resultStart}-{resultEnd} of {totalOrders}
                 </div>
 
-                <nav className="flex max-w-full items-center overflow-x-auto rounded-[18px] border border-border bg-white shadow-sm [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300">
+                <nav className="flex max-w-full items-center overflow-x-auto rounded-default border border-border bg-white shadow-sm [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300">
+
                   <button
                     className={`p-3 transition-colors hover:bg-surface-alt ${currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-text'}`}
                     onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
