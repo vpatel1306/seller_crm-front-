@@ -44,7 +44,7 @@ const mainFields = [
   { key: 'mobile_no', label: 'Mobile No', icon: <FiPhone size={13} />, type: 'number', required: true },
   { key: 'person_name', label: 'Contact Person', icon: <FiUser size={13} />, type: 'text', required: true },
   { key: 'order_data_from', label: 'Order Data From', icon: <FiCalendar size={13} />, type: 'date', required: true },
-  { key: 'label_text_file_folder', label: 'Label / File Folder', icon: <FiFileText size={13} />, type: 'text', required: false },
+  /* { key: 'label_text_file_folder', label: 'Label / File Folder', icon: <FiFileText size={13} />, type: 'text', required: false }, */
   { key: 'address', label: 'Address', icon: <FiMapPin size={13} />, type: 'text', required: false, textarea: true },
 ];
 
@@ -194,13 +194,12 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
       isOpen
       onClose={disableClose ? () => {} : onClose}
       title={title}
-      size="xl"
+      size="lg"
       headerStyle="gradient"
       showFooter={false}
       showCloseButton={!disableClose}
       closeOnEsc={!disableClose}
       closeOnOverlayClick={!disableClose}
-      customClass="max-w-[1220px]"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
 
@@ -214,7 +213,7 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
           </div>
         ) : null}
 
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.9fr)]">
+        <div className="grid gap-5">
           <section className="rounded-default border border-border bg-white shadow-sm">
 
             <div className="border-b border-border px-5 py-4">
@@ -226,7 +225,7 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
             </div>
           </section>
 
-          <section className="space-y-5">
+          {/* <section className="space-y-5">
             <div className="rounded-default border border-border bg-surface-alt shadow-sm">
 
               <div className="border-b border-border px-5 py-4">
@@ -238,7 +237,7 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
               </div>
             </div>
 
-          </section>
+          </section> */}
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-5">
