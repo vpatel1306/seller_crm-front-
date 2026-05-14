@@ -2,7 +2,7 @@ import { FiGlobe, FiMail, FiMapPin, FiPhone } from 'react-icons/fi';
 
 const supportItems = [
   { icon: FiPhone, label: '+91 12345 67890' },
-  { icon: FiMail, label: 'support@sellerinsight.in' },
+  { icon: FiMail, label: 'support@meematrix.com' },
   { icon: FiGlobe, label: 'meematrix.com' },
   { icon: FiMapPin, label: 'Surat, Gujarat 395001' },
 ];
@@ -14,7 +14,7 @@ export default function Footer() {
         <div className="flex flex-col items-center justify-between gap-6 lg:flex-row">
           <div className="flex items-center gap-3">
             <div className="h-6 w-1 rounded-full bg-primary" />
-            <span className="text-[0.65rem] font-black uppercase tracking-[0.2em] text-slate-400">Seller Insight Hub</span>
+            <span className="text-[0.65rem] font-black uppercase tracking-[0.2em] text-slate-400">Meematrix Hub</span>
           </div>
 
           <div className="flex flex-wrap justify-center gap-3">
@@ -27,7 +27,7 @@ export default function Footer() {
           </div>
 
           <div className="text-[0.55rem] font-bold uppercase tracking-[0.1em] text-slate-400">
-            &copy; {new Date().getFullYear()} Seller Insight CRM. v2.0.4
+            &copy; {new Date().getFullYear()} Meematrix CRM. v1.0.0
           </div>
         </div>
       </div>

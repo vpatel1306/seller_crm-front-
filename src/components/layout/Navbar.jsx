@@ -222,7 +222,7 @@ export default function Navbar() {
                         className="flex w-full items-center gap-3 rounded-inner px-3 py-2 text-sm font-semibold text-error transition-colors hover:bg-red-50"
                       >
                         <FiLogOut size={16} />
-                        Logout Session
+                        Logout
                       </button>
                     </div>
                   </div>

@@ -110,7 +110,7 @@ export default function AppSidebar() {
 
                 <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-soft">
                     <div className="text-[0.6rem] font-bold text-slate-400 uppercase tracking-widest">Support</div>
-                    <div className="mt-1 text-xs font-semibold text-slate-700">MeeMatrix ERP v2.0</div>
+                    <div className="mt-1 text-xs font-semibold text-slate-700">Meematrix CRM. v1.0.0</div>
                 </div>
             </div>
         </aside>
