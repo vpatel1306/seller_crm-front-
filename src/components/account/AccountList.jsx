@@ -234,13 +234,13 @@ export default function AccountList({ isStandalone = false }) {
             },
         },
         {
-            key: 'updated_at',
-            label: 'Last Sync',
-            render: (row) => <span className="text-[0.65rem] font-bold text-slate-400 uppercase leading-tight">{fmtDateTime(row.updated_at)}</span>,
+            key: 'order_data_from',
+            label: 'Data From',
+            render: (row) => <span className="text-[0.65rem] font-bold text-slate-400 uppercase leading-tight">{fmtDateTime(row.order_data_from)}</span>,
         },
         {
             key: 'account_active',
-            label: 'Operation State',
+            label: 'Status',
             className: 'w-[140px]',
             render: (row) => (
                 <div className="flex items-center justify-center gap-3">
@@ -259,7 +259,7 @@ export default function AccountList({ isStandalone = false }) {
         },
         {
             key: 'actions',
-            label: 'Control',
+            label: 'Actions',
             className: 'w-[120px]',
             render: (row) => {
                 const isDeletingThisRow = deleting && checked.has(row.id);

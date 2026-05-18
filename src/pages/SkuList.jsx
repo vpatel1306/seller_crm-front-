@@ -49,8 +49,8 @@ const initialQuickFilters = {
 
 const COST_STATUS_MAP = {
   all: null,
-  'cost-set': 'Active',
-  'without-cost': 'Inactive',
+  'with-cost': 'with-cost',
+  'without-cost': 'without-cost',
 };
 
 const ACCOUNT_SCOPE_MAP = {
@@ -514,12 +514,6 @@ const handleImportFile = async (event) => {
       render: (row) => <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{formatCurrency(calculateFinalCost(row))}</span>,
     },
     {
-      key: 'updated_at',
-      label: 'Last Update',
-      className: 'min-w-[150px]',
-      render: (row) => <span className="text-xs text-text-muted">{row.updated_at || '-'}</span>,
-    },
-    {
       key: 'actions',
       label: 'Action',
       className: 'min-w-[88px]',
@@ -605,7 +599,7 @@ const handleImportFile = async (event) => {
             >
               <option value="all">All SKUs</option>
               <option value="without-cost">Without Cost</option>
-              <option value="cost-set">Cost Set</option>
+              <option value="with-cost">Cost Set</option>
             </select>
             <FiChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted" />
           </div>

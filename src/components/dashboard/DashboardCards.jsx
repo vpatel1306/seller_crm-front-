@@ -104,6 +104,7 @@ const SEPARATE_CARDS = [
   { key: 'cancel_pickup', status: 'Cancel Pickup', title: 'Cancelled Pickup', route: '/cancel-pickup', tone: 'border-fuchsia-200 bg-fuchsia-50', icon: FiXCircle },
   { key: 'approved_claims', status: 'Approved Claims', title: 'Approved Claims', route: '/approve-claim', tone: 'border-emerald-200 bg-emerald-50', icon: FiCheckCircle },
   { key: 'pending_claims', status: 'Pending Claims', title: 'Pending Claims', route: '/approve-claim', tone: 'border-amber-200 bg-amber-50', icon: FiClock },
+  { key: 'wrong_return_claims', status: 'Wrong Return Claims', title: 'Wrong Return Claims', route: '/wrong-return-claim', tone: 'border-rose-200 bg-rose-50', icon: FiTrendingDown },
 ];
 
 function SectionHeader({ title, subtitle, action }) {
@@ -318,6 +319,19 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
     </div>
   );
 
+  const chartData = RETURNS_CARDS.map(r => {
+    const live = dashboardCards[r.key] || {};
+
+    return {
+      name: r.title,
+      count: Number(live.total_orders || 0),
+      color: r.color,
+      route: r.route,
+
+      fullHeight: 60,
+    };
+  });
+
   return (
     <div className="space-y-4">
       {/* INDEPENDENT PAYMENT CYCLE (Used in executive grid) */}
@@ -467,7 +481,40 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
                 margin={{ top: 20, right: 10, left: 0, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#64748b' }} />
+                {/* <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#64748b' }} /> */}
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={(props) => {
+                    const { x, y, payload } = props;
+
+                    const item = chartData.find(
+                      d => d.name === payload.value
+                    );
+
+                    return (
+                      <text
+                        x={x}
+                        y={y + 10}
+                        textAnchor="middle"
+                        fill="#64748b"
+                        fontSize={10}
+                        fontWeight="bold"
+                        style={{
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => {
+                          if (item?.route) {
+                            navigate(item.route);
+                          }
+                        }}
+                      >
+                        {payload.value}
+                      </text>
+                    );
+                  }}
+                />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
                 <Tooltip
                   cursor={{ fill: '#f8fafc' }}
@@ -553,7 +600,7 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
           <SectionHeader title="Operational Insights" subtitle="Logistics and claim management" />
 
           {/* SEPARATE STATUS CARDS GRID */}
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 mt-2">
             {SEPARATE_CARDS.map((item) => {
               const live = dashboardCards[item.key] || {};
 
