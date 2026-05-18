@@ -4,8 +4,11 @@ import {
   RadialBarChart,
   RadialBar,
 } from 'recharts';
+import { useNavigate } from 'react-router-dom';
 
-export default function Sidebar({ accountDetails = null }) {
+export default function Sidebar({ accountDetails = null, navigate }) {
+  navigate = useNavigate();
+
   const accountStatus = accountDetails || {};
   const netProfit = Number(accountStatus.net_profit) || 0;
   const netProfitPct = Number(accountStatus.net_profit_percentage) || 0;
@@ -72,24 +75,6 @@ export default function Sidebar({ accountDetails = null }) {
             </div>
           </div>
 
-          {/* ALERTS / ACTION ITEMS
-          {alerts.length > 0 && (
-            <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-100 space-y-1.5">
-              <div className="text-[0.6rem] font-black text-amber-700 uppercase tracking-widest flex items-center gap-1.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                Action Alerts
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {alerts.map(a => (
-                  <div key={a.l} className="flex items-center gap-1.5 bg-white/50 rounded p-1">
-                    <span className="text-xs font-black text-slate-900 leading-none">{a.c}</span>
-                    <span className={`text-[9px] font-bold uppercase leading-none ${a.color}`}>{a.l}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )} */}
-
           <div className="h-px bg-gray-200/50" />
 
           <div>
@@ -118,8 +103,15 @@ export default function Sidebar({ accountDetails = null }) {
               <h5 className="text-[0.65rem] font-black uppercase tracking-wider text-green-700">Net Profits</h5>
               <h5 className="mt-0.5 text-lg font-black leading-none text-green-800">₹{fmtAmt(netProfit)}</h5>
             </div>
+
             <div className="h-6 w-6 rounded-full bg-green-200/50 flex items-center justify-center">
               <FiTrendingUp className="text-green-700" size={14} />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center rounded-lg border border-gray-100 bg-gray-200 p-2" onClick={() => navigate('/sku-list')}>
+            <div>
+              <h5 className="text-[0.75rem] font-black  tracking-wider text-gray-800">Total SKU - {accountStatus.total_sku} /  Without Cost SKU - {accountStatus.without_cost_sku} </h5>
             </div>
           </div>
         </div>

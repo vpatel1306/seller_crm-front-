@@ -225,19 +225,6 @@ export default function AccountModal({ mode = 'add', initialData = null, onClose
             </div>
           </section>
 
-          {/* <section className="space-y-5">
-            <div className="rounded-default border border-border bg-surface-alt shadow-sm">
-
-              <div className="border-b border-border px-5 py-4">
-                <h3 className="text-base font-extrabold text-text">Optional Access Details</h3>
-                <p className="mt-1 text-sm text-text-muted">Add credentials and bank details if they are available right now.</p>
-              </div>
-              <div className="grid gap-4 p-5">
-                {optionalFields.map(renderField)}
-              </div>
-            </div>
-
-          </section> */}
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-5">

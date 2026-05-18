@@ -33,6 +33,8 @@ import ApproveClaim from '../pages/Orders/Claim/ApproveClaim';
 import DeliveredOrders from '../pages/Orders/DeliveredOrders';
 import ReturnsOreders from '../pages/Orders/ReturnsOreders';
 import OthersOrders from '../pages/Orders/OthersOrders';
+import WrongReturnClaim from '../pages/Orders/Claim/WrongReturnClaim';
+
 
 export default function AppRoutes() {
   return (
@@ -70,6 +72,7 @@ export default function AppRoutes() {
       <Route path="/delivered-orders" element={<ProtectedRoute><DeliveredOrders /></ProtectedRoute>} />
       <Route path="/returns-orders" element={<ProtectedRoute><ReturnsOreders /></ProtectedRoute>} />
       <Route path="/others-orders" element={<ProtectedRoute><OthersOrders /></ProtectedRoute>} />
+      <Route path="/wrong-return-claim" element={<ProtectedRoute><WrongReturnClaim /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
