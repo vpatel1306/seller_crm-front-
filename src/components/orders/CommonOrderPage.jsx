@@ -243,8 +243,6 @@ export default function CommonOrderPage({
         filterData: finalFilterData,
         page,
         limit: perPageCount,
-        fromDate: requestFromDate,
-        toDate: requestToDate,
         filters,
       });
       const requestConfig = {
@@ -266,8 +264,6 @@ export default function CommonOrderPage({
       } = mapResponse(payload, {
         page,
         limit: perPageCount,
-        fromDate: requestFromDate,
-        toDate: requestToDate,
         filters,
       });
       setOrders(list);

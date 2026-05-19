@@ -199,10 +199,8 @@ export default function ReceivedPaymentOrders() {
       loadingText="Loading received payment orders..."
       emptyText="No received payment orders found."
       endpoint="/get-received-payment-orders"
-      buildRequestPayload={({ filterData, fromDate, toDate, filters, page, limit }) => ({
+      buildRequestPayload={({ filterData, filters, page, limit }) => ({
         filter_data: filterData,
-        start_date: fromDate || '',
-        end_date: toDate || '',
         order_filter: filters.order_filter || 'All',
         page_no: page,
         limit,
