@@ -10,7 +10,7 @@ export default function OthersOrders() {
       emptyText="No Others orders found."
       fixedFilterData={{ 
         status: [
-         'Processing', ' '
+         'Processing',
         ]
       }}
     />

@@ -132,10 +132,8 @@ export default function PaymentMismatch() {
       loadingText="Loading payment mismatch orders..."
       emptyText="No payment mismatch orders found."
       endpoint="/get-payment-mismatch-orders"
-      buildRequestPayload={({ filterData, fromDate, toDate, page, limit }) => ({
+      buildRequestPayload={({ filterData, page, limit }) => ({
         filter_data: filterData,
-        start_date: fromDate,
-        end_date: toDate,
         page_no: page,
         limit,
       })}

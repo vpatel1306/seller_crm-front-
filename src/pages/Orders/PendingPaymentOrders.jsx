@@ -230,10 +230,8 @@ export default function PendingPaymentOrders() {
       loadingText="Loading Pending payment orders..."
       emptyText="No Pending payment orders found."
       endpoint="/get-pending-payment-orders"
-      buildRequestPayload={({ filterData, fromDate, toDate, filters, page, limit }) => ({
+      buildRequestPayload={({ filterData, page, limit }) => ({
         filter_data: filterData,
-        start_date: fromDate || '',
-        end_date: toDate || '',
         order_filter: filters.order_filter || 'All',
         page_no: page,
         limit,

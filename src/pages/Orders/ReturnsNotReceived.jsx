@@ -193,11 +193,9 @@ function normalizeSummaryRows(summaryData, config) {
   }));
 }
 
-function buildPendingReturnsPayload({ filterData, page, limit, fromDate, toDate }) {
+function buildPendingReturnsPayload({ filterData, page, limit }) {
   return {
     filter_data: filterData,
-    start_date: fromDate,
-    end_date: toDate,
     page_no: page,
     limit,
   };

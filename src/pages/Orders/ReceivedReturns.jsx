@@ -149,11 +149,9 @@ function normalizeSummaryRows(summaryData, config) {
   }));
 }
 
-function buildReceivedReturnsPayload({ filterData, fromDate, toDate, page, limit }) {
+function buildReceivedReturnsPayload({ filterData, page, limit }) {
   return {
     filter_data: filterData,
-    start_date: fromDate || '',
-    end_date: toDate || '',
     page_no: page,
     limit,
   };
