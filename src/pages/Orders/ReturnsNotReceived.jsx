@@ -203,16 +203,24 @@ function buildPendingReturnsPayload({ filterData, page, limit, fromDate, toDate 
   };
 }
 
+function getNumericCount(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function mapPendingReturnsResponse(payload, { page, limit }) {
   const list = Array.isArray(payload.data) ? payload.data : [];
-  const total = Number(payload.total_rows) || list.length;
+  const total = getNumericCount(payload.total_rows) ?? getNumericCount(payload.total_count) ?? getNumericCount(payload.count) ?? list.length;
+  const resolvedPage = getNumericCount(payload.current_page) ?? page;
+  const resolvedPageSize = getNumericCount(payload.page_size) ?? limit;
+  const resolvedTotalPages = getNumericCount(payload.total_pages) ?? Math.max(Math.ceil(total / resolvedPageSize), 1);
 
   return {
     list,
     total,
-    resolvedPage: page,
-    resolvedPageSize: limit,
-    resolvedTotalPages: Math.max(Math.ceil(total / limit), 1),
+    resolvedPage,
+    resolvedPageSize,
+    resolvedTotalPages,
     summaryData: {
       date_wise_rows: normalizeSummaryRows(payload.summary?.date_wise, {
         fallbackLabel: 'Date',
