@@ -27,6 +27,8 @@ const FILTER_FIELDS = [
   { key: 'size', label: 'Size' },
 ];
 
+const getTodayDateString = () => new Date().toISOString().split('T')[0];
+
 const initialAddSkuForm = {
   sku_id: '',
   product_name: '',
@@ -34,6 +36,8 @@ const initialAddSkuForm = {
   basic_cost: '',
   gst_percentage: '',
   packing_charge: '',
+  order_start_date: getTodayDateString(),
+  order_end_date: getTodayDateString(),
 };
 
 const initialQuickFilters = {
@@ -229,6 +233,8 @@ export default function SkuList() {
       basic_cost: sku.basic_cost ?? '',
       gst_percentage: sku.gst_percentage ?? '0',
       packing_charge: sku.packing_charge ?? '',
+      order_start_date: sku.order_start_date || getTodayDateString(),
+      order_end_date: sku.order_end_date || getTodayDateString(),
     });
     setShowAddSkuModal(true);
   };
@@ -370,6 +376,8 @@ const handleImportFile = async (event) => {
           basic_cost: payload.basic_cost,
           gst_percentage: payload.gst_percentage,
           packing_charge: payload.packing_charge,
+          order_start_date: addSkuForm.order_start_date,
+          order_end_date: addSkuForm.order_end_date,
         }, {
           headers: {
             account: accountHeaderValue,
@@ -883,21 +891,23 @@ const handleImportFile = async (event) => {
           />
           <div className="space-y-4">
             <div className="rounded-default border border-border bg-white px-3 py-3">
-              <div className="grid gap-4 sm:grid-cols-2 mb-5">
-                <Input
-                  label="To Date"
-                  type="date"
-                  value={addSkuForm.to_date}
-                  onChange={(event) => handleAddSkuInputChange('to_date', event.target.value)}
+              {editingSku && (
+                <div className="grid gap-4 sm:grid-cols-2 mb-5">
+                  <Input
+                    label="Order Start Date"
+                    type="date"
+                    value={addSkuForm.order_start_date}
+                    onChange={(event) => handleAddSkuInputChange('order_start_date', event.target.value)}
                   />
 
-                <Input
-                  label="From Date"
-                  type="date"
-                  value={addSkuForm.from_date}
-                  onChange={(event) => handleAddSkuInputChange('from_date', event.target.value)}
+                  <Input
+                    label="Order End Date"
+                    type="date"
+                    value={addSkuForm.order_end_date}
+                    onChange={(event) => handleAddSkuInputChange('order_end_date', event.target.value)}
                   />
-              </div>
+                </div>
+              )}
               <div className="grid gap-4 sm:grid-cols-3 mb-5">
                 <Input
                   label="Basic Cost"
