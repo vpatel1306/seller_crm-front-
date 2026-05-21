@@ -18,6 +18,12 @@ const RECEIVED_PAYMENT_COLUMNS = [
     render: (row) => <span className="text-text-muted">{formatDate(row.order_date)}</span>,
   },
   {
+    key: 'customer_name',
+    label: 'Customer Name',
+    className: 'min-w-[180px]',
+    render: (row) => <span className="text-text-muted">{row.customer_name || '-'}</span>,
+  },
+  {
     key: 'order_status',
     label: 'Order Status',
     className: 'min-w-[150px]',
@@ -41,56 +47,37 @@ const RECEIVED_PAYMENT_COLUMNS = [
     render: (row) => <span className="text-text-muted">{row.qty ?? 0}</span>,
   },
   {
-    key: 'selling_amount',
-    label: 'Selling Amount',
+    key: 'pickup_date',
+    label: 'Pickup Date',
+    className: 'min-w-[180px]',
+    render: (row) => <span className="text-text-muted">{formatDate(row.pickup_date)}</span>,
+  },
+  {
+    key: 'dispatch_date',
+    label: 'Dispatch Date',
+    className: 'min-w-[180px]',
+    render: (row) => <span className="text-text-muted">{formatDate(row.dispatch_date)}</span>,
+  },
+  {
+    key: 'awb_number',
+    label: 'AWB Number',
+    className: 'min-w-[150px]',
+    render: (row) => <span className="text-text-muted">{row.awb_number || '-'}</span>,
+  },
+  {
+    key: 'courier_partner',
+    label: 'Courier Partner',
+    className: 'min-w-[180px]',
+    render: (row) => <span className="text-text-muted">{row.courier_partner || '-'}</span>,
+  },
+  {
+    key: 'days',
+    label: 'Days',
     right: true,
-    className: 'min-w-[130px]',
-    render: (row) => <span className="font-bold text-text">{formatCurrency(row.selling_amount)}</span>,
+    className: 'min-w-[80px]',
+    render: (row) => <span className="text-text-muted">{row.days ?? '-'}</span>,
   },
-  {
-    key: 'received_payment',
-    label: 'Received Payment',
-    right: true,
-    className: 'min-w-[140px]',
-    render: (row) => <span className="font-bold text-emerald-600">{formatCurrency(row.received_payment)}</span>,
-  },
-  {
-    key: 'cost_amount',
-    label: 'Cost Amount',
-    right: true,
-    className: 'min-w-[130px]',
-    render: (row) => <span className="text-text-muted">{formatCurrency(row.cost_amount)}</span>,
-  },
-  {
-    key: 'profit_loss',
-    label: 'P/L',
-    right: true,
-    className: 'min-w-[110px]',
-    render: (row) => (
-      <span className={`font-extrabold ${(Number(row.profit_loss) || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-        {formatCurrency(row.profit_loss)}
-      </span>
-    ),
-  },
-  {
-    key: 'payment_entry_count',
-    label: 'Payment Entries',
-    right: true,
-    className: 'min-w-[120px]',
-    render: (row) => <span className="text-text-muted">{row.payment_entry_count ?? 0}</span>,
-  },
-  {
-    key: 'first_payment_date',
-    label: 'First Payment Date',
-    className: 'min-w-[190px]',
-    render: (row) => <span className="text-text-muted">{formatDate(row.first_payment_date)}</span>,
-  },
-  {
-    key: 'last_payment_date',
-    label: 'Last Payment Date',
-    className: 'min-w-[190px]',
-    render: (row) => <span className="text-text-muted">{formatDate(row.last_payment_date)}</span>,
-  },
+ 
 ];
 
 function formatCurrency(value) {
@@ -220,7 +207,7 @@ export default function PendingPaymentOrders() {
       loadingText="Loading Pending payment orders..."
       emptyText="No Pending payment orders found."
       endpoint="/get-pending-payment-orders"
-      buildRequestPayload={({ filterData, page, limit }) => ({
+      buildRequestPayload={({ filterData, filters, page, limit }) => ({
         filter_data: filterData,
         order_filter: filters.order_filter || 'All',
         page_no: page,
@@ -230,8 +217,7 @@ export default function PendingPaymentOrders() {
       columns={RECEIVED_PAYMENT_COLUMNS}
       renderSidebar={renderReceivedPaymentSidebar}
       rowActions={[
-        // { key: 'edit', label: 'Edit Order', icon: FiEdit2, className: 'border-emerald-200 text-emerald-700 hover:bg-emerald-50' },
-        // { key: 'delete', label: 'Delete Order', icon: FiTrash2, className: 'border-rose-200 text-rose-700 hover:bg-rose-50' },
+
         {
           key: 'payment-details',
           label: 'Payment Details',
@@ -240,7 +226,6 @@ export default function PendingPaymentOrders() {
           disabled: (row) => !row.platform_order_id,
           onClick: (row) => navigate(`/payment-details/${encodeURIComponent(row.platform_order_id)}`),
         },
-        // { key: 'details', label: 'Order Details', icon: FiInfo, className: 'border-slate-200 text-slate-700 hover:bg-slate-100' },
       ]}
       additionalInitialFilters={{ order_filter: 'All' }}
       compactSingleRowFilters
@@ -263,5 +248,6 @@ export default function PendingPaymentOrders() {
         </div>
       )}
     />
+
   );
 }
