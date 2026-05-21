@@ -34,23 +34,6 @@ const COLUMNS = [
     render: (row) => <span className="text-text-muted">{formatDateTime(row.pickup_date)}</span>,
   },
   {
-    key: 'days',
-    label: 'Days',
-    right: true,
-    className: 'min-w-[72px]',
-    render: (row) => <span className="font-bold tabular-nums text-text">{row.days ?? '-'}</span>,
-  },
-  {
-    key: 'status',
-    label: 'Status',
-    className: 'min-w-[180px]',
-    render: (row) => (
-      <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-text">
-        {row.status || '-'}
-      </span>
-    ),
-  },
-  {
     key: 'order_status',
     label: 'Order Status',
     className: 'min-w-[140px]',
@@ -59,6 +42,13 @@ const COLUMNS = [
         {row.order_status || '-'}
       </span>
     ),
+  },
+  {
+    key: 'days',
+    label: 'Days',
+    right: true,
+    className: 'min-w-[72px]',
+    render: (row) => <span className="font-bold tabular-nums text-text">{row.days ?? '-'}</span>,
   },
   {
     key: 'awb_number',

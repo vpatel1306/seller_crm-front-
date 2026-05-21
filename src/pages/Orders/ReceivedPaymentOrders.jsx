@@ -18,16 +18,6 @@ const RECEIVED_PAYMENT_COLUMNS = [
     render: (row) => <span className="text-text-muted">{formatDate(row.order_date)}</span>,
   },
   {
-    key: 'status',
-    label: 'Status',
-    className: 'min-w-[180px]',
-    render: (row) => (
-      <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] text-text">
-        {row.status || '-'}
-      </span>
-    ),
-  },
-  {
     key: 'order_status',
     label: 'Order Status',
     className: 'min-w-[150px]',

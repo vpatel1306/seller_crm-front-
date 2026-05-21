@@ -32,7 +32,7 @@ const initialAddSkuForm = {
   product_name: '',
   box_size: '',
   basic_cost: '',
-  gst_percentage: '18',
+  gst_percentage: '',
   packing_charge: '',
 };
 
@@ -345,8 +345,8 @@ const handleImportFile = async (event) => {
       return;
     }
 
-    if (basicCost <= 0 || gstPercentage <= 0 || packingCharge <= 0) {
-      setAddSkuError('Basic cost, GST percentage and packing charge must be greater than 0.');
+    if (basicCost <= 0 ) {
+      setAddSkuError('Basic cost must be greater than 0.');
       return;
     }
 
