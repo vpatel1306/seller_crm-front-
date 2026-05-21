@@ -881,46 +881,64 @@ const handleImportFile = async (event) => {
             onChange={(event) => handleAddSkuInputChange('product_name', event.target.value)}
             placeholder="Enter Product Name"
           />
+          <div className="space-y-4">
+            <div className="rounded-default border border-border bg-white px-3 py-3">
+              <div className="grid gap-4 sm:grid-cols-2 mb-5">
+                <Input
+                  label="To Date"
+                  type="date"
+                  value={addSkuForm.to_date}
+                  onChange={(event) => handleAddSkuInputChange('to_date', event.target.value)}
+                  />
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Input
-              label="Basic Cost"
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={addSkuForm.basic_cost}
-              onChange={(event) => handleAddSkuInputChange('basic_cost', event.target.value)}
-              placeholder="Enter Basic Cost"
-            />
-            <Input
-              label="GST %"
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={addSkuForm.gst_percentage}
-              onChange={(event) => handleAddSkuInputChange('gst_percentage', event.target.value)}
-              placeholder="Enter GST %"
-            />
-            <Input
-              label="Packing Charge"
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={addSkuForm.packing_charge}
-              onChange={(event) => handleAddSkuInputChange('packing_charge', event.target.value)}
-              placeholder="Enter Packing Charge"
-            />
-          </div>
+                <Input
+                  label="From Date"
+                  type="date"
+                  value={addSkuForm.from_date}
+                  onChange={(event) => handleAddSkuInputChange('from_date', event.target.value)}
+                  />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3 mb-5">
+                <Input
+                  label="Basic Cost"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={addSkuForm.basic_cost}
+                  onChange={(event) => handleAddSkuInputChange('basic_cost', event.target.value)}
+                  placeholder="Enter Basic Cost"
+                  />
+                <Input
+                  label="GST %"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={addSkuForm.gst_percentage}
+                  onChange={(event) => handleAddSkuInputChange('gst_percentage', event.target.value)}
+                  placeholder="Enter GST %"
+                  />
+                <Input
+                  label="Packing Charge"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={addSkuForm.packing_charge}
+                  onChange={(event) => handleAddSkuInputChange('packing_charge', event.target.value)}
+                  placeholder="Enter Packing Charge"
+                  />
+              </div>
 
-          <div className="rounded-default border border-emerald-200 bg-emerald-50 px-4 py-4">
+              <div className="rounded-default border border-emerald-200 bg-emerald-50 px-2 py-2 flex justify-between items-center">
 
-            <div className="crm-section-label !text-emerald-700">Estimated Final Cost</div>
-            <div className="mt-2 text-2xl font-black text-emerald-700">
-              {formatCurrency(
-                (Number(addSkuForm.basic_cost) || 0) +
-                ((Number(addSkuForm.basic_cost) || 0) * (Number(addSkuForm.gst_percentage) || 0) / 100) +
-                (Number(addSkuForm.packing_charge) || 0)
-              )}
+                <div className="crm-section-label !text-emerald-700">Estimated Final Cost</div>
+                <div className="mt-2 text-2xl font-black text-emerald-700">
+                  {formatCurrency(
+                    (Number(addSkuForm.basic_cost) || 0) +
+                    ((Number(addSkuForm.basic_cost) || 0) * (Number(addSkuForm.gst_percentage) || 0) / 100) +
+                    (Number(addSkuForm.packing_charge) || 0)
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
