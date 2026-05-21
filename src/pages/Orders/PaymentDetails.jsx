@@ -134,15 +134,14 @@ export default function PaymentDetails() {
         >
           <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
             <DetailMetric label="Order Status" value={orderDetails?.order_status || '-'} tone="text-amber-700" />
-            <DetailMetric label="Status" value={orderDetails?.status || '-'} tone="text-primary" />
             <DetailMetric label="Settlement Amount" value={formatCurrency(orderDetails?.settlement_amount)} tone="text-emerald-600" />
             <DetailMetric label="Claim Amount" value={formatCurrency(orderDetails?.claim_amount)} tone="text-rose-600" />
             <DetailMetric label="Shipping Charge" value={formatCurrency(orderDetails?.shipping_charge)} />
             <DetailMetric label="Return Shipping" value={formatCurrency(orderDetails?.return_shipping_charge)} />
+            <DetailMetric label="Total Amount" value={formatCurrency(orderDetails?.total_amount)} />
           </div>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
-            <DetailMetric label="Total Amount" value={formatCurrency(orderDetails?.total_amount)} />
+          <div className="mt-5 grid gap-3 md:grid-cols-3 xl:grid-cols-5">
             <DetailMetric label="Cost Amount" value={formatCurrency(orderDetails?.cost_amount)} tone="text-amber-600" />
             <DetailMetric label="Order Date" value={formatDate(orderDetails?.order_date)} />
             <DetailMetric label="Payment Entries" value={paymentSummary.totalEntries} tone="text-primary" />

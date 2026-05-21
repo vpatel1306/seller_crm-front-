@@ -44,16 +44,6 @@ const COLUMNS = [
     render: (row) => <span className="font-bold tabular-nums text-text">{row.days ?? '-'}</span>,
   },
   {
-    key: 'status',
-    label: 'Status',
-    className: 'min-w-[180px]',
-    render: (row) => (
-      <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-text">
-        {row.status || '-'}
-      </span>
-    ),
-  },
-  {
     key: 'order_status',
     label: 'Order Status',
     className: 'min-w-[140px]',

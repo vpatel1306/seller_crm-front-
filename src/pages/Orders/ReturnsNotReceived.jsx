@@ -16,18 +16,8 @@ const RETURNS_NOT_RECEIVED_COLUMNS = [
     render: (row) => <span className="text-text-muted">{row.id || '-'}</span>,
   },
   {
-    key: 'status',
-    label: 'Status',
-    className: 'min-w-[160px]',
-    render: (row) => (
-      <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] text-text">
-        {row.status || '-'}
-      </span>
-    ),
-  },
-  {
     key: 'order_status',
-    label: 'Return Type',
+    label: 'Order Status',
     className: 'min-w-[160px]',
     render: (row) => (
       <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] text-amber-700">
