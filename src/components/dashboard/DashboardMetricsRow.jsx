@@ -11,7 +11,7 @@ export default function DashboardMetricsRow({ metrics = [], className = '', mode
             <div className="p-1 rounded-lg bg-indigo-50 text-indigo-600">
               <FiTarget size={12} />
             </div>
-            <span className="text-xs font-black uppercase tracking-widest text-slate-500 leading-none">Averages Overview</span>
+            <span className="text-xs font-black uppercase tracking-widest text-slate-500 leading-none">Average Performance</span>
           </div>
           <div className="flex flex-col gap-2">
             {metrics.map(m => (
