@@ -1,4 +1,6 @@
 import CommonOrderPage from '../../components/orders/CommonOrderPage';
+import { formatCurrency, formatDateTime as formatDate } from '../../utils/formatters';
+
 import OrdersSidebarSection from '../../components/orders/OrdersSidebarSection';
 import SummaryTable from '../../components/ui/SummaryTable';
 
@@ -141,15 +143,6 @@ const RETURNS_NOT_RECEIVED_COLUMNS = [
   },
 ];
 
-function formatCurrency(value) {
-  return `Rs. ${(Number(value) || 0).toFixed(2)}`;
-}
-
-function formatDate(value) {
-  if (!value) return '-';
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? value : parsedDate.toLocaleString('en-IN');
-}
 
 function getCountValue(item) {
   return (
@@ -179,7 +172,7 @@ function normalizeSummaryRows(summaryData, config) {
     id: `${config.fallbackLabel}-${index}`,
     label: key,
     count: typeof value === 'object' ? getCountValue(value) : Number(value) || 0,
-    amount: typeof value === 'object' ? Number(getAmountValue(value) || 0).toFixed(2) : '0.00',
+    amount: typeof value === 'object' ? formatCurrency(getAmountValue(value)) : formatCurrency(0),
   }));
 }
 

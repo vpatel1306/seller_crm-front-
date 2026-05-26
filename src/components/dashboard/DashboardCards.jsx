@@ -336,7 +336,14 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
     <div className="space-y-4">
       {/* INDEPENDENT PAYMENT CYCLE (Used in executive grid) */}
       {viewMode === 'payment-cycle' && (
-        <Card title="Payment Settlement Status" subtitle="Track payment clearance from courier/channel" className="h-full" contentClassName="p-3.5 space-y-2.5">
+        <Card
+          title="Payment Settlement Status"
+          subtitle="Track payment clearance from courier/channel"
+          icon={FiCreditCard}
+          iconColor="text-blue-600 bg-blue-50/80 border-blue-100"
+          className="h-full"
+          contentClassName="p-3.5 space-y-2.5"
+        >
           {[
             { key: 'received_payment', status: 'Received Payment', title: 'Settled & Received', color: 'text-emerald-600', icon: FiCheckCircle, bg: 'bg-emerald-50', route: '/received-payment-orders' },
             { key: 'pending_payment', status: 'Pending Payment', title: 'Pending Payments', color: 'text-amber-600', icon: FiClock, bg: 'bg-amber-50', route: '/pending-payment-orders' },
@@ -386,7 +393,14 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
       {/* SECTION 1.5: EXECUTIVE OVERVIEW CHARTS */}
       {(viewMode === 'all' || viewMode === 'executive' || viewMode === 'executive-charts') && (
         <section className="h-full flex flex-col">
-          <Card className="flex-1 flex flex-col" title="Profit vs Expenses Chart" contentClassName="flex-1 flex flex-col p-4">
+          <Card
+            title="Profit vs Expenses Chart"
+            subtitle="Analysis of profit margins vs expenses"
+            icon={FiTrendingUp}
+            iconColor="text-teal-600 bg-teal-50/80 border-teal-100"
+            className="flex-1 flex flex-col"
+            contentClassName="flex-1 flex flex-col p-4"
+          >
             <div className="flex-1 min-h-[180px] w-full flex items-center justify-center">
               {[
                 { name: 'Net Profit', value: Math.max(0, Number(accountStatus.net_profit || 0)), color: '#10b981' },
@@ -468,6 +482,8 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
         <Card
           title="Returned Orders Tracking"
           subtitle="Track return status from customers"
+          icon={FiRefreshCw}
+          iconColor="text-amber-600 bg-amber-50/80 border-amber-100"
           className="h-full flex flex-col"
           contentClassName="p-4 flex-1 flex flex-col min-h-[300px]"
         >
@@ -546,6 +562,8 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
         <Card
           title="Delivery Stage Tracking"
           subtitle="Current status of all received orders"
+          icon={FiLayers}
+          iconColor="text-indigo-600 bg-indigo-50/80 border-indigo-100"
           className="h-full flex flex-col"
           contentClassName="p-4 flex-1 flex flex-col justify-center"
         >

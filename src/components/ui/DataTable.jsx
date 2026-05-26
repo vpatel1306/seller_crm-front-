@@ -27,6 +27,7 @@ export default function DataTable({
   cellClassName = 'px-4 py-4 text-sm text-slate-600 border-b border-slate-100',
   emptyCellClassName = 'py-24 text-center text-slate-400 font-medium text-sm',
   getRowId = (row) => row.id,
+  totalsRow,
 }) {
   const SortIcon = ({ k }) =>
     sortKey === k ? (
@@ -199,6 +200,11 @@ export default function DataTable({
                   })
                 )}
               </tbody>
+              {totalsRow && (
+                <tfoot className="sticky bottom-0 z-10 bg-slate-50 border-t border-slate-200 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+                  {totalsRow}
+                </tfoot>
+              )}
             </table>
           </div>
         </>

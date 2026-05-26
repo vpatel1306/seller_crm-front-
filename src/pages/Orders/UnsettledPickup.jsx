@@ -3,12 +3,7 @@ import CommonOrderPage from '../../components/orders/CommonOrderPage';
 import OrdersSidebarSection from '../../components/orders/OrdersSidebarSection';
 import SummaryTable from '../../components/ui/SummaryTable';
 
-const formatCurrency = (value) => `Rs. ${(Number(value) || 0).toFixed(2)}`;
-const formatDateTime = (value) => {
-  if (!value) return '-';
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString('en-IN');
-};
+import { formatCurrency, formatDate as formatDateTime } from '../../utils/formatters';
 
 const STATUS_COLOR = {
   DELIVERED: 'text-emerald-600',
@@ -120,20 +115,21 @@ function mapResponse(payload, { page, limit }) {
   const courierWise = (payload.summaries?.courier_wise || []).map((item) => ({
     courier: item.courier || 'Unknown',
     count: item.count ?? 0,
-    cost_amt: (Number(item.cost_amt) || 0).toFixed(2),
+    cost_amt: formatCurrency(item.cost_amt),
   }));
 
   const pickupDateWise = (payload.summaries?.pickup_date_wise || []).map((item) => ({
     date: item.date || '-',
     count: item.count ?? 0,
-    cost_amt: (Number(item.cost_amt) || 0).toFixed(2),
+    cost_amt: formatCurrency(item.cost_amt),
   }));
 
   const statusWise = (payload.summaries?.status_wise || []).map((item) => ({
     status: item.status || 'Unknown',
     count: item.count ?? 0,
-    cost_amt: (Number(item.cost_amt) || 0).toFixed(2),
+    cost_amt: formatCurrency(item.cost_amt),
   }));
+
 
   return {
     list,

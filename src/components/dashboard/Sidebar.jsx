@@ -1,10 +1,11 @@
-import { FiTrendingUp } from 'react-icons/fi';
+import { FiTrendingUp, FiPieChart } from 'react-icons/fi';
 import {
   ResponsiveContainer,
   RadialBarChart,
   RadialBar,
 } from 'recharts';
 import { useNavigate } from 'react-router-dom';
+import Card from '../ui/Card';
 
 export default function Sidebar({ accountDetails = null, navigate }) {
   navigate = useNavigate();
@@ -31,10 +32,15 @@ export default function Sidebar({ accountDetails = null, navigate }) {
   const fmtAmt = (v) => Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm h-full">
-      <div className="bg-gradient-to-b from-white via-white to-slate-50/80 p-3 flex-1 flex flex-col">
-        <div className="space-y-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3 shadow-inner flex-1 flex flex-col">
-          <span className="block border-b border-gray-100 pb-1.5 text-xs font-bold uppercase tracking-widest text-gray-900">Profit & Loss Summary</span>
+    <Card
+      title="Profit & Loss Summary"
+      subtitle="Comprehensive view of earnings and leakages"
+      icon={FiPieChart}
+      iconColor="text-emerald-600 bg-emerald-50/80 border-emerald-100"
+      className="h-full flex flex-col"
+      contentClassName="p-3 bg-gradient-to-b from-white via-white to-slate-50/80 flex-1 flex flex-col"
+    >
+      <div className="space-y-3 rounded-xl border border-slate-100 bg-slate-50/30 p-3 shadow-inner flex-1 flex flex-col">
           
           <div className="flex items-center justify-between gap-2">
             <div className="flex-1">
@@ -118,7 +124,6 @@ export default function Sidebar({ accountDetails = null, navigate }) {
             <span className="text-[0.6rem] font-bold text-primary mt-0.5">Click here to manage products & costs</span>
           </div>
         </div>
-      </div>
-    </div>
+    </Card>
   );
 }

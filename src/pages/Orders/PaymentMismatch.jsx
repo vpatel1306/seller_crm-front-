@@ -1,4 +1,6 @@
 import CommonOrderPage from '../../components/orders/CommonOrderPage';
+import { formatCurrency, formatDateTime as formatDate } from '../../utils/formatters';
+
 
 const PAYMENT_MISMATCH_COLUMNS = [
   {
@@ -89,15 +91,6 @@ const PAYMENT_MISMATCH_COLUMNS = [
   },
 ];
 
-function formatCurrency(value) {
-  return `Rs. ${(Number(value) || 0).toFixed(2)}`;
-}
-
-function formatDate(value) {
-  if (!value) return '-';
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? value : parsedDate.toLocaleString('en-IN');
-}
 
 function mapPaymentMismatchResponse(payload, { page, limit }) {
   const list = Array.isArray(payload.data) ? payload.data : [];

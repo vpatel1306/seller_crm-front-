@@ -10,7 +10,7 @@ import DataTable from '../../components/ui/DataTable';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 
-const fmt = (v) => (Number(v) || 0).toFixed(2);
+import { formatCurrency as fmt } from '../../utils/formatters';
 
 const CREDIT_COLS = [
   { key: '_date', label: 'Period' },
@@ -57,42 +57,36 @@ function CreditTable({ rows, dateField, loading }) {
     const keys = ['claim', 'recovery', 'comp', 'settlement', 'ads_cost', 'bank_received'];
     const t = keys.reduce((acc, k) => { acc[k] = rows.reduce((s, r) => s + (Number(r[k]) || 0), 0); return acc; }, {});
     return (
-      <tr className="border-t-2 border-border bg-surface-alt font-bold text-text">
-        <td className="px-4 py-2 text-xs">Total →</td>
-        <td className="px-4 py-2 text-right text-xs">{fmt(t.claim)}</td>
-        <td className={`px-4 py-2 text-right text-xs ${t.recovery < 0 ? 'text-rose-600' : ''}`}>{fmt(t.recovery)}</td>
-        <td className="px-4 py-2 text-right text-xs">{fmt(t.comp)}</td>
-        <td className="px-4 py-2 text-right text-xs text-emerald-600">{fmt(t.settlement)}</td>
-        <td className="px-4 py-2 text-right text-xs">{fmt(t.ads_cost)}</td>
-        <td className="px-4 py-2 text-right text-xs text-sky-600">{fmt(t.bank_received)}</td>
+      <tr className="bg-slate-100/90 font-bold text-slate-800 border-t-2 border-slate-200">
+        <td className="px-4 py-2.5 text-xs font-black text-slate-700 whitespace-nowrap">Total →</td>
+        <td className="px-4 py-2.5 text-right text-xs whitespace-nowrap">{fmt(t.claim)}</td>
+        <td className={`px-4 py-2.5 text-right text-xs whitespace-nowrap ${t.recovery < 0 ? 'text-rose-600' : ''}`}>{fmt(t.recovery)}</td>
+        <td className="px-4 py-2.5 text-right text-xs whitespace-nowrap">{fmt(t.comp)}</td>
+        <td className="px-4 py-2.5 text-right text-xs text-emerald-600 whitespace-nowrap">{fmt(t.settlement)}</td>
+        <td className="px-4 py-2.5 text-right text-xs whitespace-nowrap">{fmt(t.ads_cost)}</td>
+        <td className="px-4 py-2.5 text-right text-xs text-sky-600 whitespace-nowrap">{fmt(t.bank_received)}</td>
       </tr>
     );
   }, [rows]);
 
   return (
-    <div className="overflow-x-auto">
-      <DataTable
-        columns={CREDIT_COLS}
-        data={mapped}
-        loading={loading}
-        loadingText="Loading..."
-        emptyText="No data available."
-        mobileCardView={false}
-        showIndex={false}
-        wrapperClassName="rounded-b-none"
-        tableClassName="min-w-[680px]"
-        headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
-        headerCellClassName="px-4 py-2 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap border-b border-border"
-        cellClassName="px-4 py-2 whitespace-nowrap text-xs text-text"
-        hoverClass="hover:bg-surface-alt"
-        rowClassName={(_, i) => i % 2 === 0 ? 'border-b border-border bg-white' : 'border-b border-border bg-surface-alt/40'}
-      />
-      {totalsRow && (
-        <table className="w-full min-w-[680px]">
-          <tbody>{totalsRow}</tbody>
-        </table>
-      )}
-    </div>
+    <DataTable
+      columns={CREDIT_COLS}
+      data={mapped}
+      loading={loading}
+      loadingText="Loading..."
+      emptyText="No data available."
+      mobileCardView={false}
+      showIndex={false}
+      wrapperClassName="rounded-b-default"
+      tableClassName="min-w-[680px]"
+      headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
+      headerCellClassName="px-4 py-2 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap border-b border-border"
+      cellClassName="px-4 py-2 whitespace-nowrap text-xs text-text"
+      hoverClass="hover:bg-surface-alt"
+      rowClassName={(_, i) => i % 2 === 0 ? 'border-b border-border bg-white' : 'border-b border-border bg-surface-alt/40'}
+      totalsRow={totalsRow}
+    />
   );
 }
 
@@ -175,7 +169,7 @@ export default function BankCreditStatement() {
 
   const settlementTypeEntries = Object.entries(settlementTypes).map(([key, val]) => ({
     title: key,
-    amount: fmt(val?.amount),
+    amount: val?.amount ?? 0,
     count: String(val?.count ?? 0),
     colors: SETTLEMENT_COLORS[key] || { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200' },
   }));
@@ -291,8 +285,8 @@ export default function BankCreditStatement() {
                       <div className="mt-4 space-y-3">
                         <div className="flex flex-col">
                           <div className="text-[0.55rem] font-extrabold uppercase tracking-widest text-slate-400">Total Amount</div>
-                          <div className={`mt-1 text-[1.1rem] font-black tracking-tight leading-tight break-words ${Number(item.amount) < 0 ? 'text-rose-600' : 'text-slate-900'}`}>
-                            {item.amount}
+                          <div className={`mt-1 text-[1.1rem] font-black tracking-tight leading-tight break-words ${item.amount < 0 ? 'text-rose-600' : 'text-slate-900'}`}>
+                            {fmt(item.amount)}
                           </div>
                         </div>
                         <div className="flex items-center justify-between border-t border-slate-200/50 pt-2.5">

@@ -8,6 +8,8 @@ import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { formatCurrency, formatDateTime as formatDate } from '../../utils/formatters';
+
 
 const PAYMENT_COLUMNS = [
   {
@@ -41,15 +43,6 @@ const PAYMENT_COLUMNS = [
   },
 ];
 
-function formatCurrency(value) {
-  return `Rs. ${(Number(value) || 0).toFixed(2)}`;
-}
-
-function formatDate(value) {
-  if (!value) return '-';
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? value : parsedDate.toLocaleString('en-IN');
-}
 
 function DetailMetric({ label, value, tone = 'text-text' }) {
   return (

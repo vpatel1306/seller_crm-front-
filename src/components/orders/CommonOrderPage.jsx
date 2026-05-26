@@ -25,6 +25,8 @@ import SummaryTable from '../ui/SummaryTable';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import { formatCurrency, formatDateTime } from '../../utils/formatters';
+
 
 const STATUS_COLOR = {
   SHIPPED: 'text-sky-600',
@@ -58,12 +60,6 @@ const summaryTableProps = {
   rowClassName: (_, i) => (i % 2 === 0 ? 'border-b border-border bg-white' : 'border-b border-border bg-surface-alt/45'),
 };
 
-const formatCurrency = (value) => `Rs. ${(Number(value) || 0).toFixed(2)}`;
-const formatDateTime = (value) => {
-  if (!value) return '-';
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? value : parsedDate.toLocaleString('en-IN');
-};
 const getNumericCount = (value) => {
   const parsedValue = Number(value);
   return Number.isFinite(parsedValue) ? parsedValue : null;
@@ -463,7 +459,6 @@ export default function CommonOrderPage({
     rowClassName: (_, i) => (i % 2 === 0 ? 'bg-white border-b border-slate-50/50' : 'bg-slate-50/20 border-b border-slate-50/50'),
   };
 
-  const formatCurrency = (value) => `Rs. ${(Number(value) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const getPaginationNumbers = () => {
     const delta = 1;
