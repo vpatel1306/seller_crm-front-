@@ -115,9 +115,11 @@ function mapReceivedPaymentResponse(payload, { page, limit }) {
 
 function MetricCard({ label, value, tone = 'text-text' }) {
   return (
-    <div className="rounded-default border border-border bg-white px-4 py-4 shadow-sm">
-      <div className="text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-text-muted">{label}</div>
-      <div className={`mt-2 text-2xl font-extrabold ${tone}`}>{value}</div>
+    <div className="rounded-default border border-border bg-white p-3.5 shadow-sm min-w-0">
+      <div className="text-[0.62rem] font-black uppercase tracking-[0.18em] text-text-muted truncate" title={label}>{label}</div>
+      <div className={`mt-1.5 text-lg font-black tracking-tighter leading-tight break-words ${tone}`} title={String(value)}>
+        {value}
+      </div>
     </div>
   );
 }

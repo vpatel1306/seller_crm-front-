@@ -308,7 +308,6 @@ export default function AccountList({ isStandalone = false }) {
                     <>
                         <Button variant="refresh" size='sm' onClick={fetchAccounts} isLoading={loading}>
                             <FiRefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-                            <span className="ml-1">Sync List</span>
                         </Button>
                         <Button variant="create" size='sm' onClick={() => setIsAddModalOpen(true)}>
                             <FiPlus size={16} />
