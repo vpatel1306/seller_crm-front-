@@ -93,10 +93,10 @@ const FULFILMENT_CARDS = [
 ];
 
 const RETURNS_CARDS = [
-  { key: 'return_in_transit', status: 'Return In Transit', title: 'Return On the Way', route: '/return-in-transit', color: '#f59e0b' },
-  { key: 'return_received', status: 'Return Received', title: 'Returned & Received', route: '/received-returns', color: '#10b981' },
-  { key: 'return_not_received', status: 'Return Not Received', title: 'Not Returned Back', route: '/returns-not-received', color: '#f43f5e' },
-  { key: 'return_mismatch', status: 'Return Mismatch', title: 'Wrong/Damaged Return', route: '/return-mismatch', color: '#ef4444' },
+  { key: 'return_in_transit', status: 'Return In Transit', title: 'On The Way', route: '/return-in-transit', color: '#f59e0b' },
+  { key: 'return_received', status: 'Return Received', title: 'Received', route: '/received-returns', color: '#10b981' },
+  { key: 'return_not_received', status: 'Return Not Received', title: 'Not Received', route: '/returns-not-received', color: '#f43f5e' },
+  { key: 'return_mismatch', status: 'Return Mismatch', title: 'Wrong/Damaged', route: '/return-mismatch', color: '#ef4444' },
 ];
 
 const SEPARATE_CARDS = [
