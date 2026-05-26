@@ -490,18 +490,16 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
           <div className="flex-1 min-h-0 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={RETURNS_CARDS.map(r => {
-                  const live = dashboardCards[r.key] || {};
-                  return { name: r.title, count: Number(live.total_orders || 0), color: r.color, route: r.route };
-                })}
+                data={chartData}
                 margin={{ top: 20, right: 10, left: 0, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                {/* <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#64748b' }} /> */}
                 <XAxis
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
+                  interval={0}
+                  height={45}
                   tick={(props) => {
                     const { x, y, payload } = props;
 
@@ -509,13 +507,22 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
                       d => d.name === payload.value
                     );
 
+                    const words = payload.value.split(' ');
+                    const lines = [];
+                    if (words.length >= 2) {
+                      lines.push(words.slice(0, Math.ceil(words.length / 2)).join(' '));
+                      lines.push(words.slice(Math.ceil(words.length / 2)).join(' '));
+                    } else {
+                      lines.push(payload.value);
+                    }
+
                     return (
                       <text
                         x={x}
                         y={y + 10}
                         textAnchor="middle"
                         fill="#64748b"
-                        fontSize={10}
+                        fontSize={9}
                         fontWeight="bold"
                         style={{
                           cursor: 'pointer',
@@ -526,7 +533,11 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
                           }
                         }}
                       >
-                        {payload.value}
+                        {lines.map((line, idx) => (
+                          <tspan key={idx} x={x} dy={idx === 0 ? 0 : 11}>
+                            {line}
+                          </tspan>
+                        ))}
                       </text>
                     );
                   }}
@@ -549,7 +560,7 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
                   }}
                   style={{ cursor: 'pointer' }}
                 >
-                  {RETURNS_CARDS.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                  {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
