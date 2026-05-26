@@ -1,4 +1,6 @@
 import CommonOrderPage from '../../components/orders/CommonOrderPage';
+import { formatCurrency, formatDateTime as formatDate } from '../../utils/formatters';
+
 import OrdersSidebarSection from '../../components/orders/OrdersSidebarSection';
 import SummaryTable from '../../components/ui/SummaryTable';
 import { FiCreditCard, FiEdit2, FiInfo, FiTrash2 } from 'react-icons/fi';
@@ -80,15 +82,6 @@ const RECEIVED_PAYMENT_COLUMNS = [
  
 ];
 
-function formatCurrency(value) {
-  return `Rs. ${(Number(value) || 0).toFixed(2)}`;
-}
-
-function formatDate(value) {
-  if (!value) return '-';
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? value : parsedDate.toLocaleString('en-IN');
-}
 
 function mapReceivedPaymentResponse(payload, { page, limit }) {
   const list = Array.isArray(payload.data) ? payload.data : [];

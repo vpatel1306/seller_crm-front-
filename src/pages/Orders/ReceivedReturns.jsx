@@ -1,4 +1,6 @@
 import CommonOrderPage from '../../components/orders/CommonOrderPage';
+import { formatCurrency, formatDateTime as formatDate } from '../../utils/formatters';
+
 import OrdersSidebarSection from '../../components/orders/OrdersSidebarSection';
 import SummaryTable from '../../components/ui/SummaryTable';
 
@@ -98,15 +100,6 @@ const RECEIVED_RETURNS_COLUMNS = [
   },
 ];
 
-function formatCurrency(value) {
-  return `Rs. ${(Number(value) || 0).toFixed(2)}`;
-}
-
-function formatDate(value) {
-  if (!value) return '-';
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? value : parsedDate.toLocaleString('en-IN');
-}
 
 function getCountValue(item) {
   return item?.count ?? item?.total_orders ?? item?.total_rows ?? item?.rows ?? item?.qty ?? item?.value ?? 0;
@@ -128,7 +121,7 @@ function normalizeSummaryRows(summaryData, config) {
           id: `${config.fallbackLabel}-${index}`,
           label: label || `${config.fallbackLabel} ${index + 1}`,
           count: getCountValue(item),
-          amount: Number(getAmountValue(item) || 0).toFixed(2),
+          amount: formatCurrency(getAmountValue(item)),
         };
       }
 
@@ -136,7 +129,7 @@ function normalizeSummaryRows(summaryData, config) {
         id: `${config.fallbackLabel}-${index}`,
         label: item || `${config.fallbackLabel} ${index + 1}`,
         count: 0,
-        amount: '0.00',
+        amount: formatCurrency(0),
       };
     });
   }
@@ -145,7 +138,7 @@ function normalizeSummaryRows(summaryData, config) {
     id: `${config.fallbackLabel}-${index}`,
     label: key,
     count: typeof value === 'object' ? getCountValue(value) : Number(value) || 0,
-    amount: typeof value === 'object' ? Number(getAmountValue(value) || 0).toFixed(2) : '0.00',
+    amount: typeof value === 'object' ? formatCurrency(getAmountValue(value)) : formatCurrency(0),
   }));
 }
 

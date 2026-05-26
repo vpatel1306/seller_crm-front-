@@ -1,11 +1,6 @@
 import CommonOrderPage from '../../components/orders/CommonOrderPage';
 
-const formatCurrency = (value) => `Rs. ${(Number(value) || 0).toFixed(2)}`;
-const formatDateTime = (value) => {
-  if (!value) return '-';
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString('en-IN');
-};
+import { formatCurrency, formatDate as formatDateTime } from '../../utils/formatters';
 
 const STATUS_COLOR = {
   DELIVERED: 'text-emerald-600',

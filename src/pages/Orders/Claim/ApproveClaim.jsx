@@ -3,12 +3,7 @@ import CommonOrderPage from '../../../components/orders/CommonOrderPage';
 import OrdersSidebarSection from '../../../components/orders/OrdersSidebarSection';
 import SummaryTable from '../../../components/ui/SummaryTable';
 
-const formatCurrency = (value) => `Rs. ${(Number(value) || 0).toFixed(2)}`;
-const formatDateTime = (value) => {
-  if (!value) return '-';
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString('en-IN');
-};
+import { formatCurrency, formatDate as formatDateTime } from '../../../utils/formatters';
 
 const STATUS_COLOR = {
   Processing: 'text-amber-600',
@@ -97,8 +92,8 @@ function mapResponse(payload, { page, limit }) {
   const monthWise = (payload.summaries?.month_wise || []).map((item) => ({
     month_year: item.month_year || '-',
     count: item.count ?? 0,
-    claim_received: (Number(item.claim_received) || 0).toFixed(2),
-    settled_amt: (Number(item.settled_amt) || 0).toFixed(2),
+    claim_received: formatCurrency(item.claim_received),
+    settled_amt: formatCurrency(item.settled_amt),
   }));
 
   return {

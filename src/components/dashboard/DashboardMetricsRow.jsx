@@ -1,4 +1,5 @@
 import { FiTarget } from 'react-icons/fi';
+import Card from '../ui/Card';
 
 export default function DashboardMetricsRow({ metrics = [], className = '', mode = 'all' }) {
   return (
@@ -6,13 +7,14 @@ export default function DashboardMetricsRow({ metrics = [], className = '', mode
 
       {/* AVERAGES */}
       {(mode === 'all' || mode === 'radar') && (
-        <div className="flex flex-col rounded-xl border border-slate-200 bg-white p-3 shadow-soft flex-1">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-1 rounded-lg bg-indigo-50 text-indigo-600">
-              <FiTarget size={12} />
-            </div>
-            <span className="text-xs font-black uppercase tracking-widest text-slate-500 leading-none">Averages Overview</span>
-          </div>
+        <Card
+          title="Average Performance"
+          subtitle="Key historical operational averages"
+          icon={FiTarget}
+          iconColor="text-violet-600 bg-violet-50/80 border-violet-100"
+          className="h-full flex flex-col"
+          contentClassName="p-3.5 flex-1"
+        >
           <div className="flex flex-col gap-2">
             {metrics.map(m => (
               <div key={m.label} className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:shadow-sm">
@@ -21,7 +23,7 @@ export default function DashboardMetricsRow({ metrics = [], className = '', mode
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

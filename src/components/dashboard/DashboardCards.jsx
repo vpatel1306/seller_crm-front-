@@ -46,7 +46,7 @@ const formatCount = (value) => Number(value || 0).toLocaleString('en-IN');
 const KPI_CONFIG = [
   {
     key: 'sales',
-    title: 'Gross Sales',
+    title: 'Total Sales (Gross)',
     valueKey: 'total_sales_amount',
     helper: (metrics) => `Generated from ${formatCount(metrics.total_sales_orders)} orders`,
     tone: 'from-teal-600 to-teal-800',
@@ -55,7 +55,7 @@ const KPI_CONFIG = [
   },
   {
     key: 'received',
-    title: 'Bank Credit',
+    title: 'Money Received in Bank',
     valueKey: 'received_bank_amount',
     helper: (metrics) => `${formatCount(metrics.received_payment_orders)} settled payments`,
     tone: 'from-blue-600 to-indigo-800',
@@ -64,7 +64,7 @@ const KPI_CONFIG = [
   },
   {
     key: 'pending',
-    title: 'Pending Payout',
+    title: 'Pending Money (Unpaid)',
     valueKey: 'pending_payment_amount',
     helper: (metrics) => `${formatCount(metrics.pending_payment_orders)} orders in process`,
     tone: 'from-amber-500 to-orange-700',
@@ -73,9 +73,9 @@ const KPI_CONFIG = [
   },
   {
     key: 'profit',
-    title: 'Net Profit',
+    title: 'Net Profit (Your Earnings)',
     valueKey: 'net_profit',
-    helper: (metrics) => `${Number(metrics.net_profit_percentage || 0).toFixed(2)}% healthy margin`,
+    helper: (metrics) => `${Number(metrics.net_profit_percentage || 0).toFixed(2)}% margin`,
     tone: 'from-emerald-600 to-green-800',
     route: null,
     icon: FiTrendingUp,
@@ -83,28 +83,28 @@ const KPI_CONFIG = [
 ];
 
 const FULFILMENT_CARDS = [
-  { key: 'all_orders', status: 'All Received Orders', title: 'All Orders', route: '/all-orders', tone: 'border-teal-200 bg-teal-50', icon: FiLayers },
-  { key: 'delivered', status: 'Delivered Orders', title: 'Delivered', route: '/delivered-orders', tone: 'border-emerald-200 bg-emerald-50', icon: FiCheckCircle },
-  { key: 'shipped', status: 'Shipped Out For Delivery', title: 'Shipped', route: '/shipped', tone: 'border-indigo-200 bg-indigo-50', icon: FiBox },
+  { key: 'all_orders', status: 'All Received Orders', title: 'Total Orders Received', route: '/all-orders', tone: 'border-teal-200 bg-teal-50', icon: FiLayers },
+  { key: 'delivered', status: 'Delivered Orders', title: 'Delivered to Customer', route: '/delivered-orders', tone: 'border-emerald-200 bg-emerald-50', icon: FiCheckCircle },
+  { key: 'shipped', status: 'Shipped Out For Delivery', title: 'On the Way (Shipped)', route: '/shipped', tone: 'border-indigo-200 bg-indigo-50', icon: FiBox },
   { key: 'cancelled', status: 'Cancelled Orders', title: 'Cancelled', route: '/cancelled-orders', tone: 'border-slate-300 bg-slate-100', icon: FiXCircle },
-  { key: 'all_returns', status: 'Returns', title: 'Returns', route: '/returns-orders', tone: 'border-rose-200 bg-rose-50', icon: FiTrendingDown },
-  { key: 'ready_to_ship', status: 'Ready To Ship', title: 'Ready To Ship', route: '/ready-to-ship', tone: 'border-blue-200 bg-blue-50', icon: FiClock },
-  { key: 'other', status: 'Others', title: 'Pending / Hold', route: '/others-orders', tone: 'border-slate-200 bg-slate-50', icon: FiBox },
+  { key: 'all_returns', status: 'Returns', title: 'Returned by Customer', route: '/returns-orders', tone: 'border-rose-200 bg-rose-50', icon: FiTrendingDown },
+  { key: 'ready_to_ship', status: 'Ready To Ship', title: 'Ready to Pack & Send', route: '/ready-to-ship', tone: 'border-blue-200 bg-blue-50', icon: FiClock },
+  { key: 'other', status: 'Others', title: 'On Hold / Pending', route: '/others-orders', tone: 'border-slate-200 bg-slate-50', icon: FiBox },
 ];
 
 const RETURNS_CARDS = [
-  { key: 'return_in_transit', status: 'Return In Transit', title: 'In Transit', route: '/return-in-transit', color: '#f59e0b' },
-  { key: 'return_received', status: 'Return Received', title: 'Received', route: '/received-returns', color: '#10b981' },
-  { key: 'return_not_received', status: 'Return Not Received', title: 'Not Received', route: '/returns-not-received', color: '#f43f5e' },
-  { key: 'return_mismatch', status: 'Return Mismatch', title: 'Mismatch', route: '/return-mismatch', color: '#ef4444' },
+  { key: 'return_in_transit', status: 'Return In Transit', title: 'Return On the Way', route: '/return-in-transit', color: '#f59e0b' },
+  { key: 'return_received', status: 'Return Received', title: 'Returned & Received', route: '/received-returns', color: '#10b981' },
+  { key: 'return_not_received', status: 'Return Not Received', title: 'Not Returned Back', route: '/returns-not-received', color: '#f43f5e' },
+  { key: 'return_mismatch', status: 'Return Mismatch', title: 'Wrong/Damaged Return', route: '/return-mismatch', color: '#ef4444' },
 ];
 
 const SEPARATE_CARDS = [
-  { key: 'unsettled_pickup', status: 'Unsettled Pickup', title: 'Unsettled Pickup', route: '/unsettled-pickup', tone: 'border-violet-200 bg-violet-50', icon: FiBox },
-  { key: 'cancel_pickup', status: 'Cancel Pickup', title: 'Cancelled Pickup', route: '/cancel-pickup', tone: 'border-fuchsia-200 bg-fuchsia-50', icon: FiXCircle },
-  { key: 'approved_claims', status: 'Approved Claims', title: 'Approved Claims', route: '/approve-claim', tone: 'border-emerald-200 bg-emerald-50', icon: FiCheckCircle },
-  { key: 'pending_claims', status: 'Pending Claims', title: 'Pending Claims', route: '/approve-claim', tone: 'border-amber-200 bg-amber-50', icon: FiClock },
-  { key: 'wrong_return_claims', status: 'Wrong Return Claims', title: 'Wrong Return Claims', route: '/wrong-return-claim', tone: 'border-rose-200 bg-rose-50', icon: FiTrendingDown },
+  { key: 'unsettled_pickup', status: 'Unsettled Pickup', title: 'Courier Unpicked Packages', route: '/unsettled-pickup', tone: 'border-violet-200 bg-violet-50', icon: FiBox },
+  { key: 'cancel_pickup', status: 'Cancel Pickup', title: 'Cancelled Pickups', route: '/cancel-pickup', tone: 'border-fuchsia-200 bg-fuchsia-50', icon: FiXCircle },
+  { key: 'approved_claims', status: 'Approved Claims', title: 'Approved Claims (Reimbursed)', route: '/approve-claim', tone: 'border-emerald-200 bg-emerald-50', icon: FiCheckCircle },
+  { key: 'pending_claims', status: 'Pending Claims', title: 'Pending Claims (Under Review)', route: '/approve-claim', tone: 'border-amber-200 bg-amber-50', icon: FiClock },
+  { key: 'wrong_return_claims', status: 'Wrong Return Claims', title: 'Wrong Return Claims Filed', route: '/wrong-return-claim', tone: 'border-rose-200 bg-rose-50', icon: FiTrendingDown },
 ];
 
 function SectionHeader({ title, subtitle, action }) {
@@ -216,41 +216,41 @@ function MiniInsight({ label, value, tone = 'text-slate-900', icon }) {
 function useDashboardMetrics(averages) {
   return [
     {
-      label: 'Monthly Avg. Orders',
+      label: 'Average Orders Per Month',
       value: String(averages.monthly_avg_orders ?? '-'),
       subValue: averages.monthly_avg_orders ? `Approx. ${(averages.monthly_avg_orders / 30).toFixed(1)} / day` : 'Historical average'
     },
     {
-      label: 'Daily Avg. Orders',
+      label: 'Average Orders Per Day',
       value: String(averages.daily_avg_orders ?? '-'),
       positive: Number(averages.daily_avg_orders) > 0,
       subValue: averages.daily_avg_orders ? `Total ${(averages.daily_avg_orders * 30).toLocaleString()} monthly` : 'Current trend'
     },
     {
-      label: 'Avg. Return Charge',
+      label: 'Average Return Courier Cost',
       value: formatAmount(averages.avg_return_charge),
       negative: Number(averages.avg_return_charge) > 0,
       subValue: 'Direct logistics impact'
     },
     {
-      label: 'Avg. P/L Per Order',
+      label: 'Average Profit/Loss Per Order',
       value: formatAmount(averages.avg_pl_per_order),
       positive: Number(averages.avg_pl_per_order) >= 0,
       negative: Number(averages.avg_pl_per_order) < 0,
       subValue: 'Unit level profitability'
     },
     {
-      label: "Today's Pickup",
+      label: "Ready for Courier Today",
       value: String(averages.today_pickup ?? '-'),
       subValue: 'Orders ready for ship'
     },
     {
-      label: "Today's Return Receipts",
+      label: "Returned Orders Received Today",
       value: String(averages.today_returns_received ?? '-'),
       subValue: 'Inbound warehouse activity'
     },
     {
-      label: "Today's Bank Credit",
+      label: "Money Credited in Bank Today",
       value: formatAmount(averages.today_bank_credit),
       positive: Number(averages.today_bank_credit) > 0,
       subValue: 'Realized revenue today'
@@ -336,12 +336,19 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
     <div className="space-y-4">
       {/* INDEPENDENT PAYMENT CYCLE (Used in executive grid) */}
       {viewMode === 'payment-cycle' && (
-        <Card title="Payment Cycle" subtitle="Financial settlement status" className="h-full" contentClassName="p-3.5 space-y-2.5">
+        <Card
+          title="Payment Settlement Status"
+          subtitle="Track payment clearance from courier/channel"
+          icon={FiCreditCard}
+          iconColor="text-blue-600 bg-blue-50/80 border-blue-100"
+          className="h-full"
+          contentClassName="p-3.5 space-y-2.5"
+        >
           {[
-            { key: 'received_payment', status: 'Received Payment', title: 'Received', color: 'text-emerald-600', icon: FiCheckCircle, bg: 'bg-emerald-50', route: '/received-payment-orders' },
-            { key: 'pending_payment', status: 'Pending Payment', title: 'Pending', color: 'text-amber-600', icon: FiClock, bg: 'bg-amber-50', route: '/pending-payment-orders' },
-            { key: 'payment_mismatch', status: 'Payment Mismatch', title: 'Mismatch', color: 'text-rose-600', icon: FiAlertCircle, bg: 'bg-rose-50', route: '/payment-mismatch' },
-            { key: 'received', valueKey: 'received_bank_amount', title: 'Bank Credit', color: 'text-blue-600', icon: FiCreditCard, bg: 'bg-blue-50', route: '/bank-credit-statement' },
+            { key: 'received_payment', status: 'Received Payment', title: 'Settled & Received', color: 'text-emerald-600', icon: FiCheckCircle, bg: 'bg-emerald-50', route: '/received-payment-orders' },
+            { key: 'pending_payment', status: 'Pending Payment', title: 'Pending Payments', color: 'text-amber-600', icon: FiClock, bg: 'bg-amber-50', route: '/pending-payment-orders' },
+            { key: 'payment_mismatch', status: 'Payment Mismatch', title: 'Wrong/Unmatched Payments', color: 'text-rose-600', icon: FiAlertCircle, bg: 'bg-rose-50', route: '/payment-mismatch' },
+            { key: 'received', valueKey: 'received_bank_amount', title: 'Received in Bank', color: 'text-blue-600', icon: FiCreditCard, bg: 'bg-blue-50', route: '/bank-credit-statement' },
           ].map(p => {
             const live = p.key === 'received'
               ? { total_orders: headlineMetrics.received_payment_orders, total_cost: headlineMetrics.received_bank_amount }
@@ -371,8 +378,8 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
       {(viewMode === 'all' || viewMode === 'executive' || viewMode === 'executive-cards') && (
         <section className="space-y-3">
           <SectionHeader
-            title="Executive Overview"
-            subtitle="High-level financial performance and health"
+            title="Quick Business Overview"
+            subtitle="Key summary of sales, payments, and earnings"
             action={extraAction}
           />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -386,7 +393,14 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
       {/* SECTION 1.5: EXECUTIVE OVERVIEW CHARTS */}
       {(viewMode === 'all' || viewMode === 'executive' || viewMode === 'executive-charts') && (
         <section className="h-full flex flex-col">
-          <Card className="flex-1 flex flex-col" title="Financial Health" contentClassName="flex-1 flex flex-col p-4">
+          <Card
+            title="Profit vs Expenses Chart"
+            subtitle="Analysis of profit margins vs expenses"
+            icon={FiTrendingUp}
+            iconColor="text-teal-600 bg-teal-50/80 border-teal-100"
+            className="flex-1 flex flex-col"
+            contentClassName="flex-1 flex flex-col p-4"
+          >
             <div className="flex-1 min-h-[180px] w-full flex items-center justify-center">
               {[
                 { name: 'Net Profit', value: Math.max(0, Number(accountStatus.net_profit || 0)), color: '#10b981' },
@@ -466,8 +480,10 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
       {/* RETURNS DISTRIBUTION CHART (Standalone) */}
       {viewMode === 'returns-distribution' && (
         <Card
-          title="Returns Distribution"
-          subtitle="Volume by return status"
+          title="Returned Orders Tracking"
+          subtitle="Track return status from customers"
+          icon={FiRefreshCw}
+          iconColor="text-amber-600 bg-amber-50/80 border-amber-100"
           className="h-full flex flex-col"
           contentClassName="p-4 flex-1 flex flex-col min-h-[300px]"
         >
@@ -544,8 +560,10 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
       {/* FULFILMENT LIFECYCLE PROGRESS (Standalone) */}
       {viewMode === 'fulfilment-lifecycle' && (
         <Card
-          title="Fulfilment Lifecycle"
-          subtitle="Stage performance"
+          title="Delivery Stage Tracking"
+          subtitle="Current status of all received orders"
+          icon={FiLayers}
+          iconColor="text-indigo-600 bg-indigo-50/80 border-indigo-100"
           className="h-full flex flex-col"
           contentClassName="p-4 flex-1 flex flex-col justify-center"
         >
@@ -597,7 +615,7 @@ export default function DashboardCards({ dashboardData, viewMode = 'all', extraA
       {/* SECTION 2 & 3: OPERATIONAL COMMAND CENTER */}
       {(viewMode === 'all' || viewMode === 'operational') && (
         <section className="space-y-4 border-t border-slate-200 pt-2">
-          <SectionHeader title="Operational Insights" subtitle="Logistics and claim management" />
+          <SectionHeader title="Courier Disputes & Claims" subtitle="Track courier unpicked packages and filed claims" />
 
           {/* SEPARATE STATUS CARDS GRID */}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 mt-2">
