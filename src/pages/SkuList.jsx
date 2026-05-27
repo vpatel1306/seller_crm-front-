@@ -668,7 +668,7 @@ const handleImportFile = async (event) => {
           ]}
         actions={
           <>
-            <Button variant="secondary" size="sm" onClick={() => setShowImportExportModal(true)} className="h-10 rounded-default border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm">
+            <Button variant="secondary" size="sm" onClick={() => setShowImportExportModal(true)}>
               <FiFilter size={16} />
               Import
             </Button>
@@ -676,7 +676,6 @@ const handleImportFile = async (event) => {
             <Button
               variant="create"
               size="sm"
-              className="h-10 rounded-default border-border/90 px-4 text-[0.72rem] tracking-[0.18em] shadow-sm"
               onClick={() => {
                 resetAddSkuForm();
                 setShowAddSkuModal(true);

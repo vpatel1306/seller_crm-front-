@@ -25,7 +25,7 @@ export default function DailyImport() {
             note: 'Daily sales order file upload',
             reviewRoute: '/all-orders',
             issueRoute: '/payment-mismatch',
-            acceptedTypesLabel: 'CSV',
+            // acceptedTypesLabel: 'CSV',
         },
         {
             id: 'ofd',
@@ -142,10 +142,10 @@ export default function DailyImport() {
 
     const handleUpload = async () => {
         const fileValidationError = validateFile(selectedFile);
-        if (fileValidationError) {
-            setUploadError(fileValidationError);
-            return;
-        }
+        // if (fileValidationError) {
+        //     setUploadError(fileValidationError);
+        //     return;
+        // }
 
         if (!activeAccount?.id) {
             setUploadError('Please select an active account before uploading.');
@@ -186,7 +186,7 @@ export default function DailyImport() {
 
     return (
         <AppShell>
-            <div className="w-full max-w-6xl mx-auto py-6 px-4">
+            <div className="w-full mx-auto py-6 px-4">
                 <OrdersPageHeader 
                     breadcrumbs={[
                         { label: 'Dashboard', onClick: () => navigate('/dashboard') },
@@ -197,7 +197,7 @@ export default function DailyImport() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
                     {/* Left Column: Import Type Selection */}
-                    <div className="lg:col-span-5 flex flex-col gap-3">
+                    <div className="lg:col-span-4 flex flex-col gap-3">
                         <h3 className="font-semibold text-gray-700 mb-2 uppercase tracking-wider text-xs">1. Select Import Type</h3>
                         {importDataOptions.map((option) => {
                             const isActive = selectedImportData === option.id;
@@ -228,7 +228,7 @@ export default function DailyImport() {
                     </div>
 
                     {/* Right Column: Upload Panel */}
-                    <div className="lg:col-span-7">
+                    <div className="lg:col-span-8">
                         <h3 className="font-semibold text-gray-700 mb-4 uppercase tracking-wider text-xs">2. Upload & Process</h3>
 
                         <div className="space-y-6 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
@@ -242,7 +242,7 @@ export default function DailyImport() {
                                         <div className="text-lg font-extrabold text-gray-900">{activeOption.name}</div>
                                         <div className="text-sm text-gray-500">{activeOption.note}</div>
                                         <div className="text-xs font-semibold uppercase tracking-widest text-gray-400 mt-2 block">
-                                            Accepted file type: {activeOption.acceptedTypesLabel}
+                                            {/* Accepted file type: {activeOption.acceptedTypesLabel} */}
                                         </div>
                                     </div>
                                 </div>
@@ -253,7 +253,7 @@ export default function DailyImport() {
                                 <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-white p-6 transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer">
                                     <input
                                         type="file"
-                                        accept={(importAcceptConfig[selectedImportData] || ['.csv']).join(',')}
+                                        // accept={(importAcceptConfig[selectedImportData] || ['.csv']).join(',')}
                                         onChange={handleFileChange}
                                         disabled={uploading}
                                         className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-xl file:border-0 file:bg-primary file:px-6 file:py-2.5 file:text-sm file:font-bold file:text-white hover:file:bg-primary-hover file:cursor-pointer file:transition-colors disabled:opacity-50"
@@ -345,14 +345,6 @@ export default function DailyImport() {
                                         </div>
                                     ) : null}
 
-                                    <div className="grid gap-3 sm:grid-cols-2 pt-2">
-                                        <Button type="button" variant="secondary" onClick={() => activeOption?.reviewRoute && navigate(activeOption.reviewRoute)}>
-                                            Review Imported Records
-                                        </Button>
-                                        <Button type="button" variant="warning" onClick={() => activeOption?.issueRoute && navigate(activeOption.issueRoute)}>
-                                            Open Possible Issues
-                                        </Button>
-                                    </div>
                                 </div>
                             ) : null}
 

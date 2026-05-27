@@ -166,7 +166,7 @@ export default function PickUpEntry() {
             showIndex
             wrapperClassName="rounded-b-default"
             tableClassName="min-w-[1400px]"
-            headClassName="sticky top-0 z-10 bg-amber-50/95 text-amber-800 backdrop-blur"
+            headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
             headerCellClassName="px-4 py-3 text-[0.68rem] font-extrabold uppercase tracking-[0.16em] whitespace-nowrap border-b border-amber-100"
             indexHeaderClassName="w-10 border-b border-amber-100 px-3 py-3 text-center text-[0.68rem] font-extrabold"
             cellClassName="px-4 py-3 whitespace-nowrap text-xs text-text"
