@@ -200,6 +200,7 @@ export default function CommonOrderPage({
     to: selectedDateRange?.to || '',
   }), [selectedDateRange?.from, selectedDateRange?.to]);
   const [filters, setFilters] = useState(mergedInitialFilters);
+  const [filtersDraft, setFiltersDraft] = useState(mergedInitialFilters);
   const [selectedId, setSelectedId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
@@ -283,10 +284,10 @@ export default function CommonOrderPage({
   useEffect(() => {
     if (!activeAccount?.id) return;
     const timeoutId = setTimeout(() => {
-      loadOrders();
+      loadOrders(1, perPage, dateRange);
     }, 0);
     return () => clearTimeout(timeoutId);
-  }, [activeAccount?.id, loadOrders]);
+  }, [filters, dateRange, activeAccount?.id, loadOrders, perPage]);
 
   useEffect(() => {
     if (!showMobileFilters) return undefined;
@@ -304,6 +305,11 @@ export default function CommonOrderPage({
     setDateDraft(globalDateRange);
   }, [globalDateRange]);
 
+  useEffect(() => {
+    setFilters(mergedInitialFilters);
+    setFiltersDraft(mergedInitialFilters);
+  }, [mergedInitialFilters]);
+
   const handleSort = (key) => {
     if (sortKey === key) {
       setSortDir((direction) => (direction === 'asc' ? 'desc' : 'asc'));
@@ -315,13 +321,14 @@ export default function CommonOrderPage({
 
   const clearFilters = () => {
     setFilters(mergedInitialFilters);
+    setFiltersDraft(mergedInitialFilters);
     setDateRange(globalDateRange);
     setDateDraft(globalDateRange);
     setCurrentPage(1);
   };
 
   const activeQuickFilterCount =
-    Object.values(filters).filter((value) => value && value !== 'all').length +
+    Object.values(filtersDraft).filter((value) => value && value !== 'all').length +
     (dateDraft.from ? 1 : 0) +
     (dateDraft.to ? 1 : 0);
 
@@ -437,8 +444,8 @@ export default function CommonOrderPage({
       to: dateDraft.to || '',
     };
     setDateRange(nextDateRange);
+    setFilters(filtersDraft);
     setCurrentPage(1);
-    loadOrders(1, perPage, nextDateRange);
     setShowMobileFilters(false);
   };
 
@@ -493,8 +500,8 @@ export default function CommonOrderPage({
             <FiSearch size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-primary" />
             <input
               type="text"
-              value={filters.platform_order_id}
-              onChange={(event) => setFilters((prev) => ({ ...prev, platform_order_id: event.target.value }))}
+              value={filtersDraft.platform_order_id}
+              onChange={(event) => setFiltersDraft((prev) => ({ ...prev, platform_order_id: event.target.value }))}
               placeholder={`Search ${orderSearchLabel.toLowerCase()}`}
               className="h-9 w-full rounded-default border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 shadow-sm"
 
@@ -508,8 +515,8 @@ export default function CommonOrderPage({
             <FiSearch size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-primary" />
             <input
               type="text"
-              value={filters.sku}
-              onChange={(event) => setFilters((prev) => ({ ...prev, sku: event.target.value }))}
+              value={filtersDraft.sku}
+              onChange={(event) => setFiltersDraft((prev) => ({ ...prev, sku: event.target.value }))}
               placeholder="Search SKU"
               className="h-9 w-full rounded-default border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 shadow-sm"
 
@@ -523,8 +530,8 @@ export default function CommonOrderPage({
               <label className="ml-1 text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Order Status</label>
               <div className="relative">
                 <select
-                  value={filters.order_status}
-                  onChange={(event) => setFilters((prev) => ({ ...prev, order_status: event.target.value }))}
+                  value={filtersDraft.order_status}
+                  onChange={(event) => setFiltersDraft((prev) => ({ ...prev, order_status: event.target.value }))}
                   className="h-9 w-full appearance-none rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
 
                 >
@@ -554,8 +561,8 @@ export default function CommonOrderPage({
               <label className="ml-1 text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Payment Status</label>
               <div className="relative">
                 <select
-                  value={filters.payment_status}
-                  onChange={(event) => setFilters((prev) => ({ ...prev, payment_status: event.target.value }))}
+                  value={filtersDraft.payment_status}
+                  onChange={(event) => setFiltersDraft((prev) => ({ ...prev, payment_status: event.target.value }))}
                   className="h-9 w-full appearance-none rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm hover:border-slate-300"
 
                 >
@@ -570,7 +577,7 @@ export default function CommonOrderPage({
           </>
         ) : null}
 
-        {renderCustomFilters ? renderCustomFilters({ filters, setFilters }) : null}
+        {renderCustomFilters ? renderCustomFilters({ filters: filtersDraft, setFilters: setFiltersDraft }) : null}
 
         <div className="flex w-[160px] shrink-0 flex-col gap-1.5">
           <label className="ml-1 text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">From Date</label>
