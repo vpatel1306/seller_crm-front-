@@ -94,6 +94,9 @@ export default function SkuList() {
   const [skuFilter, setSkuFilter] = useState('all');
   const [accountFilter, setAccountFilter] = useState('this-account');
   const [quickFilters, setQuickFilters] = useState(initialQuickFilters);
+  const [quickFiltersDraft, setQuickFiltersDraft] = useState(initialQuickFilters);
+  const [skuFilterDraft, setSkuFilterDraft] = useState('all');
+  const [accountFilterDraft, setAccountFilterDraft] = useState('this-account');
   const [showImportExportModal, setShowImportExportModal] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
@@ -115,8 +118,11 @@ export default function SkuList() {
 
   const handleClearFilters = () => {
     setQuickFilters(initialQuickFilters);
+    setQuickFiltersDraft(initialQuickFilters);
     setSkuFilter('all');
+    setSkuFilterDraft('all');
     setAccountFilter('this-account');
+    setAccountFilterDraft('this-account');
     setCurrentPage(1);
   };
 
@@ -216,7 +222,7 @@ export default function SkuList() {
 
   const resultStart = totalSKUs === 0 ? 0 : ((currentPage - 1) * perPage) + 1;
   const resultEnd = totalSKUs === 0 ? 0 : Math.min(currentPage * perPage, totalSKUs);
-  const activeQuickFilterCount = Object.values(quickFilters).filter(Boolean).length + (skuFilter !== 'all' ? 1 : 0) + (accountFilter !== 'this-account' ? 1 : 0);
+  const activeQuickFilterCount = Object.values(quickFiltersDraft).filter(Boolean).length + (skuFilterDraft !== 'all' ? 1 : 0) + (accountFilterDraft !== 'this-account' ? 1 : 0);
 
   const handleRowClick = (sku) => {
     setSelectedSKU(sku);
@@ -561,8 +567,8 @@ const handleImportFile = async (event) => {
           <Input
             key={field.key}
             label={field.label}
-            value={quickFilters[field.key]}
-            onChange={(event) => setQuickFilters((prev) => ({ ...prev, [field.key]: event.target.value }))}
+            value={quickFiltersDraft[field.key]}
+            onChange={(event) => setQuickFiltersDraft((prev) => ({ ...prev, [field.key]: event.target.value }))}
             placeholder={`Search ${field.label.toLowerCase()}`}
             inputClassName="h-9"
             containerClassName={field.key === 'keyword1' ? 'xl:min-w-[304px] xl:flex-[1.5_1_0]' : 'xl:min-w-[200px] xl:flex-[1_1_0]'}
@@ -601,8 +607,8 @@ const handleImportFile = async (event) => {
           <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Cost Status</label>
           <div className="relative">
             <select
-              value={skuFilter}
-              onChange={(event) => setSkuFilter(event.target.value)}
+              value={skuFilterDraft}
+              onChange={(event) => setSkuFilterDraft(event.target.value)}
               className="h-9 w-full appearance-none rounded-default border border-border bg-white px-4 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
             >
               <option value="all">All SKUs</option>
@@ -617,10 +623,9 @@ const handleImportFile = async (event) => {
           <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">Account Scope</label>
           <div className="relative">
             <select
-              value={accountFilter}
+              value={accountFilterDraft}
               onChange={(event) => {
-                setAccountFilter(event.target.value);
-                setCurrentPage(1);
+                setAccountFilterDraft(event.target.value);
               }}
               className="h-9 w-full appearance-none rounded-default border border-border bg-white px-4 pr-11 text-sm font-medium text-text outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
             >
@@ -638,7 +643,12 @@ const handleImportFile = async (event) => {
               type="button"
               variant="primary"
               className="!h-9 flex-1 min-w-[52px] px-0"
-              onClick={() => fetchSkuList(1, perPage)}
+              onClick={() => {
+                setQuickFilters(quickFiltersDraft);
+                setSkuFilter(skuFilterDraft);
+                setAccountFilter(accountFilterDraft);
+                setCurrentPage(1);
+              }}
               title="Apply Filters"
             >
               <FiFilter size={16} />
@@ -724,7 +734,10 @@ const handleImportFile = async (event) => {
                 variant="primary"
                 className="w-full"
                 onClick={() => {
-                  fetchSkuList(1, perPage);
+                  setQuickFilters(quickFiltersDraft);
+                  setSkuFilter(skuFilterDraft);
+                  setAccountFilter(accountFilterDraft);
+                  setCurrentPage(1);
                   setShowMobileFilters(false);
                 }}
               >
