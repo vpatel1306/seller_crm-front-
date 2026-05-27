@@ -5,6 +5,8 @@ import Button from '../ui/Button';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import api from '../../services/api';
 
+let userFetchCalled = false;
+
 const getCompactAccountLabel = (accountName) => {
   if (!accountName) return 'Active Account';
   const firstWord = accountName.trim().split(/\s+/)[0] || accountName;
@@ -106,7 +108,8 @@ export default function Navbar() {
   };
 
   useEffect(() => {
-    if (token && !user) {
+    if (token && !user && !userFetchCalled) {
+      userFetchCalled = true;
       fetchUser().catch(() => { });
     }
   }, [token, user, fetchUser]);
