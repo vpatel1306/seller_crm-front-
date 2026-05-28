@@ -186,7 +186,7 @@ export default function DailyImport() {
 
     return (
         <AppShell>
-            <div className="w-full mx-auto py-6 px-4">
+            <div className="w-full mx-auto py-2 px-2 space-y-4">
                 <OrdersPageHeader 
                     breadcrumbs={[
                         { label: 'Dashboard', onClick: () => navigate('/dashboard') },

@@ -8,6 +8,7 @@ import {
   FiEdit2,
   FiFilter,
   FiInfo,
+  FiX,
   FiPlus,
   FiRotateCcw,
 } from 'react-icons/fi';
@@ -636,12 +637,12 @@ const handleImportFile = async (event) => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1.5 xl:min-w-[120px] xl:flex-none">
-          <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-transparent select-none">Clear</label>
-          <div className="flex items-center gap-2">
+        
+          <div className="flex shrink-0 items-end gap-2 xl:self-end">
             <Button
               type="button"
               variant="primary"
+              size="md"
               className="!h-9 flex-1 min-w-[52px] px-0"
               onClick={() => {
                 setQuickFilters(quickFiltersDraft);
@@ -650,20 +651,21 @@ const handleImportFile = async (event) => {
                 setCurrentPage(1);
               }}
               title="Apply Filters"
-            >
-              <FiFilter size={16} />
+            > Apply
             </Button>
             <Button
-              type="button"
-              variant="secondary"
-              className="!h-9 flex-1 min-w-[52px] px-0"
-              onClick={handleClearFilters}
-              title="Clear Filters"
-            >
-              <FiRotateCcw size={16} />
-            </Button>
+            type="button"
+            variant="secondary"
+            size="icon"
+            className="!h-9 !w-9 rounded-default"
+
+            onClick={handleClearFilters}
+            title="Clear Filters"
+          >
+            <FiX size={18} />
+          </Button>
           </div>
-        </div>
+        
       </div>
     </div>
   );

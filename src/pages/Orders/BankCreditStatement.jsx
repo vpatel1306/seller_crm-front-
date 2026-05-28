@@ -181,35 +181,36 @@ export default function BankCreditStatement() {
         <div className="relative">
           <FiSearch size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search settlements"
-            className="w-full rounded-default border border-border bg-white py-3 pl-11 pr-11 text-sm text-text outline-none transition-all placeholder:text-text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/10" />
+            className="h-9 w-full rounded-default border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 shadow-sm" />
           {search ? <button type="button" onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text"><FiX size={14} /></button> : null}
         </div>
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">From Date</label>
         <input type="date" value={dateDraft.from} onChange={(e) => setDateDraft((prev) => ({ ...prev, from: e.target.value }))}
-          className="h-[50px] rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+          className="h-9 w-full rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm" />
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">To Date</label>
         <input type="date" value={dateDraft.to} onChange={(e) => setDateDraft((prev) => ({ ...prev, to: e.target.value }))}
-          className="h-[50px] rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+          className="h-9 w-full rounded-default border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition-all focus:border-primary shadow-sm" />
       </div>
       <Button
         variant="primary"
-        className="h-[50px] min-w-[56px] px-0 self-end"
+        size="md"
+        className="!h-9 rounded-default px-5"
         onClick={() => {
           const nextDateRange = { from: dateDraft.from || '', to: dateDraft.to || '' };
           setDateRange(nextDateRange);
           fetchData(nextDateRange);
         }}
         title="Apply"
-      >
-        <FiSearch size={18} />
+      > Apply
       </Button>
       <Button
         variant="secondary"
-        className="h-[50px] min-w-[56px] px-0 self-end"
+        size="icon"
+        className="!h-9 rounded-default"
         onClick={() => {
           setSearch('');
           setDateDraft({ from: '', to: '' });
