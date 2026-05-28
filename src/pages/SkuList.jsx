@@ -8,6 +8,7 @@ import {
   FiEdit2,
   FiFilter,
   FiInfo,
+  FiX,
   FiPlus,
   FiRotateCcw,
 } from 'react-icons/fi';
@@ -71,6 +72,7 @@ const calculateFinalCost = (item) => {
 
 const formatCurrency = (value) => `Rs. ${(Number(value) || 0).toFixed(2)}`;
 const PRODUCT_NAME_WORD_LIMIT = 4;
+const SKU_ID_CHAR_LIMIT = 30;
 
 export default function SkuList() {
   const navigate = useNavigate();
@@ -439,11 +441,34 @@ const handleImportFile = async (event) => {
       key: 'sku_id',
       label: 'SKU ID',
       className: 'min-w-[220px] max-w-[240px] whitespace-nowrap',
-      render: (row) => (
-        <div className="max-w-[220px]">
-          <div className="font-extrabold text-text">{row.sku_id || '-'}</div>
-        </div>
-      ),
+      render: (row) => {
+        const skuId = row.sku_id || '-';
+        const hasMoreContent = skuId.length > SKU_ID_CHAR_LIMIT;
+        const previewText = hasMoreContent
+          ? `${skuId.substring(0, SKU_ID_CHAR_LIMIT)}...`
+          : skuId;
+
+        return (
+          <div className="max-w-[220px]">
+            <div className="flex items-center gap-2 font-extrabold text-text">
+              <span className="truncate">{previewText}</span>
+              {hasMoreContent ? (
+                <button
+                  type="button"
+                  className="inline-flex shrink-0 items-center gap-1 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-primary transition-colors hover:text-primary-hover"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setProductInfoSku(row);
+                  }}
+                >
+                  <FiInfo size={11} />
+                  More
+                </button>
+              ) : null}
+            </div>
+          </div>
+        );
+      },
     },
     {
       key: 'product_name',
@@ -636,12 +661,12 @@ const handleImportFile = async (event) => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1.5 xl:min-w-[120px] xl:flex-none">
-          <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-transparent select-none">Clear</label>
-          <div className="flex items-center gap-2">
+        
+          <div className="flex shrink-0 items-end gap-2 xl:self-end">
             <Button
               type="button"
               variant="primary"
+              size="md"
               className="!h-9 flex-1 min-w-[52px] px-0"
               onClick={() => {
                 setQuickFilters(quickFiltersDraft);
@@ -650,20 +675,21 @@ const handleImportFile = async (event) => {
                 setCurrentPage(1);
               }}
               title="Apply Filters"
-            >
-              <FiFilter size={16} />
+            > Apply
             </Button>
             <Button
-              type="button"
-              variant="secondary"
-              className="!h-9 flex-1 min-w-[52px] px-0"
-              onClick={handleClearFilters}
-              title="Clear Filters"
-            >
-              <FiRotateCcw size={16} />
-            </Button>
+            type="button"
+            variant="secondary"
+            size="icon"
+            className="!h-9 !w-9 rounded-default"
+
+            onClick={handleClearFilters}
+            title="Clear Filters"
+          >
+            <FiX size={18} />
+          </Button>
           </div>
-        </div>
+        
       </div>
     </div>
   );
