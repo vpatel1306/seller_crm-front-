@@ -72,6 +72,7 @@ const calculateFinalCost = (item) => {
 
 const formatCurrency = (value) => `Rs. ${(Number(value) || 0).toFixed(2)}`;
 const PRODUCT_NAME_WORD_LIMIT = 4;
+const SKU_ID_CHAR_LIMIT = 30;
 
 export default function SkuList() {
   const navigate = useNavigate();
@@ -440,11 +441,34 @@ const handleImportFile = async (event) => {
       key: 'sku_id',
       label: 'SKU ID',
       className: 'min-w-[220px] max-w-[240px] whitespace-nowrap',
-      render: (row) => (
-        <div className="max-w-[220px]">
-          <div className="font-extrabold text-text">{row.sku_id || '-'}</div>
-        </div>
-      ),
+      render: (row) => {
+        const skuId = row.sku_id || '-';
+        const hasMoreContent = skuId.length > SKU_ID_CHAR_LIMIT;
+        const previewText = hasMoreContent
+          ? `${skuId.substring(0, SKU_ID_CHAR_LIMIT)}...`
+          : skuId;
+
+        return (
+          <div className="max-w-[220px]">
+            <div className="flex items-center gap-2 font-extrabold text-text">
+              <span className="truncate">{previewText}</span>
+              {hasMoreContent ? (
+                <button
+                  type="button"
+                  className="inline-flex shrink-0 items-center gap-1 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-primary transition-colors hover:text-primary-hover"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setProductInfoSku(row);
+                  }}
+                >
+                  <FiInfo size={11} />
+                  More
+                </button>
+              ) : null}
+            </div>
+          </div>
+        );
+      },
     },
     {
       key: 'product_name',
