@@ -29,6 +29,7 @@ export default function ReturnScannerModal({ isOpen, onClose, onScanSuccess }) {
   const [isScanning, setIsScanning] = useState(false);
   const [scanStatus, setScanStatus] = useState('idle'); // 'idle' | 'success' | 'error' | 'loading'
   const [scannedAwb, setScannedAwb] = useState('');
+  const [scanErrorMessage, setScanErrorMessage] = useState('');
   
   const scannerRef = useRef(null);
   const scannerId = "return-qr-reader";
@@ -185,9 +186,12 @@ export default function ReturnScannerModal({ isOpen, onClose, onScanSuccess }) {
       }, 1500);
     } catch (err) {
       setScanStatus('error');
+      const apiMsg = err.response?.data?.message || err.response?.data?.detail || err.message || 'Scan failed. Please try again.';
+      setScanErrorMessage(apiMsg);
       setTimeout(() => {
         setScanStatus('idle');
         setScannedAwb('');
+        setScanErrorMessage('');
       }, 3000);
     }
   };
@@ -260,7 +264,9 @@ export default function ReturnScannerModal({ isOpen, onClose, onScanSuccess }) {
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-rose-950/80 backdrop-blur-sm text-rose-400 p-6 text-center animate-fade-in animate-duration-150">
                 <FiAlertTriangle size={56} className="text-rose-400 mb-3 animate-pulse" />
                 <h4 className="text-lg font-black uppercase tracking-tight">Scan Failed</h4>
-                <p className="text-xs opacity-90 font-medium mt-1">Please try again.</p>
+                <p className="text-xs opacity-90 font-bold mt-2 max-w-[280px] break-words bg-rose-900/40 px-3 py-1.5 rounded-lg border border-rose-800/40 leading-snug">
+                  {scanErrorMessage}
+                </p>
                 <p className="text-[0.65rem] text-rose-500 uppercase tracking-widest mt-4">Retrying...</p>
               </div>
             )}
