@@ -373,16 +373,18 @@ export default function DailyImport() {
                         <div className="mt-5 bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 text-slate-700 shadow-soft">
                             <div className="flex items-center gap-2 mb-3 text-primary">
                                 <FiAlertCircle size={18} className="text-primary flex-shrink-0" />
-                                <span className="font-extrabold uppercase tracking-wider text-xs">Steps to download Meesho Order File</span>
+                                <span className="font-extrabold uppercase tracking-wider text-xs">Steps to download Meesho Returns/RTO File</span>
                             </div>
                             <ol className="list-decimal pl-5 space-y-1.5 text-[0.78rem] font-semibold text-slate-600">
                                 <li>Login to Meesho Supplier Panel.</li>
-                                <li>Navigate to Orders.</li>
-                                <li>Click on "Download Orders Data" available at the top-right corner.</li>
-                                <li>Choose the date range.</li>
-                                <li>Click on Export data.</li>
-                                <li>Once the excel is generated, click on Download Orders Data.</li>
-                                <li>Download the Excel/CSV file.</li>
+                                <li>Navigate to Returns.</li>
+                                <li>Open the required Return/RTO status tab.</li>
+                                <li>Apply filters and date range.</li>
+                                <li>Click on "Export Data".</li>
+                                <li>Submit the export request.</li>
+                                <li>Wait for the file to be generated.</li>
+                                <li>Open Exported Files.</li>
+                                <li>Click Download to download the Excel report.</li>
                             </ol>
                         </div>
                     </div>

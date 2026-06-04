@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiChevronLeft, FiChevronRight, FiDownload, FiRefreshCw, FiSearch, FiTrendingDown, FiTrendingUp, FiX } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight, FiDownload, FiRefreshCw, FiSearch, FiTrendingDown, FiTrendingUp, FiX, FiDollarSign, FiPackage, FiTruck, FiAlertCircle } from 'react-icons/fi';
 import AppShell from '../../components/layout/AppShell';
 import OrdersPageHeader from '../../components/orders/OrdersPageHeader';
 import OrdersFilterSection from '../../components/orders/OrdersFilterSection';
@@ -9,6 +9,7 @@ import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import CommonModal from '../../components/common/CommonModal';
 
 const fmt = (v) => (Number(v) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtN = (v) => Number(v ?? 0).toLocaleString('en-IN');
@@ -126,6 +127,12 @@ export default function SKUReport() {
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [selectedId, setSelectedId] = useState(null);
+
+  // Redesign state
+  const [activeTab, setActiveTab] = useState('overview');
+  const [selectedSkuData, setSelectedSkuData] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [dateRange, setDateRange] = useState(() => ({
     from: selectedDateRange?.from || '',
     to: selectedDateRange?.to || '',
@@ -182,6 +189,17 @@ export default function SKUReport() {
     [data]
   );
 
+  const visibleColumns = useMemo(() => {
+    if (activeTab === 'all') return COLUMNS;
+    const tabKeys = {
+      overview: ['sku_id', 'profit_loss', 'orders', 'delivered', 'return', 'avg_pl'],
+      pipeline: ['sku_id', 'orders', 'hold', 'pending', 'cancelled', 'rts', 'picked', 'shipped'],
+      delivery: ['sku_id', 'orders', 'shipped', 'rto', 'delivered', 'return', 'delivery', 'avg_pl'],
+    };
+    const allowed = tabKeys[activeTab] || tabKeys.overview;
+    return COLUMNS.filter((col) => allowed.includes(col.key));
+  }, [activeTab]);
+
   const getPaginationNumbers = () => {
     const delta = 1; const range = []; const result = []; let last;
     for (let i = 1; i <= totalPages; i++) {
@@ -201,11 +219,18 @@ export default function SKUReport() {
     fetchData(nextDateRange);
     setShowMobileFilters(false);
   };
+  
   const handleClear = () => {
     setPlFilter('all');
     setDateDraft({ from: '', to: '' });
     setDateRange({ from: '', to: '' });
     setCurrentPage(1);
+  };
+
+  const handleRowClick = (row) => {
+    setSelectedId(row.id);
+    setSelectedSkuData(row);
+    setIsModalOpen(true);
   };
 
   const exportCSV = () => {
@@ -224,7 +249,6 @@ export default function SKUReport() {
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">P/L Filter</label>
         <select value={plFilter} onChange={(e) => setPlFilter(e.target.value)}
           className="h-9 w-full rounded-default border border-border bg-white px-4 text-sm font-medium text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10">
-
           <option value="all">All SKUs</option>
           <option value="profit">Profit Only</option>
           <option value="loss">Loss Only</option>
@@ -234,13 +258,11 @@ export default function SKUReport() {
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">From Date</label>
         <input type="date" value={dateDraft.from} onChange={(e) => setDateDraft((prev) => ({ ...prev, from: e.target.value }))}
           className="h-9 rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
-
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[0.72rem] font-extrabold uppercase tracking-[0.22em] text-text-muted">To Date</label>
         <input type="date" value={dateDraft.to} onChange={(e) => setDateDraft((prev) => ({ ...prev, to: e.target.value }))}
           className="h-9 rounded-default border border-border bg-white px-4 text-sm text-text outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
-
       </div>
       <Button variant="primary" className="!h-9 w-full px-0 self-end" onClick={handleApply} title="Apply Filters"><FiSearch size={18} /></Button>
       <Button variant="secondary" className="!h-9 w-full px-0 self-end" onClick={handleClear} title="Clear Filters"><FiX size={18} /></Button>
@@ -264,7 +286,6 @@ export default function SKUReport() {
           )}
         />
 
-
         <OrdersFilterSection
           mobileTitle="SKU Report Filters"
           mobileDescription="Filter SKU report by P/L status and date range."
@@ -278,41 +299,137 @@ export default function SKUReport() {
           {filterContent}
         </OrdersFilterSection>
 
-        {/* Summary Stats */}
-        <Card title="Overall Performance" subtitle={`${total} SKUs total`} muted>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
-            {SUMMARY_STATS.map(({ key, label, pctKey, color, isCurrency }) => (
-              <div key={key} className="rounded-default border border-border/70 bg-white p-3 text-center">
-
-                <div className="text-[0.62rem] font-extrabold uppercase tracking-[0.18em] text-text-muted">{label}</div>
-                <div className={`mt-2 text-lg font-black ${color}`}>
-                  {isCurrency ? `Rs. ${fmt(summary[key])}` : fmtN(summary[key])}
-                </div>
-                {pctKey ? <div className="text-[0.65rem] font-bold text-text-muted">{summary[pctKey] ?? 0}%</div> : null}
+        {/* Overall Performance Redesign (Compact) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* 1. Grand Profit/Loss Card */}
+          <div className={`p-3.5 rounded-default border flex flex-col justify-between shadow-xs relative overflow-hidden transition-all duration-300 ${
+            Number(summary.grand_pl) >= 0
+              ? 'bg-emerald-50/50 border-emerald-100/60 shadow-emerald-500/5'
+              : 'bg-rose-50/50 border-rose-100/60 shadow-rose-500/5'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className="text-[0.62rem] font-extrabold text-slate-400 uppercase tracking-widest block">Net Profit / Loss</span>
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                Number(summary.grand_pl) >= 0 ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
+              }`}>
+                {Number(summary.grand_pl) >= 0 ? <FiTrendingUp size={15} /> : <FiTrendingDown size={15} />}
               </div>
-            ))}
+            </div>
+            <div className={`text-xl font-black mt-1.5 ${
+              Number(summary.grand_pl) >= 0 ? 'text-emerald-700' : 'text-rose-700'
+            }`}>
+              Rs. {fmt(summary.grand_pl)}
+            </div>
           </div>
-        </Card>
+
+          {/* 2. Total Orders Card */}
+          <div className="p-3.5 rounded-default border border-slate-200 bg-white flex flex-col justify-between shadow-xs shadow-slate-100/50">
+            <div className="flex items-center justify-between">
+              <span className="text-[0.62rem] font-extrabold text-slate-400 uppercase tracking-widest block">Total Order Volume</span>
+              <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <FiPackage size={15} />
+              </div>
+            </div>
+            <div className="text-xl font-black mt-1.5 text-slate-800">
+              {fmtN(summary.grand_total)} <span className="text-xs font-semibold text-slate-400">Orders</span>
+            </div>
+          </div>
+
+          {/* 3. Delivery Success Card */}
+          <div className="p-3.5 rounded-default border border-slate-200 bg-white flex flex-col justify-between shadow-xs shadow-slate-100/50 border-l-4 border-l-emerald-500">
+            <div className="flex items-center justify-between">
+              <span className="text-[0.62rem] font-extrabold text-slate-400 uppercase tracking-widest block">Net Delivery Rate</span>
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                <FiTruck size={15} />
+              </div>
+            </div>
+            <div className="text-xl font-black mt-1.5 text-emerald-700 flex items-baseline gap-1.5">
+              <span>{summary.delivery_pct ?? 0}%</span>
+              <span className="text-[10px] font-bold text-slate-400">({fmtN(summary.delivery)} orders)</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Logistics Pipeline Stats Row (Compact) */}
+        <div className="bg-white rounded-default border border-slate-200/80 shadow-xs p-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            {/* Picked */}
+            <div className="rounded-lg bg-slate-50/50 border border-slate-100/80 p-2 text-center">
+              <div className="text-[0.58rem] font-extrabold uppercase tracking-widest text-slate-400">Picked</div>
+              <div className="mt-1 text-base font-black text-slate-700">{fmtN(summary.picked)}</div>
+            </div>
+
+            {/* Shipped */}
+            <div className="rounded-lg bg-slate-50/50 border border-slate-100/80 p-2 text-center">
+              <div className="text-[0.58rem] font-extrabold uppercase tracking-widest text-slate-400">Shipped</div>
+              <div className="mt-1 text-base font-black text-sky-600">{fmtN(summary.shipped)} <span className="text-[10px] font-bold text-slate-400">({summary.shipped_pct ?? 0}%)</span></div>
+            </div>
+
+            {/* Delivered */}
+            <div className="rounded-lg bg-slate-50/50 border border-slate-100/80 p-2 text-center">
+              <div className="text-[0.58rem] font-extrabold uppercase tracking-widest text-slate-400">Delivered</div>
+              <div className="mt-1 text-base font-black text-emerald-600">{fmtN(summary.delivered)} <span className="text-[10px] font-bold text-slate-400">({summary.delivered_pct ?? 0}%)</span></div>
+            </div>
+
+            {/* RTO */}
+            <div className="rounded-lg bg-slate-50/50 border border-slate-100/80 p-2 text-center">
+              <div className="text-[0.58rem] font-extrabold uppercase tracking-widest text-slate-400">RTO</div>
+              <div className="mt-1 text-base font-black text-rose-600">{fmtN(summary.rto)} <span className="text-[10px] font-bold text-slate-400">({summary.rto_pct ?? 0}%)</span></div>
+            </div>
+
+            {/* Return */}
+            <div className="rounded-lg bg-slate-50/50 border border-slate-100/80 p-2 text-center">
+              <div className="text-[0.58rem] font-extrabold uppercase tracking-widest text-slate-400">Return</div>
+              <div className="mt-1 text-base font-black text-amber-600">{fmtN(summary.return)} <span className="text-[10px] font-bold text-slate-400">({summary.return_pct ?? 0}%)</span></div>
+            </div>
+          </div>
+        </div>
 
         {/* Data Table */}
         <Card
           title="SKU Records"
-          subtitle={`Showing ${data.length} of ${total} SKUs`}
+          subtitle={`Showing ${data.length} of ${total} SKUs • Click a row to view visual breakdown`}
           contentClassName="p-0"
           noHeaderBorder
           action={(
             <div className="flex items-center gap-3">
               <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
                 className="rounded-inner border border-border bg-white px-3 py-2 text-sm font-bold text-text outline-none focus:border-primary">
-
                 {PER_PAGE_OPTIONS.map((o) => <option key={o} value={o}>{o} / page</option>)}
               </select>
               <Button variant="secondary" size="sm" onClick={fetchData}><FiRefreshCw size={14} /></Button>
             </div>
           )}
         >
+          {/* Tab Selector */}
+          <div className="border-b border-border bg-surface-alt/45 p-3 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1 rounded-xl w-fit">
+              {[
+                { id: 'overview', label: '📊 Overview' },
+                { id: 'pipeline', label: '🚚 Pipeline' },
+                { id: 'delivery', label: '📈 Outcomes' },
+                { id: 'all', label: '📋 All Columns' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`rounded-lg px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === tab.id
+                      ? 'bg-white text-primary shadow-sm font-extrabold'
+                      : 'text-text-muted hover:text-text'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="text-[0.68rem] font-bold text-text-muted italic hidden md:block">
+              💡 Click any SKU row to view graphical metrics & pipeline details.
+            </div>
+          </div>
+
           <DataTable
-            columns={COLUMNS}
+            columns={visibleColumns}
             data={tableData}
             loading={loading}
             loadingText="Loading SKU report..."
@@ -321,17 +438,16 @@ export default function SKUReport() {
             showIndex
             stickyFirstColumn
             selectedId={selectedId}
-            onRowClick={(row) => setSelectedId((prev) => (prev === row.id ? null : row.id))}
+            onRowClick={handleRowClick}
             wrapperClassName="rounded-b-default pb-2"
-
-            tableClassName="min-w-[1400px]"
+            tableClassName={activeTab === 'all' ? 'min-w-[1400px]' : 'min-w-[1000px] w-full'}
             headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
             headerCellClassName="px-3 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap border-b border-border sm:px-4"
             indexHeaderClassName="sticky left-0 z-20 w-10 border-b border-r border-border bg-surface-alt/95 px-3 py-3 text-center text-[0.62rem] font-extrabold"
             indexCellClassName="sticky left-0 z-10 border-r border-border bg-surface-alt/95 px-3 py-3 text-center font-medium text-text-muted"
-            cellClassName="px-3 py-3 whitespace-nowrap text-xs text-text sm:px-4"
-            selectedClass="bg-primary/10 text-text"
-            hoverClass="hover:bg-surface-alt"
+            cellClassName="px-3 py-3 whitespace-nowrap text-xs text-text sm:px-4 cursor-pointer"
+            selectedClass="bg-primary/5 text-text"
+            hoverClass="hover:bg-surface-alt/70"
           />
 
           {totalPages > 1 && (
@@ -340,7 +456,6 @@ export default function SKUReport() {
                 {total === 0 ? 0 : ((currentPage - 1) * perPage) + 1}-{Math.min(currentPage * perPage, total)} of {total}
               </span>
               <nav className="flex items-center overflow-x-auto rounded-default border border-border bg-white shadow-sm">
-
                 <button className={`p-3 transition-colors hover:bg-surface-alt ${currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-text'}`}
                   onClick={() => currentPage > 1 && setCurrentPage((p) => p - 1)} disabled={currentPage === 1}>
                   <FiChevronLeft size={16} />
@@ -364,6 +479,240 @@ export default function SKUReport() {
           )}
         </Card>
       </div>
+
+      {/* SKU Detail Modal */}
+      {selectedSkuData && (
+        <CommonModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedSkuData(null);
+          }}
+          title="SKU Performance Details"
+          size="lg"
+          headerStyle="gradient"
+          showFooter={false}
+        >
+          <div className="space-y-6">
+            {/* Header info */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <h4 className="text-xl font-black text-slate-800 tracking-tight">
+                  {selectedSkuData.sku_id}
+                </h4>
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1">
+                  Size: <span className="text-slate-700 font-extrabold">{selectedSkuData.size || 'Free Size'}</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[0.62rem] font-extrabold uppercase tracking-widest text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+                  Performance Summary
+                </span>
+              </div>
+            </div>
+
+            {/* Financial Performance KPI Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className={`p-4 rounded-default border flex flex-col justify-between shadow-sm relative overflow-hidden ${
+                Number(selectedSkuData.profit_loss) >= 0
+                  ? 'bg-emerald-50/50 border-emerald-100'
+                  : 'bg-rose-50/50 border-rose-100'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Net Profit / Loss</span>
+                  {Number(selectedSkuData.profit_loss) >= 0 ? (
+                    <FiTrendingUp className="text-emerald-500" size={18} />
+                  ) : (
+                    <FiTrendingDown className="text-rose-500" size={18} />
+                  )}
+                </div>
+                <div className={`text-2xl font-black mt-3 ${
+                  Number(selectedSkuData.profit_loss) >= 0 ? 'text-emerald-700' : 'text-rose-700'
+                }`}>
+                  Rs. {fmt(selectedSkuData.profit_loss)}
+                </div>
+              </div>
+
+              <div className={`p-4 rounded-default border bg-white flex flex-col justify-between shadow-sm border-slate-200 ${
+                Number(selectedSkuData.avg_pl) >= 0 ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-rose-500'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Avg P/L per Order</span>
+                  <FiDollarSign className="text-primary/70" size={16} />
+                </div>
+                <div className={`text-2xl font-black mt-3 ${
+                  Number(selectedSkuData.avg_pl) >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                }`}>
+                  Rs. {fmt(selectedSkuData.avg_pl)}
+                </div>
+              </div>
+
+              <div className="p-4 rounded-default border border-slate-200 bg-white flex flex-col justify-between shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Total Orders</span>
+                  <FiPackage className="text-primary/70" size={16} />
+                </div>
+                <div className="text-2xl font-black mt-3 text-slate-800">
+                  {fmtN(selectedSkuData.orders)}
+                </div>
+              </div>
+            </div>
+
+            {/* Performance Rates - Progress Bars */}
+            <div className="bg-white rounded-default border border-slate-200 p-4 sm:p-5 shadow-sm space-y-4">
+              <h5 className="text-[0.75rem] font-extrabold uppercase tracking-widest text-slate-400 flex items-center gap-2 border-b border-slate-100 pb-2">
+                <FiTruck size={14} className="text-primary" /> Delivery & Logistics Rates
+              </h5>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                {/* Delivered Rate */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-xs font-bold">
+                    <span className="text-slate-600">Delivered Rate</span>
+                    <span className="text-emerald-600">{selectedSkuData.delivered_pct ?? 0}% ({fmtN(selectedSkuData.delivered)} orders)</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2">
+                    <div
+                      className="bg-emerald-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(Number(selectedSkuData.delivered_pct) || 0, 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Net Delivery Success */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-xs font-bold">
+                    <span className="text-slate-600">Net Delivery Success Rate</span>
+                    <span className="text-emerald-700">{selectedSkuData.delivery_pct ?? 0}% ({fmtN(selectedSkuData.delivery)} orders)</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2">
+                    <div
+                      className="bg-emerald-600 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(Number(selectedSkuData.delivery_pct) || 0, 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* RTO Rate */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-xs font-bold">
+                    <span className="text-slate-600">RTO Rate</span>
+                    <span className="text-rose-600">{selectedSkuData.rto_pct ?? 0}% ({fmtN(selectedSkuData.rto)} orders)</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2">
+                    <div
+                      className="bg-rose-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(Number(selectedSkuData.rto_pct) || 0, 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Return Rate */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-xs font-bold">
+                    <span className="text-slate-600">Customer Return Rate</span>
+                    <span className="text-amber-600">{selectedSkuData.return_pct ?? 0}% ({fmtN(selectedSkuData.return)} orders)</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2">
+                    <div
+                      className="bg-amber-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(Number(selectedSkuData.return_pct) || 0, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Pipeline Stage Breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Group 1: Processing */}
+              <div className="bg-slate-50/50 rounded-default border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+                <div>
+                  <h6 className="text-[0.68rem] font-extrabold uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2">
+                    1. Warehouse Processing
+                  </h6>
+                  <div className="mt-3 space-y-2.5">
+                    <div className="flex justify-between items-center text-xs font-medium">
+                      <span className="text-slate-500">On Hold</span>
+                      <span className="font-bold text-slate-700 tabular-nums">{fmtN(selectedSkuData.hold)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-medium">
+                      <span className="text-slate-500">Pending Entry</span>
+                      <span className="font-bold text-slate-700 tabular-nums">{fmtN(selectedSkuData.pending)}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 pt-3 border-t border-dashed border-slate-200 text-[0.62rem] text-slate-400 font-semibold">
+                  Orders yet to be packed/shipped.
+                </div>
+              </div>
+
+              {/* Group 2: Shipping Pipeline */}
+              <div className="bg-slate-50/50 rounded-default border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+                <div>
+                  <h6 className="text-[0.68rem] font-extrabold uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2">
+                    2. Fulfillment Pipeline
+                  </h6>
+                  <div className="mt-3 space-y-2.5">
+                    <div className="flex justify-between items-center text-xs font-medium">
+                      <span className="text-slate-500">RTS (Ready to Ship)</span>
+                      <span className="font-bold text-slate-700 tabular-nums">{fmtN(selectedSkuData.rts)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-medium">
+                      <span className="text-slate-500">Picked</span>
+                      <span className="font-bold text-slate-700 tabular-nums">{fmtN(selectedSkuData.picked)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-medium">
+                      <span className="text-slate-500">Shipped</span>
+                      <div className="text-right">
+                        <span className="font-bold text-sky-600 tabular-nums">{fmtN(selectedSkuData.shipped)}</span>
+                        <span className="text-[0.62rem] text-slate-400 block">{selectedSkuData.shipped_pct ?? 0}% of total</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 pt-3 border-t border-dashed border-slate-200 text-[0.62rem] text-slate-400 font-semibold">
+                  Fulfillment operations & logistics handoff.
+                </div>
+              </div>
+
+              {/* Group 3: Outcomes */}
+              <div className="bg-slate-50/50 rounded-default border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+                <div>
+                  <h6 className="text-[0.68rem] font-extrabold uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2">
+                    3. Final Outcomes
+                  </h6>
+                  <div className="mt-3 space-y-2">
+                    <div className="flex justify-between items-center text-xs font-medium">
+                      <span className="text-slate-500">Delivered</span>
+                      <span className="font-bold text-emerald-600 tabular-nums">{fmtN(selectedSkuData.delivered)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-medium">
+                      <span className="text-slate-500">RTO (Returned)</span>
+                      <span className="font-bold text-rose-600 tabular-nums">{fmtN(selectedSkuData.rto)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-medium">
+                      <span className="text-slate-500">Customer Return</span>
+                      <span className="font-bold text-amber-600 tabular-nums">{fmtN(selectedSkuData.return)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-medium">
+                      <span className="text-slate-500">Cancelled</span>
+                      <span className="font-bold text-rose-700 tabular-nums">{fmtN(selectedSkuData.cancelled)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-medium">
+                      <span className="text-slate-500">N/A / Other</span>
+                      <span className="font-bold text-slate-500 tabular-nums">{fmtN(selectedSkuData.na)}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2 border-t border-dashed border-slate-200 text-[0.62rem] text-slate-400 font-semibold">
+                  End states of all period orders.
+                </div>
+              </div>
+            </div>
+          </div>
+        </CommonModal>
+      )}
     </AppShell>
   );
 }
