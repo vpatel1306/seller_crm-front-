@@ -59,6 +59,14 @@ export default function DailyImport() {
             issueRoute: '/smart-tickets',
             acceptedTypesLabel: 'CSV',
         },
+        {
+            id: 'lost',
+            name: 'Import Lost Orders',
+            note: 'Lost orders reconciliation',
+            reviewRoute: '/lost-orders',
+            issueRoute: '/return-mismatch',
+            acceptedTypesLabel: 'CSV',
+        }
     ];
 
     const uploadEndpoints = {
@@ -66,7 +74,8 @@ export default function DailyImport() {
         ofd: '/upload-ofd-order-file',
         com: '/upload-com-order-file',
         payment: '/upload-payment-detail-file',
-        claim: '/upload-claim-status-file'
+        claim: '/upload-claim-status-file',
+        lost: '/upload-lost-order-file',
     };
 
     const importAcceptConfig = {
@@ -75,6 +84,7 @@ export default function DailyImport() {
         com: ['.csv'],
         payment: ['.xlsx'],
         claim: ['.csv'],
+        lost: ['.csv'],
     };
 
     const activeOption = useMemo(

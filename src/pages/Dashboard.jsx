@@ -453,6 +453,12 @@ export default function Dashboard() {
         extraFilter = { order_status: 'DELIVERED' };
       } else if (ordersFilter === 'cancelled') {
         extraFilter = { order_status: 'CANCELLED' };
+      } else if (ordersFilter === 'ready_to_ship') {
+        extraFilter = { order_status: 'READY_TO_SHIP' };
+      } else if (ordersFilter === 'out_for_delivery') {
+        extraFilter = { order_status: 'Delivering Today' };
+      } else if (ordersFilter === 'returned') {
+        extraFilter = { status: ['Return In Transit', 'Return Received', 'Return Not Receive', 'Return', 'RTO'] };
       } else if (ordersFilter === 'pending') {
         endpoint = '/get-pending-payment-orders';
       } else if (ordersFilter === 'sla' || ordersFilter === 'unsettled-pickup') {
@@ -482,7 +488,7 @@ export default function Dashboard() {
           start_date: selectedDateRange.from || '',
           end_date: selectedDateRange.to || '',
           ...extraFilter,
-          ...(ordersOrderId.trim() ? { order_id: ordersOrderId.trim() } : {}),
+          ...(ordersOrderId.trim() ? { platform_order_id: ordersOrderId.trim() } : {}),
           ...(ordersSku.trim() ? { sku: ordersSku.trim() } : {})
         },
         page_no: ordersPage,
@@ -583,7 +589,7 @@ export default function Dashboard() {
       } else if (returnsFilter === 'received') {
         endpoint = '/get-received-returns';
       } else if (returnsFilter === 'not-received') {
-        extraFilter = { status: ['RETURN_NOT_RECEIVED'] };
+        endpoint = '/get-pending-returns';
       } else if (returnsFilter === 'mismatch') {
         endpoint = '/get-return-mismatch-returns';
       }
@@ -1042,20 +1048,27 @@ export default function Dashboard() {
 
                       {/* Pending Payments Table */}
                       <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse min-w-[700px]">
+                        <table className="w-full text-left border-collapse min-w-[1000px]">
                           <thead>
                             <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
                               <th className="py-3 px-4">Order ID</th>
                               <th className="py-3 px-4">Order Date</th>
                               <th className="py-3 px-4">SKU</th>
-                              <th className="py-3 px-4">Order Item Status</th>
-                              <th className="py-3 px-4">Payment Status</th>
+                              <th className="py-3 px-4 text-right">Qty</th>
+                              <th className="py-3 px-4">Order Status</th>
+                              <th className="py-3 px-4">AWB Number</th>
+                              <th className="py-3 px-4">Courier Partner</th>
+                              <th className="py-3 px-4">Customer Name</th>
+                              <th className="py-3 px-4 text-right">Cost Amount</th>
+                              <th className="py-3 px-4">Pickup Date</th>
+                              <th className="py-3 px-4">Dispatch Date</th>
+                              <th className="py-3 px-4">Days</th>
                             </tr>
                           </thead>
                           <tbody>
                             {pendingLoading ? (
                               <tr>
-                                <td colSpan={5} className="py-10 text-center text-xs font-bold text-slate-400">
+                                <td colSpan={13} className="py-10 text-center text-xs font-bold text-slate-400">
                                   <div className="flex flex-col items-center gap-2 justify-center">
                                     <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
                                     <span>Loading pending payments...</span>
@@ -1064,32 +1077,36 @@ export default function Dashboard() {
                               </tr>
                             ) : pendingOrders.length === 0 ? (
                               <tr>
-                                <td colSpan={5} className="py-10 text-center text-xs font-bold text-slate-400">No pending payments found.</td>
+                                <td colSpan={13} className="py-10 text-center text-xs font-bold text-slate-400">No pending payments found.</td>
                               </tr>
                             ) : (
                               pendingOrders.map((order, i) => (
                                 <tr key={order.id || i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors text-xs">
                                   <td className="py-4 px-4 font-black text-primary select-all">{order.platform_order_id}</td>
-                                  <td className="py-4 px-4 font-bold text-slate-500">
+                                  <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
                                     {order.order_date ? new Date(order.order_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                                   </td>
-                                  <td className="py-4 px-4 max-w-[320px]">
+                                  <td className="py-4 px-4 max-w-[200px]">
                                     <div className="font-extrabold text-amber-700 truncate" title={order.sku}>{order.sku}</div>
-                                    <div className="text-[10px] font-bold text-slate-400 truncate mt-0.5" title={order.product_name || order.sku}>
-                                      {order.product_name || "Premium Quality Soft Baby Diaper Pants..."}
-                                    </div>
                                   </td>
+                                  <td className="py-4 px-4 text-right font-bold text-slate-700">{order.qty || '-'}</td>
+                                
                                   <td className="py-4 px-4">
-                                    <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-blue-50 text-blue-600">
-                                      {order.order_status || 'DELIVERED'}
+                                    <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600">
+                                      {order.order_status || '-'}
                                     </span>
                                   </td>
-                                  <td className="py-4 px-4">
-                                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-600">
-                                      <FiClock size={10} />
-                                      <span>Pending</span>
-                                    </span>
+                                  <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">{order.awb_number || '-'}</td>
+                                  <td className="py-4 px-4 font-bold text-slate-600">{order.courier_partner || '-'}</td>
+                                  <td className="py-4 px-4 font-bold text-slate-600">{order.customer_name || '-'}</td>
+                                  <td className="py-4 px-4 text-right font-bold text-slate-700">₹{formatCount(order.cost_amount || 0)}</td>
+                                  <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                    {order.pickup_date ? new Date(order.pickup_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                                   </td>
+                                  <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                    {order.dispatch_date ? new Date(order.dispatch_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                  </td>
+                                  <td className="py-4 px-4 font-bold text-slate-700">{order.days || '-'}</td>
                                 </tr>
                               ))
                             )}
@@ -1182,10 +1199,11 @@ export default function Dashboard() {
                         {[
                           { filterKey: 'all', title: 'Total Orders Received', count: dashboardCards.all_orders?.total_orders || 0, key: 'all_orders', barColor: 'bg-teal-500' },
                           { filterKey: 'delivered', title: 'Delivered to Customer', count: dashboardCards.delivered?.total_orders || 0, key: 'delivered', barColor: 'bg-emerald-500' },
-                          { filterKey: 'all', title: 'On the Way (Shipped)', count: dashboardCards.shipped?.total_orders || 0, key: 'shipped', barColor: 'bg-indigo-500' },
+                          { filterKey: 'shipped', title: 'On the Way (Shipped)', count: dashboardCards.shipped?.total_orders || 0, key: 'shipped', barColor: 'bg-indigo-500' },
+                          { filterKey: 'out_for_delivery', title: 'Out for Delivery', count: dashboardCards.pending?.total_orders || 0, key: 'out_for_delivery', barColor: 'bg-amber-500' },
+                          { filterKey: 'ready_to_ship', title: 'Ready to Ship', count: dashboardCards.ready_to_ship?.total_orders || 0, key: 'ready_to_ship', barColor: 'bg-blue-500' },
                           { filterKey: 'cancelled', title: 'Cancelled', count: dashboardCards.cancelled?.total_orders || 0, key: 'cancelled', barColor: 'bg-slate-500' },
-                          { filterKey: 'all', title: 'Returned by Customer', count: (dashboardCards.all_orders?.breakdown?.all_returns || 0), key: 'all_returns', barColor: 'bg-rose-500' },
-                          { filterKey: 'sla', title: 'Ready to Pack & Send', count: dashboardCards.ready_to_ship?.total_orders || 0, key: 'ready_to_ship', barColor: 'bg-blue-500' },
+                          { filterKey: 'returned', title: 'Returned by Customer', count: (dashboardCards.all_orders?.breakdown?.all_returns || 0), key: 'all_returns', barColor: 'bg-rose-500' },
                         ].map((stage, idx) => {
                           const total = Number(dashboardCards.all_orders?.total_orders || 1);
                           const percentage = total > 0 ? Math.round((Number(stage.count) / total) * 100) : 0;
@@ -1312,6 +1330,9 @@ export default function Dashboard() {
                             {ordersFilter === 'all' && 'All Orders'}
                             {ordersFilter === 'delivered' && 'Delivered Orders'}
                             {ordersFilter === 'cancelled' && 'Cancelled Orders'}
+                            {ordersFilter === 'ready_to_ship' && 'Ready to Ship Orders'}
+                            {ordersFilter === 'out_for_delivery' && 'Out for Delivery Orders'}
+                            {ordersFilter === 'returned' && 'Returned Orders'}
                             {ordersFilter === 'pending' && 'Pending Payment Orders'}
                             {ordersFilter === 'sla' && 'Unsettled Pickup Orders'}
                             {ordersFilter === 'unsettled-pickup' && 'Unsettled Pickup Orders'}
@@ -1461,20 +1482,72 @@ export default function Dashboard() {
                       </div>
 
                       <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse min-w-[700px]">
+                        <table className="w-full text-left border-collapse min-w-[1200px]">
                           <thead>
                             <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
-                              <th className="py-3 px-4">Order ID</th>
+                              <th className="py-3 px-4">Platform Order ID</th>
                               <th className="py-3 px-4">Order Date</th>
                               <th className="py-3 px-4">SKU</th>
-                              <th className="py-3 px-4">Courier</th>
-                              <th className="py-3 px-4 text-right">Profit / Loss</th>
+                              <th className="py-3 px-4 text-right">Qty</th>
+                              {(ordersFilter === 'unsettled-pickup' || ordersFilter === 'sla' || ordersFilter === 'pending') && (
+                                <>
+                                  <th className="py-3 px-4">Status</th>
+                                  <th className="py-3 px-4">Order Status</th>
+                                  <th className="py-3 px-4">AWB Number</th>
+                                  <th className="py-3 px-4">Courier Partner</th>
+                                  <th className="py-3 px-4">Customer Name</th>
+                                  <th className="py-3 px-4 text-right">Cost Amount</th>
+                                  <th className="py-3 px-4">Pickup Date</th>
+                                  <th className="py-3 px-4">Dispatch Date</th>
+                                  <th className="py-3 px-4">Days</th>
+                                </>
+                              )}
+                              {ordersFilter === 'cancel-pickup' && (
+                                <>
+                                  <th className="py-3 px-4">Status</th>
+                                  <th className="py-3 px-4">Order Status</th>
+                                  <th className="py-3 px-4 text-right">Selling Amount</th>
+                                  <th className="py-3 px-4 text-right">Cost Amount</th>
+                                  <th className="py-3 px-4 text-right">Profit / Loss</th>
+                                  <th className="py-3 px-4">Courier Partner</th>
+                                  <th className="py-3 px-4">AWB Number</th>
+                                  <th className="py-3 px-4">Pickup AWB</th>
+                                  <th className="py-3 px-4">Pickup Date</th>
+                                  <th className="py-3 px-4">Customer Name</th>
+                                  <th className="py-3 px-4">Customer Phone</th>
+                                </>
+                              )}
+                              {(ordersFilter !== 'unsettled-pickup' && ordersFilter !== 'sla' && ordersFilter !== 'pending' && ordersFilter !== 'cancel-pickup') && (
+                                <>
+                                  <th className="py-3 px-4">Courier</th>
+                                  <th className="py-3 px-4">AWB Number</th>
+                                  <th className="py-3 px-4">Pickup AWB</th>
+                                  <th className="py-3 px-4">Order Status</th>
+                                  <th className="py-3 px-4">Dispatch Date</th>
+                                  <th className="py-3 px-4">Pickup Date</th>
+                                  <th className="py-3 px-4 text-right">Total Amount</th>
+                                  <th className="py-3 px-4 text-right">Cost Amount</th>
+                                  <th className="py-3 px-4 text-right">Shipping Charge</th>
+                                  <th className="py-3 px-4 text-right">Settlement Amt</th>
+                                  <th className="py-3 px-4">Payment Status</th>
+                                  <th className="py-3 px-4 text-right">Profit / Loss</th>
+                                  <th className="py-3 px-4">Return Type</th>
+                                  <th className="py-3 px-4">Return Date</th>
+                                  <th className="py-3 px-4">Return Delivered</th>
+                                  <th className="py-3 px-4 text-right">Return Charge</th>
+                                  <th className="py-3 px-4">Claim Status</th>
+                                  <th className="py-3 px-4 text-right">Claim Amount</th>
+                                  <th className="py-3 px-4">Is Lost</th>
+                                  <th className="py-3 px-4">Lost Date</th>
+                                  <th className="py-3 px-4">Recovery Reason</th>
+                                </>
+                              )}
                             </tr>
                           </thead>
                           <tbody>
                             {ordersLoading ? (
                               <tr>
-                                <td colSpan={5} className="py-10 text-center text-xs font-bold text-slate-400">
+                                <td colSpan={25} className="py-10 text-center text-xs font-bold text-slate-400">
                                   <div className="flex flex-col items-center gap-2 justify-center">
                                     <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
                                     <span>Loading detailed records...</span>
@@ -1483,27 +1556,133 @@ export default function Dashboard() {
                               </tr>
                             ) : ordersList.length === 0 ? (
                               <tr>
-                                <td colSpan={5} className="py-10 text-center text-xs font-bold text-slate-400">No records found.</td>
+                                <td colSpan={25} className="py-10 text-center text-xs font-bold text-slate-400">No records found.</td>
                               </tr>
                             ) : (
                               ordersList.map((order, i) => (
                                 <tr key={order.id || i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors text-xs">
                                   <td className="py-4 px-4 font-black text-primary select-all">{order.platform_order_id}</td>
-                                  <td className="py-4 px-4 font-bold text-slate-500">
+                                  <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
                                     {order.order_date ? new Date(order.order_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                                   </td>
-                                  <td className="py-4 px-4 max-w-[320px]">
+                                  <td className="py-4 px-4 max-w-[200px]">
                                     <div className="font-extrabold text-amber-700 truncate" title={order.sku}>{order.sku}</div>
-                                    <div className="text-[10px] font-bold text-slate-400 truncate mt-0.5">
-                                      {order.product_name || "Premium Quality Soft Baby Diaper Pants..."}
-                                    </div>
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-600">{order.courier_partner || '-'}</td>
-                                  <td className={`py-4 px-4 text-right font-black ${
-                                    (Number(order.profit_loss) || 0) >= 0 ? 'text-green-600' : 'text-rose-600'
-                                  }`}>
-                                    ₹{formatCount(order.profit_loss || 0)}
-                                  </td>
+                                  <td className="py-4 px-4 text-right font-bold text-slate-700">{order.qty || '-'}</td>
+                                  
+                                  {(ordersFilter === 'unsettled-pickup' || ordersFilter === 'sla' || ordersFilter === 'pending') && (
+                                    <>
+                                      <td className="py-4 px-4">
+                                        <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-slate-50 text-slate-600">
+                                          {order.status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4">
+                                        <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600">
+                                          {order.order_status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">{order.awb_number || '-'}</td>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.courier_partner || '-'}</td>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.customer_name || '-'}</td>
+                                      <td className="py-4 px-4 text-right font-bold text-slate-700">₹{formatCount(order.cost_amount || 0)}</td>
+                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        {order.pickup_date ? new Date(order.pickup_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        {order.dispatch_date ? new Date(order.dispatch_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-700">{order.days || '-'}</td>
+                                    </>
+                                  )}
+
+                                  {ordersFilter === 'cancel-pickup' && (
+                                    <>
+                                      <td className="py-4 px-4">
+                                        <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-slate-50 text-slate-600">
+                                          {order.status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4">
+                                        <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600">
+                                          {order.order_status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4 text-right font-black text-slate-700">₹{formatCount(order.selling_amount || 0)}</td>
+                                      <td className="py-4 px-4 text-right font-bold text-slate-600">₹{formatCount(order.cost_amount || 0)}</td>
+                                      <td className={`py-4 px-4 text-right font-black ${
+                                        (Number(order.profit_loss) || 0) >= 0 ? 'text-green-600' : 'text-rose-600'
+                                      }`}>
+                                        ₹{formatCount(order.profit_loss || 0)}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.courier_partner || '-'}</td>
+                                      <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">{order.awb_number || '-'}</td>
+                                      <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">{order.pickup_awb_number || '-'}</td>
+                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        {order.pickup_date ? new Date(order.pickup_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.customer_name || '-'}</td>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.customer_phone || '-'}</td>
+                                    </>
+                                  )}
+
+                                  {(ordersFilter !== 'unsettled-pickup' && ordersFilter !== 'sla' && ordersFilter !== 'pending' && ordersFilter !== 'cancel-pickup') && (
+                                    <>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.courier_partner || '-'}</td>
+                                      <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">{order.awb_number || '-'}</td>
+                                      <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">{order.pickup_awb_number || '-'}</td>
+                                      <td className="py-4 px-4">
+                                        <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600">
+                                          {order.order_status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        {order.dispatch_date ? new Date(order.dispatch_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        {order.pickup_date ? new Date(order.pickup_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                      </td>
+                                      <td className="py-4 px-4 text-right font-black text-slate-700">₹{formatCount(order.total_amount || 0)}</td>
+                                      <td className="py-4 px-4 text-right font-bold text-slate-600">₹{formatCount(order.cost_amount || 0)}</td>
+                                      <td className="py-4 px-4 text-right font-bold text-slate-600">₹{formatCount(order.shipping_charge || 0)}</td>
+                                      <td className="py-4 px-4 text-right font-bold text-emerald-600">₹{formatCount(order.settlement_amount || 0)}</td>
+                                      <td className="py-4 px-4">
+                                        <span className={`px-2 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                                          order.payment_status === 'Settled' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                                        }`}>
+                                          {order.payment_status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className={`py-4 px-4 text-right font-black ${
+                                        (Number(order.profit_loss) || 0) >= 0 ? 'text-green-600' : 'text-rose-600'
+                                      }`}>
+                                        ₹{formatCount(order.profit_loss || 0)}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.return_type || '-'}</td>
+                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        {order.return_date ? new Date(order.return_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        {order.return_delivered ? new Date(order.return_delivered).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                      </td>
+                                      <td className="py-4 px-4 text-right font-bold text-rose-600">₹{formatCount(order.return_shipping_charge || 0)}</td>
+                                      <td className="py-4 px-4">
+                                        <span className={`px-2 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                                          order.claim_status === 'Approved' ? 'bg-emerald-50 text-emerald-600' : order.claim_status ? 'bg-amber-50 text-amber-600' : ''
+                                        }`}>
+                                          {order.claim_status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4 text-right font-bold text-slate-600">₹{formatCount(order.claim_amount || 0)}</td>
+                                      <td className="py-4 px-4 text-center">
+                                        {order.is_lost ? <span className="text-red-600 font-black">Yes</span> : <span className="text-slate-400">-</span>}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        {order.lost_date ? new Date(order.lost_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.recovery_reason || '-'}</td>
+                                    </>
+                                  )}
                                 </tr>
                               ))
                             )}
@@ -1856,21 +2035,59 @@ export default function Dashboard() {
                       </div>
 
                       <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse min-w-[700px]">
+                        <table className="w-full text-left border-collapse min-w-[1200px]">
                           <thead>
                             <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
-                              <th className="py-3 px-4">Order ID</th>
+                              <th className="py-3 px-4">Platform Order ID</th>
                               <th className="py-3 px-4">Order Date</th>
                               <th className="py-3 px-4">SKU</th>
-                              <th className="py-3 px-4 text-right">Order Valuation</th>
-                              {paymentsFilter === 'received' && <th className="py-3 px-4 text-right">Settled Amt</th>}
-                              <th className="py-3 px-4 text-right">Payment Status</th>
+                              <th className="py-3 px-4 text-right">Qty</th>
+                              {paymentsFilter === 'received' && (
+                                <>
+                                  <th className="py-3 px-4">Status</th>
+                                  <th className="py-3 px-4">Order Status</th>
+                                  <th className="py-3 px-4 text-right">Selling Amount</th>
+                                  <th className="py-3 px-4 text-right">Received Payment</th>
+                                  <th className="py-3 px-4 text-right">Cost Amount</th>
+                                  <th className="py-3 px-4 text-right">Profit / Loss</th>
+                                  <th className="py-3 px-4 text-right">Payment Entry Count</th>
+                                  <th className="py-3 px-4">First Payment Date</th>
+                                  <th className="py-3 px-4">Last Payment Date</th>
+                                </>
+                              )}
+                              {paymentsFilter === 'pending' && (
+                                <>
+                                  <th className="py-3 px-4">Status</th>
+                                  <th className="py-3 px-4">Order Status</th>
+                                  <th className="py-3 px-4">AWB Number</th>
+                                  <th className="py-3 px-4">Courier Partner</th>
+                                  <th className="py-3 px-4">Customer Name</th>
+                                  <th className="py-3 px-4 text-right">Cost Amount</th>
+                                  <th className="py-3 px-4">Pickup Date</th>
+                                  <th className="py-3 px-4">Dispatch Date</th>
+                                  <th className="py-3 px-4">Days</th>
+                                </>
+                              )}
+                              {paymentsFilter === 'mismatch' && (
+                                <>
+                                  <th className="py-3 px-4">Status</th>
+                                  <th className="py-3 px-4">Order Status</th>
+                                  <th className="py-3 px-4 text-right">Selling Amount</th>
+                                  <th className="py-3 px-4 text-right">Cost Amount</th>
+                                  <th className="py-3 px-4 text-right">Profit / Loss</th>
+                                  <th className="py-3 px-4 text-right">Settlement Amount</th>
+                                  <th className="py-3 px-4">Courier Partner</th>
+                                  <th className="py-3 px-4">AWB Number</th>
+                                  <th className="py-3 px-4">Customer Name</th>
+                                  <th className="py-3 px-4">Customer Phone</th>
+                                </>
+                              )}
                             </tr>
                           </thead>
                           <tbody>
                             {paymentsLoading ? (
                               <tr>
-                                <td colSpan={6} className="py-10 text-center text-xs font-bold text-slate-400">
+                                <td colSpan={15} className="py-10 text-center text-xs font-bold text-slate-400">
                                   <div className="flex flex-col items-center gap-2 justify-center">
                                     <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
                                     <span>Loading payment records...</span>
@@ -1879,31 +2096,106 @@ export default function Dashboard() {
                               </tr>
                             ) : paymentsList.length === 0 ? (
                               <tr>
-                                <td colSpan={6} className="py-10 text-center text-xs font-bold text-slate-400">No records found.</td>
+                                <td colSpan={15} className="py-10 text-center text-xs font-bold text-slate-400">No records found.</td>
                               </tr>
                             ) : (
                               paymentsList.map((order, i) => (
                                 <tr key={order.id || i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors text-xs">
                                   <td className="py-4 px-4 font-black text-primary select-all">{order.platform_order_id}</td>
-                                  <td className="py-4 px-4 font-bold text-slate-500">
+                                  <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
                                     {order.order_date ? new Date(order.order_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                                   </td>
-                                  <td className="py-4 px-4 max-w-[280px]">
+                                  <td className="py-4 px-4 max-w-[200px]">
                                     <div className="font-extrabold text-amber-700 truncate" title={order.sku}>{order.sku}</div>
                                   </td>
-                                  <td className="py-4 px-4 text-right font-black text-slate-700">₹{formatCount(order.total_amount || 0)}</td>
+                                  <td className="py-4 px-4 text-right font-bold text-slate-700">{order.qty || '-'}</td>
+                                  
                                   {paymentsFilter === 'received' && (
-                                    <td className="py-4 px-4 text-right font-black text-emerald-600">₹{formatCount(order.settlement_amount || 0)}</td>
+                                    <>
+                                      <td className="py-4 px-4">
+                                        <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-slate-50 text-slate-600">
+                                          {order.status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4">
+                                        <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600">
+                                          {order.order_status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4 text-right font-black text-slate-700">₹{formatCount(order.selling_amount || 0)}</td>
+                                      <td className="py-4 px-4 text-right font-black text-emerald-600">₹{formatCount(order.received_payment || 0)}</td>
+                                      <td className="py-4 px-4 text-right font-bold text-slate-600">₹{formatCount(order.cost_amount || 0)}</td>
+                                      <td className={`py-4 px-4 text-right font-black ${
+                                        (Number(order.profit_loss) || 0) >= 0 ? 'text-green-600' : 'text-rose-600'
+                                      }`}>
+                                        ₹{formatCount(order.profit_loss || 0)}
+                                      </td>
+                                      <td className="py-4 px-4 text-right font-bold text-slate-700">{order.payment_entry_count || 0}</td>
+                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        {order.first_payment_date ? new Date(order.first_payment_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        {order.last_payment_date ? new Date(order.last_payment_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                      </td>
+                                    </>
                                   )}
-                                  <td className="py-4 px-4 text-right">
-                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest ${
-                                      paymentsFilter === 'received' ? 'bg-emerald-50 text-emerald-600' :
-                                      paymentsFilter === 'mismatch' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'
-                                    }`}>
-                                      {paymentsFilter === 'received' ? 'Settled' :
-                                       paymentsFilter === 'mismatch' ? 'Mismatch' : 'Pending'}
-                                    </span>
-                                  </td>
+
+                                  {paymentsFilter === 'pending' && (
+                                    <>
+                                      <td className="py-4 px-4">
+                                        <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-slate-50 text-slate-600">
+                                          {order.status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4">
+                                        <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600">
+                                          {order.order_status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">{order.awb_number || '-'}</td>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.courier_partner || '-'}</td>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.customer_name || '-'}</td>
+                                      <td className="py-4 px-4 text-right font-bold text-slate-700">₹{formatCount(order.cost_amount || 0)}</td>
+                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        {order.pickup_date ? new Date(order.pickup_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        {order.dispatch_date ? new Date(order.dispatch_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-700">{order.days || '-'}</td>
+                                    </>
+                                  )}
+
+                                  {paymentsFilter === 'mismatch' && (
+                                    <>
+                                      <td className="py-4 px-4">
+                                        <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-slate-50 text-slate-600">
+                                          {order.status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4">
+                                        <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600">
+                                          {order.order_status || '-'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4 text-right font-black text-slate-700">₹{formatCount(order.selling_amount || 0)}</td>
+                                      <td className="py-4 px-4 text-right font-bold text-slate-600">₹{formatCount(order.cost_amount || 0)}</td>
+                                      <td className={`py-4 px-4 text-right font-black ${
+                                        (Number(order.profit_loss) || 0) >= 0 ? 'text-green-600' : 'text-rose-600'
+                                      }`}>
+                                        ₹{formatCount(order.profit_loss || 0)}
+                                      </td>
+                                      <td className={`py-4 px-4 text-right font-black ${
+                                        (Number(order.settlement_amount) || 0) >= 0 ? 'text-green-600' : 'text-rose-600'
+                                      }`}>
+                                        ₹{formatCount(order.settlement_amount || 0)}
+                                      </td>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.courier_partner || '-'}</td>
+                                      <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">{order.awb_number || '-'}</td>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.customer_name || '-'}</td>
+                                      <td className="py-4 px-4 font-bold text-slate-600">{order.customer_phone || '-'}</td>
+                                    </>
+                                  )}
                                 </tr>
                               ))
                             )}
