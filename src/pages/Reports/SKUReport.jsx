@@ -388,7 +388,7 @@ export default function SKUReport() {
         {/* Data Table */}
         <Card
           title="SKU Records"
-          subtitle={`Showing ${data.length} of ${total} SKUs • Click a row to view visual breakdown`}
+          subtitle={`Showing ${data.length} of ${total} SKUs • Click SKU to view details`}
           contentClassName="p-0"
           noHeaderBorder
           action={(
@@ -424,7 +424,7 @@ export default function SKUReport() {
               ))}
             </div>
             <div className="text-[0.68rem] font-bold text-text-muted italic hidden md:block">
-              💡 Click any SKU row to view graphical metrics & pipeline details.
+              💡 Click on any SKU to view details.
             </div>
           </div>
 
