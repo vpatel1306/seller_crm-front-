@@ -1,15 +1,27 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { FiHome, FiDatabase, FiBox, FiPrinter, FiRotateCcw, FiDownload, FiBarChart2, FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import logoImage from '../../assets/logo.jpg';
 
 export default function AppSidebar() {
+    const location = useLocation();
+    const [isOpen, setIsOpen] = useState(false);
     const [openMenus, setOpenMenus] = useState({
         main: true,
         master: true,
         orders: true,
         report: true
     });
+
+    useEffect(() => {
+        const handleToggle = () => setIsOpen(prev => !prev);
+        window.addEventListener('toggle-sidebar', handleToggle);
+        return () => window.removeEventListener('toggle-sidebar', handleToggle);
+    }, []);
+
+    useEffect(() => {
+        setIsOpen(false);
+    }, [location]);
 
     const toggleMenu = (menu) => {
         setOpenMenus(prev => ({ ...prev, [menu]: !prev[menu] }));
@@ -34,7 +46,14 @@ export default function AppSidebar() {
     );
 
     return (
-        <aside className="w-64 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        <>
+            {isOpen && (
+                <div 
+                    className="fixed inset-0 z-[1050] bg-slate-900/40 backdrop-blur-sm lg:hidden animate-fade-in"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+            <aside className={`fixed inset-y-0 left-0 z-[1100] w-64 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 transition-transform duration-300 ease-in-out shadow-[4px_0_24px_rgba(0,0,0,0.02)] lg:static lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
             <div className="flex h-16 items-center px-5 border-b border-slate-100 bg-white">
                 <img src={logoImage} alt="MeeMatrix logo" className="h-8 object-contain" />
@@ -114,5 +133,6 @@ export default function AppSidebar() {
                 </div>
             </div>
         </aside>
+      </>
     );
 }

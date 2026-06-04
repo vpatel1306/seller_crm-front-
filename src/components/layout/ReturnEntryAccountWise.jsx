@@ -9,7 +9,8 @@ import {
   FiTruck,
   FiArchive,
   FiActivity,
-  FiX
+  FiX,
+  FiCamera
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +21,7 @@ import Card from '../ui/Card';
 import DataTable from '../ui/DataTable';
 import OrdersPageHeader from '../orders/OrdersPageHeader';
 import api from '../../services/api';
+import ReturnScannerModal from './ReturnScannerModal';
 
 const CONDITION_OPTIONS = [
   { value: 'No Issue In Return', label: 'Healthy', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
@@ -89,6 +91,7 @@ export default function ReturnEntryAccountWise() {
   const [acceptError, setAcceptError] = useState('');
   const [acceptedList, setAcceptedList] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   // Auto-focus on mount
   useEffect(() => {
@@ -183,6 +186,20 @@ export default function ReturnEntryAccountWise() {
       setAcceptLoading(false);
     }
   };
+  
+  const handleScanSuccess = (awb, responseData) => {
+    const orderData = responseData?.data || responseData?.order || {};
+    const newItem = {
+      id: Date.now(),
+      platform_order_id: orderData.platform_order_id || orderData.order_id || 'Scanned Return',
+      order_id: orderData.order_id || 'Scanned Return',
+      return_awb: awb,
+      qty: orderData.qty || 1,
+      reason: 'Scanned Return Parcel',
+      scan_time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+    };
+    setAcceptedList((prev) => [newItem, ...prev]);
+  };
 
   const hasResults = searchResults.length > 0;
 
@@ -196,6 +213,15 @@ export default function ReturnEntryAccountWise() {
           ]}
           actions={
             <div className="flex items-center gap-3">
+              <Button
+                variant="primary"
+                size="sm"
+                className="flex items-center gap-2 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm"
+                onClick={() => setIsScannerOpen(true)}
+              >
+                <FiCamera size={14} />
+                <span>Scan Return Parcel</span>
+              </Button>
               <div className="hidden sm:flex items-center gap-2 rounded-lg bg-surface-alt px-3 py-1.5 text-[0.65rem] font-bold uppercase text-text-muted border border-border shadow-sm">
                 <FiArchive size={14} className="text-primary" />
                 Session: <span className="text-primary font-black ml-1">{acceptedList.length}</span>
@@ -335,7 +361,7 @@ export default function ReturnEntryAccountWise() {
                 >
                   <Card title="Order Details" subtitle="Review and Accept Return">
                     <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
                           { label: 'Order ID', value: selectedOrder.platform_order_id || selectedOrder.order_id, icon: <FiShoppingBag size={14} />, color: 'text-primary' },
                           { label: 'Pickup AWB', value: selectedOrder.awb_number, icon: <FiTruck size={14} />, color: 'text-violet-600' },
@@ -367,7 +393,7 @@ export default function ReturnEntryAccountWise() {
                         <label className="text-[0.7rem] font-black uppercase tracking-widest text-text-muted flex items-center gap-2">
                           <FiActivity size={14} /> Select Received Condition
                         </label>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {CONDITION_OPTIONS.map((opt) => (
                             <button
                               key={opt.value}
@@ -424,7 +450,7 @@ export default function ReturnEntryAccountWise() {
                   </Card>
                 </motion.div>
               ) : (
-                <div className="h-full min-h-[500px] flex flex-col items-center justify-center text-center p-10 rounded-default border-2 border-dashed border-border bg-surface-alt/20">
+                <div className="h-full min-h-[250px] lg:min-h-[500px] flex flex-col items-center justify-center text-center p-6 sm:p-10 rounded-default border-2 border-dashed border-border bg-surface-alt/20">
                   <div className="rounded-full bg-white p-8 shadow-xl shadow-slate-200/50 mb-6">
                     <FiSearch size={64} className="text-slate-300" />
                   </div>
@@ -466,7 +492,6 @@ export default function ReturnEntryAccountWise() {
                   data={acceptedList}
                   loading={false}
                   emptyText="No items processed."
-                  mobileCardView={false}
                   showIndex
                   wrapperClassName="rounded-b-default"
                   tableClassName="min-w-full"
@@ -480,6 +505,12 @@ export default function ReturnEntryAccountWise() {
           </div>
         </div>
       </div>
+      
+      <ReturnScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScanSuccess={handleScanSuccess}
+      />
     </AppShell>
   );
 }

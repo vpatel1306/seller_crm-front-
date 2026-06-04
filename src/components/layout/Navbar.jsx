@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FiCheck, FiChevronDown, FiLogOut, FiRepeat, FiUser } from 'react-icons/fi';
+import { FiCheck, FiChevronDown, FiLogOut, FiRepeat, FiUser, FiMenu } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../ui/Button';
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -116,14 +116,21 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-[100] w-full border-b border-slate-100 bg-white/80 backdrop-blur-md">
-      <div className="flex h-16 w-full items-center justify-between px-6 sm:px-8">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 lg:text-xl">
+      <div className="flex h-16 w-full items-center justify-between px-3 sm:px-8">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('toggle-sidebar'))}
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 lg:hidden shrink-0"
+            aria-label="Toggle Sidebar"
+          >
+            <FiMenu size={18} />
+          </button>
+          <h1 className="text-sm font-bold tracking-tight text-slate-900 sm:text-xl truncate max-w-[110px] xs:max-w-[140px] sm:max-w-none">
             {pageTitle}
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {user ? (
             <>
               {/* Account Switcher - Compact on mobile */}
@@ -132,16 +139,16 @@ export default function Navbar() {
                   variant="outline"
                   size="sm"
                   onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                  className={`h-9 gap-2 shadow-sm transition-all ${accountMenuOpen ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : ''}`}
+                  className={`h-8 px-2 text-[0.7rem] sm:h-9 sm:px-3 sm:text-xs gap-1 sm:gap-2 shadow-sm transition-all ${accountMenuOpen ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : ''}`}
                 >
-                  <FiRepeat size={14} className="text-primary" />
+                  <FiRepeat size={12} className="text-primary" />
                   <span className="hidden sm:inline">
                     {activeAccount?.account_name || 'Select Account'}
                   </span>
                   <span className="sm:hidden">
                     {getCompactAccountLabel(activeAccount?.account_name)}
                   </span>
-                  <FiChevronDown size={14} className={`transition-transform duration-200 ${accountMenuOpen ? 'rotate-180' : ''}`} />
+                  <FiChevronDown size={12} className={`transition-transform duration-200 ${accountMenuOpen ? 'rotate-180' : ''}`} />
                 </Button>
 
                 {accountMenuOpen && (
@@ -191,10 +198,10 @@ export default function Navbar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10 overflow-hidden rounded-full p-0 hover:bg-slate-100"
+                  className="h-8 w-8 sm:h-10 sm:w-10 overflow-hidden rounded-full p-0 hover:bg-slate-100"
                   onClick={() => setMenuOpen((value) => !value)}
                 >
-                  <div className="flex h-full w-full items-center justify-center bg-slate-900 text-sm font-bold text-white transition-transform active:scale-95">
+                  <div className="flex h-full w-full items-center justify-center bg-slate-900 text-xs sm:text-sm font-bold text-white transition-transform active:scale-95">
                     {user.name?.[0]?.toUpperCase() || 'U'}
                   </div>
                 </Button>
