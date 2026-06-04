@@ -168,11 +168,26 @@ function getAmountValue(item) {
 }
 
 function normalizeSummaryRows(summaryData, config) {
-  return Object.entries(summaryData || {}).map(([key, value], index) => ({
+  const merged = {};
+  Object.entries(summaryData || {}).forEach(([key, value]) => {
+    const rawLabel = String(key || '').trim() || 'Unknown';
+    const groupKey = rawLabel.toUpperCase();
+    if (!merged[groupKey]) {
+      merged[groupKey] = {
+        label: rawLabel,
+        count: 0,
+        amount: 0,
+      };
+    }
+    merged[groupKey].count += typeof value === 'object' ? getCountValue(value) : Number(value) || 0;
+    merged[groupKey].amount += typeof value === 'object' ? getAmountValue(value) : 0;
+  });
+
+  return Object.values(merged).map((item, index) => ({
     id: `${config.fallbackLabel}-${index}`,
-    label: key,
-    count: typeof value === 'object' ? getCountValue(value) : Number(value) || 0,
-    amount: typeof value === 'object' ? formatCurrency(getAmountValue(value)) : formatCurrency(0),
+    label: item.label,
+    count: item.count,
+    amount: formatCurrency(item.amount),
   }));
 }
 

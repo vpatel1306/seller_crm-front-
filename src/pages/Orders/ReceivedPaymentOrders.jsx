@@ -143,14 +143,33 @@ function TotalsGrid({ totals }) {
 }
 
 function renderReceivedPaymentSidebar({ groupedData, summaryTableProps }) {
-  const statusRows = (groupedData.status_wise_counts || []).map((item, index) => ({
+  const mergedStatus = {};
+  (groupedData.status_wise_counts || []).forEach((item) => {
+    const rawStatus = item.order_status || 'Unknown';
+    const key = rawStatus.toUpperCase().trim();
+    if (!mergedStatus[key]) {
+      mergedStatus[key] = {
+        status: rawStatus,
+        orders: 0,
+        received_payment: 0,
+        cost_amount: 0,
+        profit_loss: 0,
+      };
+    }
+    mergedStatus[key].orders += Number(item.order_count ?? 0);
+    mergedStatus[key].received_payment += Number(item.received_payment ?? 0);
+    mergedStatus[key].cost_amount += Number(item.cost_amount ?? 0);
+    mergedStatus[key].profit_loss += Number(item.profit_loss ?? 0);
+  });
+
+  const statusRows = Object.values(mergedStatus).map((item, index) => ({
     id: `status-${index}`,
-    status: item.order_status || 'Unknown',
-    orders: item.order_count ?? 0,
+    status: item.status,
+    orders: item.orders,
     received_payment: formatCurrency(item.received_payment),
     cost_amount: formatCurrency(item.cost_amount),
     profit_loss: formatCurrency(item.profit_loss),
-    profitLossTone: (Number(item.profit_loss) || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600',
+    profitLossTone: item.profit_loss >= 0 ? 'text-emerald-600' : 'text-rose-600',
   }));
 
   return (

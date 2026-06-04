@@ -22,6 +22,7 @@ const getFriendlyErrorMessage = (errorString) => {
 };
 
 export default function ReturnScannerModal({ isOpen, onClose, onScanSuccess }) {
+  const [showModal, setShowModal] = useState(false);
   const [hasCamera, setHasCamera] = useState(true);
   const [cameraError, setCameraError] = useState('');
   const [cameras, setCameras] = useState([]);
@@ -33,24 +34,34 @@ export default function ReturnScannerModal({ isOpen, onClose, onScanSuccess }) {
   
   const scannerRef = useRef(null);
   const scannerId = "return-qr-reader";
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowModal(true);
+    } else {
+      stopScanner().then(() => {
+        setShowModal(false);
+      });
+    }
+  }, [isOpen]);
   
   // Reset states when modal is opened
   useEffect(() => {
-    if (!isOpen) return;
+    if (!showModal) return;
     setScanStatus('idle');
     setScannedAwb('');
     setCameraError('');
     setHasCamera(true);
     setCameras([]);
     setActiveCameraId('');
-  }, [isOpen]);
+  }, [showModal]);
 
   const stopScanner = async () => {
-    if (scannerRef.current && scannerRef.current.isScanning) {
+    if (scannerRef.current) {
       try {
         await scannerRef.current.stop();
       } catch (err) {
-        console.error("Error stopping scanner:", err);
+        console.warn("Warning/error stopping scanner:", err);
       }
       scannerRef.current = null;
       setIsScanning(false);
@@ -59,7 +70,7 @@ export default function ReturnScannerModal({ isOpen, onClose, onScanSuccess }) {
 
   // Start scanner when modal opens and camera state changes
   useEffect(() => {
-    if (!isOpen || scanStatus === 'success' || scanStatus === 'loading') {
+    if (!showModal || scanStatus === 'success' || scanStatus === 'loading') {
       stopScanner();
       return;
     }
@@ -146,7 +157,7 @@ export default function ReturnScannerModal({ isOpen, onClose, onScanSuccess }) {
       clearTimeout(timer);
       stopScanner();
     };
-  }, [isOpen, activeCameraId, scanStatus]);
+  }, [showModal, activeCameraId, scanStatus]);
 
   const handleScanMatch = async (awb) => {
     if (!awb) return;
@@ -203,14 +214,15 @@ export default function ReturnScannerModal({ isOpen, onClose, onScanSuccess }) {
     setActiveCameraId(cameras[nextIndex].id);
   };
 
+  const handleClose = async () => {
+    await stopScanner();
+    onClose();
+  };
+
   return (
     <CommonModal
-      isOpen={isOpen}
-      onClose={() => {
-        stopScanner().then(() => {
-          onClose();
-        });
-      }}
+      isOpen={showModal}
+      onClose={handleClose}
       title="Scan Return Parcel"
       size="md"
       showFooter={false}

@@ -110,35 +110,47 @@ function getAmountValue(item) {
 }
 
 function normalizeSummaryRows(summaryData, config) {
+  const merged = {};
+
+  const processItem = (label, countVal, amountVal) => {
+    const rawLabel = String(label || '').trim() || 'Unknown';
+    const key = rawLabel.toUpperCase();
+    if (!merged[key]) {
+      merged[key] = {
+        label: rawLabel,
+        count: 0,
+        amount: 0,
+      };
+    }
+    merged[key].count += Number(countVal || 0);
+    merged[key].amount += Number(amountVal || 0);
+  };
+
   if (Array.isArray(summaryData)) {
-    return summaryData.map((item, index) => {
+    summaryData.forEach((item) => {
       if (item && typeof item === 'object') {
         const label = config.labelKeys
           .map((key) => item[key])
           .find((value) => value !== undefined && value !== null && value !== '');
 
-        return {
-          id: `${config.fallbackLabel}-${index}`,
-          label: label || `${config.fallbackLabel} ${index + 1}`,
-          count: getCountValue(item),
-          amount: formatCurrency(getAmountValue(item)),
-        };
+        processItem(label, getCountValue(item), getAmountValue(item));
+      } else {
+        processItem(item, 0, 0);
       }
-
-      return {
-        id: `${config.fallbackLabel}-${index}`,
-        label: item || `${config.fallbackLabel} ${index + 1}`,
-        count: 0,
-        amount: formatCurrency(0),
-      };
+    });
+  } else {
+    Object.entries(summaryData || {}).forEach(([key, value]) => {
+      const count = typeof value === 'object' ? getCountValue(value) : Number(value) || 0;
+      const amountVal = typeof value === 'object' ? getAmountValue(value) : 0;
+      processItem(key, count, amountVal);
     });
   }
 
-  return Object.entries(summaryData || {}).map(([key, value], index) => ({
+  return Object.values(merged).map((item, index) => ({
     id: `${config.fallbackLabel}-${index}`,
-    label: key,
-    count: typeof value === 'object' ? getCountValue(value) : Number(value) || 0,
-    amount: typeof value === 'object' ? formatCurrency(getAmountValue(value)) : formatCurrency(0),
+    label: item.label,
+    count: item.count,
+    amount: formatCurrency(item.amount),
   }));
 }
 

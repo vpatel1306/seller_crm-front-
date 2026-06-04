@@ -144,12 +144,28 @@ function renderReceivedPaymentSidebar({ groupedData, summaryTableProps }) {
     cost_amt: formatCurrency(item.cost_amt),
   }));
 
-  const statusRows = (groupedData.status_wise || []).map((item, index) => ({
+  const mergedStatus = {};
+  (groupedData.status_wise || []).forEach((item) => {
+    const rawStatus = item.status || 'Unknown';
+    const key = rawStatus.toUpperCase().trim();
+    if (!mergedStatus[key]) {
+      mergedStatus[key] = {
+        status: rawStatus,
+        count: 0,
+        costVal: 0,
+      };
+    }
+    mergedStatus[key].count += Number(item.count ?? 0);
+    mergedStatus[key].costVal += Number(item.cost_amt ?? 0);
+  });
+
+  const statusRows = Object.values(mergedStatus).map((item, index) => ({
     id: `status-${index}`,
-    status: item.status || 'Unknown',
-    count: item.count ?? 0,
-    cost_amt: formatCurrency(item.cost_amt),
+    status: item.status,
+    count: item.count,
+    cost_amt: formatCurrency(item.costVal),
   }));
+
 
   return (
     <OrdersSidebarSection>

@@ -32,7 +32,8 @@ import {
   FiCreditCard,
   FiPlus,
   FiX,
-  FiSidebar
+  FiSidebar,
+  FiRefreshCw
 } from 'react-icons/fi';
 import {
   ResponsiveContainer,
@@ -126,20 +127,21 @@ const parseSummaries = (payload) => {
   }
 
   // --- 2. Status Summary ---
+  let tempStatusRows = [];
   if (payload.grouped?.order_summary && Array.isArray(payload.grouped.order_summary)) {
-    statusSummaryRows = payload.grouped.order_summary.map(item => ({
+    tempStatusRows = payload.grouped.order_summary.map(item => ({
       status: item.order_status || 'Unknown',
       count: item.total_orders ?? 0,
       cost: (Number(item.total_cost_amount) || 0).toFixed(2),
     }));
   } else if (payload.summaries?.status_wise && Array.isArray(payload.summaries.status_wise)) {
-    statusSummaryRows = payload.summaries.status_wise.map(item => ({
+    tempStatusRows = payload.summaries.status_wise.map(item => ({
       status: item.status || 'Unknown',
       count: item.count ?? 0,
       cost: (Number(item.cost_amt) || 0).toFixed(2),
     }));
   } else if (payload.summary?.status_wise_counts && Array.isArray(payload.summary.status_wise_counts)) {
-    statusSummaryRows = payload.summary.status_wise_counts.map(item => ({
+    tempStatusRows = payload.summary.status_wise_counts.map(item => ({
       status: item.order_status || 'Unknown',
       count: item.order_count ?? 0,
       cost: (Number(item.cost_amount) || 0).toFixed(2),
@@ -147,13 +149,13 @@ const parseSummaries = (payload) => {
   } else if (payload.summary?.return_type) {
     const rt = payload.summary.return_type;
     if (Array.isArray(rt)) {
-      statusSummaryRows = rt.map(item => ({
+      tempStatusRows = rt.map(item => ({
         status: item.return_type || item.status || 'Unknown',
         count: item.count ?? 0,
         cost: (Number(item.cost_amt) || Number(item.amount) || 0).toFixed(2),
       }));
     } else {
-      statusSummaryRows = Object.entries(rt || {}).map(([key, val]) => {
+      tempStatusRows = Object.entries(rt || {}).map(([key, val]) => {
         const count = typeof val === 'object' ? (val?.count ?? val?.total_orders ?? val?.total_rows ?? val?.rows ?? val?.qty ?? val?.value ?? 0) : Number(val) || 0;
         const cost = typeof val === 'object' ? (val?.cost_amt ?? val?.cost_amount ?? val?.total_cost_amount ?? val?.amount ?? val?.total_amount ?? 0) : 0;
         return {
@@ -164,6 +166,27 @@ const parseSummaries = (payload) => {
       });
     }
   }
+
+  // Merge same status rows case-insensitively
+  const mergedStatus = {};
+  tempStatusRows.forEach(item => {
+    const rawStatus = item.status || 'Unknown';
+    const key = rawStatus.toUpperCase().trim();
+    if (!mergedStatus[key]) {
+      mergedStatus[key] = {
+        status: rawStatus,
+        count: 0,
+        costVal: 0
+      };
+    }
+    mergedStatus[key].count += Number(item.count || 0);
+    mergedStatus[key].costVal += Number(item.cost || 0);
+  });
+  statusSummaryRows = Object.values(mergedStatus).map(item => ({
+    status: item.status,
+    count: item.count,
+    cost: item.costVal.toFixed(2)
+  }));
 
   // --- 3. Courier Summary ---
   if (payload.grouped?.courier && Array.isArray(payload.grouped.courier)) {
@@ -750,7 +773,7 @@ export default function Dashboard() {
   return (
     <AppShell mainClassName="pt-4 lg:pt-5 bg-[#f8fafc]">
       <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-        <div className="space-y-4 max-w-[1700px] mx-auto px-4">
+        <div className="space-y-4 max-w-[1700px] mx-auto">
           
           {/* HEADER SECTION */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -943,21 +966,7 @@ export default function Dashboard() {
                             <span>Export Pending Payments</span>
                           </button>
 
-                          <select
-                            value={pendingLimit}
-                            onChange={(e) => {
-                              const nextLimit = Number(e.target.value);
-                              setPendingLimit(nextLimit);
-                              setPendingPage(1);
-                            }}
-                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-primary shadow-soft cursor-pointer"
-                          >
-                            {[10, 25, 50, 100].map((option) => (
-                              <option key={option} value={option}>
-                                {option} / page
-                              </option>
-                            ))}
-                          </select>
+
 
                           <button
                             onClick={() => setDashboardSidebarOpen((prev) => !prev)}
@@ -969,9 +978,10 @@ export default function Dashboard() {
 
                           <button
                             onClick={() => fetchPendingPayments()}
-                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-soft cursor-pointer transition-all"
+                            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-soft cursor-pointer transition-all"
                           >
-                            Refresh
+                            <FiRefreshCw size={13} className="text-slate-400" />
+                            <span>Refresh</span>
                           </button>
                         </div>
                       </div>
@@ -1116,9 +1126,27 @@ export default function Dashboard() {
 
                       {/* Pagination */}
                       {pendingTotal > 0 && (
-                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 text-xs text-slate-400 font-bold">
-                          <div>
-                            Showing {Math.min((pendingPage - 1) * pendingLimit + 1, pendingTotal)} - {Math.min(pendingPage * pendingLimit, pendingTotal)} of {pendingTotal}
+                        <div className="flex flex-col sm:flex-row items-center justify-between mt-4 pt-3 border-t border-slate-100 text-xs text-slate-400 font-bold gap-3">
+                          <div className="flex items-center gap-3">
+                            <span>
+                              Showing {Math.min((pendingPage - 1) * pendingLimit + 1, pendingTotal)} - {Math.min(pendingPage * pendingLimit, pendingTotal)} of {pendingTotal}
+                            </span>
+                            <span className="text-[10px] opacity-60 font-bold ml-2">Rows per page:</span>
+                            <select
+                              value={pendingLimit}
+                              onChange={(e) => {
+                                const nextLimit = Number(e.target.value);
+                                setPendingLimit(nextLimit);
+                                setPendingPage(1);
+                              }}
+                              className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-primary shadow-soft cursor-pointer"
+                            >
+                              {[10, 25, 50, 100].map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                           <div className="flex items-center gap-2">
                             <button

@@ -407,14 +407,28 @@ export default function CommonOrderPage({
     [groupedData.order_date]
   );
 
-  const statusSummaryRows = useMemo(
-    () => (Array.isArray(groupedData.order_summary) ? groupedData.order_summary : []).map((item) => ({
-      status: item.order_status || 'Unknown',
-      count: item.total_orders ?? 0,
-      cost: (Number(item.total_cost_amount) || 0).toFixed(2),
-    })),
-    [groupedData.order_summary]
-  );
+  const statusSummaryRows = useMemo(() => {
+    const rawList = Array.isArray(groupedData.order_summary) ? groupedData.order_summary : [];
+    const merged = {};
+    rawList.forEach((item) => {
+      const rawStatus = item.order_status || 'Unknown';
+      const key = rawStatus.toUpperCase().trim();
+      if (!merged[key]) {
+        merged[key] = {
+          status: rawStatus,
+          count: 0,
+          costVal: 0,
+        };
+      }
+      merged[key].count += Number(item.total_orders ?? 0);
+      merged[key].costVal += Number(item.total_cost_amount ?? 0);
+    });
+    return Object.values(merged).map((item) => ({
+      status: item.status,
+      count: item.count,
+      cost: item.costVal.toFixed(2),
+    }));
+  }, [groupedData.order_summary]);
 
   const courierSummaryRows = useMemo(
     () => (Array.isArray(groupedData.courier) ? groupedData.courier : []).map((item) => ({
