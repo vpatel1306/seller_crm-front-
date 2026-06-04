@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiChevronLeft, FiChevronRight, FiDownload, FiRefreshCw, FiSearch, FiTrendingDown, FiTrendingUp, FiX, FiDollarSign, FiPackage, FiTruck, FiAlertCircle } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight, FiDownload, FiRefreshCw, FiSearch, FiTrendingDown, FiTrendingUp, FiX, FiDollarSign, FiPackage, FiTruck, FiAlertCircle, FiBarChart2, FiList, FiInfo } from 'react-icons/fi';
 import AppShell from '../../components/layout/AppShell';
 import OrdersPageHeader from '../../components/orders/OrdersPageHeader';
 import OrdersFilterSection from '../../components/orders/OrdersFilterSection';
@@ -405,26 +405,31 @@ export default function SKUReport() {
           <div className="border-b border-border bg-surface-alt/45 p-3 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1 rounded-xl w-fit">
               {[
-                { id: 'overview', label: '📊 Overview' },
-                { id: 'pipeline', label: '🚚 Pipeline' },
-                { id: 'delivery', label: '📈 Outcomes' },
-                { id: 'all', label: '📋 All Columns' },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`rounded-lg px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === tab.id
-                      ? 'bg-white text-primary shadow-sm font-extrabold'
-                      : 'text-text-muted hover:text-text'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+                { id: 'overview', label: 'Overview', icon: FiBarChart2 },
+                { id: 'pipeline', label: 'Order Status', icon: FiTruck },
+                { id: 'delivery', label: 'Delivery & Returns', icon: FiTrendingUp },
+                { id: 'all', label: 'All Columns', icon: FiList },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      activeTab === tab.id
+                        ? 'bg-white text-primary shadow-sm font-extrabold'
+                        : 'text-text-muted hover:text-text'
+                    }`}
+                  >
+                    <Icon size={14} className={activeTab === tab.id ? 'text-primary' : 'text-text-muted'} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
-            <div className="text-[0.68rem] font-bold text-text-muted italic hidden md:block">
-              💡 Click on any SKU to view details.
+            <div className="text-[0.68rem] font-bold text-text-muted italic hidden md:flex items-center gap-1">
+              <FiInfo size={13} className="text-primary flex-shrink-0" />
+              <span>Click on any SKU to view details.</span>
             </div>
           </div>
 
