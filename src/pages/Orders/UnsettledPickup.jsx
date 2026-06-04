@@ -124,10 +124,25 @@ function mapResponse(payload, { page, limit }) {
     cost_amt: formatCurrency(item.cost_amt),
   }));
 
-  const statusWise = (payload.summaries?.status_wise || []).map((item) => ({
-    status: item.status || 'Unknown',
-    count: item.count ?? 0,
-    cost_amt: formatCurrency(item.cost_amt),
+  const mergedStatus = {};
+  (payload.summaries?.status_wise || []).forEach((item) => {
+    const rawStatus = item.status || 'Unknown';
+    const key = rawStatus.toUpperCase().trim();
+    if (!mergedStatus[key]) {
+      mergedStatus[key] = {
+        status: rawStatus,
+        count: 0,
+        costVal: 0,
+      };
+    }
+    mergedStatus[key].count += Number(item.count ?? 0);
+    mergedStatus[key].costVal += Number(item.cost_amt ?? 0);
+  });
+
+  const statusWise = Object.values(mergedStatus).map((item) => ({
+    status: item.status,
+    count: item.count,
+    cost_amt: formatCurrency(item.costVal),
   }));
 
 
