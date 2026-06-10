@@ -107,7 +107,7 @@ export const ORDER_COLUMNS = [
   { key: 'platform_order_id', label: 'Platform Order ID', className: 'min-w-[220px]', render: (row) => <span className="font-extrabold text-primary">{row.platform_order_id || '-'}</span> },
   { key: 'id', label: 'Order ID', className: 'min-w-[220px]', render: (row) => <span className="text-text-muted">{row.id || '-'}</span> },
   // { key: 'status', label: 'Status', className: 'min-w-[170px]', render: (row) => <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] text-text">{row.status || '-'}</span> },
-  { key: 'order_status', label: 'Order Status', className: 'min-w-[140px]', render: (row) => <span className={`rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] ${STATUS_COLOR[row.order_status] || 'text-text'} bg-surface-alt`}>{row.order_status || '-'}</span> },
+  { key: 'order_status', label: 'Order Status', className: 'min-w-[140px]', render: (row) => <span className={`rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] whitespace-nowrap ${STATUS_COLOR[row.order_status] || 'text-text'} bg-surface-alt`}>{row.order_status || '-'}</span> },
   { key: 'payment_status', label: 'Payment Status', className: 'min-w-[140px]', render: (row) => <span className="font-semibold text-sky-700">{row.payment_status || '-'}</span> },
   { key: 'sku', label: 'SKU', className: 'min-w-[200px]', render: (row) => <span className="font-semibold text-amber-700">{row.sku || '-'}</span> },
   { key: 'customer_name', label: 'Customer Name', className: 'min-w-[160px]' },

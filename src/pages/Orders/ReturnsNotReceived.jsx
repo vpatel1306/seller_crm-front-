@@ -22,7 +22,7 @@ const RETURNS_NOT_RECEIVED_COLUMNS = [
     label: 'Order Status',
     className: 'min-w-[160px]',
     render: (row) => (
-      <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] text-amber-700">
+      <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] text-amber-700 whitespace-nowrap">
         {row.order_status || '-'}
       </span>
     ),
