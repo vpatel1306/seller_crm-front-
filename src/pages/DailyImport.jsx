@@ -7,6 +7,106 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import AppShell from '../components/layout/AppShell';
 
+const MEESHO_INSTRUCTIONS = {
+    order: {
+        title: 'Steps to download Meesho Orders File',
+        steps: [
+            'Login to Meesho Supplier Panel.',
+            'Navigate to Orders.',
+            'Click on "Download Orders Data" available at the top-right corner.',
+            'Select the required report type.',
+            'Choose the date range.',
+            'Click on Generate Report.',
+            'Once the report is generated, open Download History.',
+            'Download the Excel/CSV file.'
+        ]
+    },
+    ofd: {
+        title: 'Steps to download Meesho OFD & In-Transit File',
+        steps: [
+            'Login to Meesho Supplier Panel.',
+            'Navigate to Returns → Return Tracking.',
+            'Select the "In Transit" tab.',
+            'Apply the required filters.',
+            'Click on "Export Data".',
+            'Wait for the export file to be generated.',
+            'Open the Exported Files section.',
+            'Locate the file named "intransit_*".',
+            'Click "Download" to download the Excel report.'
+        ]
+    },
+    com: {
+        title: 'Steps to download Meesho Completed/Delivered Orders File',
+        steps: [
+            'Login to Meesho Supplier Panel.',
+            'Navigate to Returns → Return Tracking.',
+            'Select the Delivered tab.',
+            'Apply the required filters.',
+            'Click on Export Data.',
+            'Choose the date range and submit the request.',
+            'Wait for the report to be generated.',
+            'Open the files ready dropdown.',
+            'Locate the completed_delivered_* report.',
+            'Click Download to download the Excel file.'
+        ]
+    },
+    lost: {
+        title: 'Steps to download Meesho Lost Orders File',
+        steps: [
+            'Login to Meesho Supplier Panel.',
+            'Navigate to Returns → Return Tracking.',
+            'Select the Lost tab.',
+            'Apply the required filters.',
+            'Click on Export Data.',
+            'Choose the date range and submit the request.',
+            'Wait for the report to be be generated.',
+            'Open the files ready dropdown.',
+            'Locate the completed_lost_* report.',
+            'Click Download to download the Excel file.'
+        ]
+    },
+    claim: {
+        title: 'Steps to download Meesho Claim Status File',
+        steps: [
+            'Login to Meesho Supplier Panel.',
+            'Navigate to Claims.',
+            'Select the required claim status tab (All/Open/Approved/Rejected).',
+            'Apply the required filters.',
+            'Click on the Download dropdown.',
+            'Click Export Data.',
+            'Select the date range and submit the request.',
+            'Wait for the report to be generated.',
+            'Open the Download dropdown again.',
+            'Locate the generated claims report.',
+            'Click Download to download the Excel file.'
+        ]
+    },
+    payment: {
+        title: 'Steps to download Meesho Payment Details File',
+        steps: [
+            'Login to Meesho Supplier Panel.',
+            'Navigate to Payments.',
+            'Click on the Download button.',
+            'Select Payments to Date from the dropdown menu.',
+            'Choose the required date range or select one of the available options.',
+            'Click on Download.',
+            'The report will be downloaded to your device within a few minutes.'
+        ]
+    },
+    outstanding_payment: {
+        title: 'Steps to download Meesho Outstanding Payment File',
+        steps: [
+            'Login to Meesho Supplier Panel.',
+            'Navigate to Payments.',
+            'Click on the Download button.',
+            'Select Outstanding Payment from the dropdown menu.',
+            'Choose the required date range or select one of the available options.',
+            'Click on Download.',
+            'The report will be downloaded to your device within a few minutes.'
+        ]
+    }
+};
+
 export default function DailyImport() {
     const navigate = useNavigate();
     const { activeAccount } = useAuth();
@@ -405,23 +505,21 @@ export default function DailyImport() {
                         </div>
 
                         {/* Instructions Note card */}
-                        <div className="mt-5 bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 text-slate-700 shadow-soft">
-                            <div className="flex items-center gap-2 mb-3 text-primary">
-                                <FiAlertCircle size={18} className="text-primary flex-shrink-0" />
-                                <span className="font-extrabold uppercase tracking-wider text-xs">Steps to download Meesho Returns/RTO File</span>
+                        {MEESHO_INSTRUCTIONS[selectedImportData] ? (
+                            <div className="mt-5 bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 text-slate-700 shadow-soft">
+                                <div className="flex items-center gap-2 mb-3 text-primary">
+                                    <FiAlertCircle size={18} className="text-primary flex-shrink-0" />
+                                    <span className="font-extrabold uppercase tracking-wider text-xs">
+                                        {MEESHO_INSTRUCTIONS[selectedImportData].title}
+                                    </span>
+                                </div>
+                                <ol className="list-decimal pl-5 space-y-1.5 text-[0.78rem] font-semibold text-slate-600">
+                                    {MEESHO_INSTRUCTIONS[selectedImportData].steps.map((step, idx) => (
+                                        <li key={idx}>{step}</li>
+                                    ))}
+                                </ol>
                             </div>
-                            <ol className="list-decimal pl-5 space-y-1.5 text-[0.78rem] font-semibold text-slate-600">
-                                <li>Login to Meesho Supplier Panel.</li>
-                                <li>Navigate to Returns.</li>
-                                <li>Open the required Return/RTO status tab.</li>
-                                <li>Apply filters and date range.</li>
-                                <li>Click on "Export Data".</li>
-                                <li>Submit the export request.</li>
-                                <li>Wait for the file to be generated.</li>
-                                <li>Open Exported Files.</li>
-                                <li>Click Download to download the Excel report.</li>
-                            </ol>
-                        </div>
+                        ) : null}
                     </div>
 
                 </div>
