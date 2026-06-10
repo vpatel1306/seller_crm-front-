@@ -22,7 +22,7 @@ const PAYMENT_COLUMNS = [
     key: 'type',
     label: 'Type',
     className: 'min-w-[140px]',
-    render: (row) => <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] text-text">{row.type || '-'}</span>,
+    render: (row) => <span className="rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] text-text whitespace-nowrap">{row.type || '-'}</span>,
   },
   {
     key: 'txn_id',

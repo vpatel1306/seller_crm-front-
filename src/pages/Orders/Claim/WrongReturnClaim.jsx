@@ -33,7 +33,7 @@ const COLUMNS = [
     label: 'Order Status',
     className: 'min-w-[150px]',
     render: (row) => (
-      <span className={`rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] ${STATUS_COLOR[row.order_status] || 'text-text'}`}>
+      <span className={`rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] whitespace-nowrap ${STATUS_COLOR[row.order_status] || 'text-text'}`}>
         {row.order_status || '-'}
       </span>
     ),
@@ -57,7 +57,7 @@ const COLUMNS = [
     label: 'Claim Status',
     className: 'min-w-[130px]',
     render: (row) => (
-      <span className={`rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] ${STATUS_COLOR[row.claim_status] || 'text-text-muted'}`}>
+      <span className={`rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] whitespace-nowrap ${STATUS_COLOR[row.claim_status] || 'text-text-muted'}`}>
         {row.claim_status || '-'}
       </span>
     ),

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiAlertCircle, FiArrowRight, FiCheck, FiClock, FiFileText, FiUploadCloud } from 'react-icons/fi';
 import Button from '../components/ui/Button';
@@ -10,6 +10,8 @@ import AppShell from '../components/layout/AppShell';
 export default function DailyImport() {
     const navigate = useNavigate();
     const { activeAccount } = useAuth();
+
+    const fileInputRef = useRef(null);
 
     const [selectedImportData, setSelectedImportData] = useState('order');
     const [selectedFile, setSelectedFile] = useState(null);
@@ -66,6 +68,14 @@ export default function DailyImport() {
             reviewRoute: '/lost-orders',
             issueRoute: '/return-mismatch',
             acceptedTypesLabel: 'CSV',
+        },
+        {
+            id: 'outstanding_payment',
+            name: 'Import Outstanding Payment',
+            note: 'Outstanding payment reconciliation',
+            reviewRoute: '/pending-payment-orders',
+            issueRoute: '/payment-mismatch',
+            acceptedTypesLabel: 'CSV/XLSX',
         }
     ];
 
@@ -76,6 +86,7 @@ export default function DailyImport() {
         payment: '/upload-payment-detail-file',
         claim: '/upload-claim-status-file',
         lost: '/upload-lost-order-file',
+        outstanding_payment: '/upload-outstanding-payment',
     };
 
     const importAcceptConfig = {
@@ -85,6 +96,7 @@ export default function DailyImport() {
         payment: ['.xlsx'],
         claim: ['.csv'],
         lost: ['.csv'],
+        outstanding_payment: ['.csv', '.xlsx'],
     };
 
     const activeOption = useMemo(
@@ -98,6 +110,9 @@ export default function DailyImport() {
         setUploadError('');
         setUploadSuccess('');
         setUploadSummary(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     const handleImportDataSelect = (importDataId) => {
@@ -142,6 +157,8 @@ export default function DailyImport() {
             updatedRows: payload.updated_rows ?? payload.updated ?? null,
             duplicateRows: payload.duplicate_rows ?? payload.duplicateRows ?? null,
             skippedRows: payload.skipped_rows ?? payload.skippedRows ?? null,
+            outstandingOrdersCount: payload.outstanding_orders_count ?? null,
+            totalOutstandingAmount: payload.total_outstanding_amount ?? null,
             warning:
                 payload.warning ||
                 payload.warnings?.[0] ||
@@ -262,6 +279,7 @@ export default function DailyImport() {
                                 <span className="mb-2 block text-xs font-extrabold uppercase tracking-widest text-gray-500">Choose File</span>
                                 <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-white p-6 transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer">
                                     <input
+                                        ref={fileInputRef}
                                         type="file"
                                         // accept={(importAcceptConfig[selectedImportData] || ['.csv']).join(',')}
                                         onChange={handleFileChange}
@@ -305,20 +323,37 @@ export default function DailyImport() {
                                     </div>
 
                                     {uploadSummary ? (
-                                        <div className="grid gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 sm:grid-cols-3">
-                                            <div className="rounded-lg bg-gray-100 px-3 py-2">
-                                                <div className="text-[0.65rem] font-extrabold uppercase tracking-widest text-gray-500">Total Rows</div>
-                                                <div className="mt-1 text-xl font-black text-gray-800">{uploadSummary.totalRows ?? '-'}</div>
+                                        selectedImportData === 'outstanding_payment' ? (
+                                            <div className="grid gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 sm:grid-cols-2">
+                                                <div className="rounded-lg bg-gray-100 px-3 py-2">
+                                                    <div className="text-[0.65rem] font-extrabold uppercase tracking-widest text-gray-500">Outstanding Orders</div>
+                                                    <div className="mt-1 text-xl font-black text-gray-800">
+                                                        {uploadSummary.outstandingOrdersCount != null ? Number(uploadSummary.outstandingOrdersCount).toLocaleString('en-IN') : '-'}
+                                                    </div>
+                                                </div>
+                                                <div className="rounded-lg bg-emerald-100/50 border border-emerald-100 px-3 py-2">
+                                                    <div className="text-[0.65rem] font-extrabold uppercase tracking-widest text-emerald-700">Total Outstanding Amount</div>
+                                                    <div className="mt-1 text-xl font-black text-emerald-700">
+                                                        {uploadSummary.totalOutstandingAmount != null ? `₹${Number(uploadSummary.totalOutstandingAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="rounded-lg bg-emerald-100/50 border border-emerald-100 px-3 py-2">
-                                                <div className="text-[0.65rem] font-extrabold uppercase tracking-widest text-emerald-700">Imported</div>
-                                                <div className="mt-1 text-xl font-black text-emerald-700">{uploadSummary.successRows ?? '-'}</div>
+                                        ) : (
+                                            <div className="grid gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 sm:grid-cols-3">
+                                                <div className="rounded-lg bg-gray-100 px-3 py-2">
+                                                    <div className="text-[0.65rem] font-extrabold uppercase tracking-widest text-gray-500">Total Rows</div>
+                                                    <div className="mt-1 text-xl font-black text-gray-800">{uploadSummary.totalRows ?? '-'}</div>
+                                                </div>
+                                                <div className="rounded-lg bg-emerald-100/50 border border-emerald-100 px-3 py-2">
+                                                    <div className="text-[0.65rem] font-extrabold uppercase tracking-widest text-emerald-700">Imported</div>
+                                                    <div className="mt-1 text-xl font-black text-emerald-700">{uploadSummary.successRows ?? '-'}</div>
+                                                </div>
+                                                <div className="rounded-lg bg-amber-100/50 border border-amber-100 px-3 py-2">
+                                                    <div className="text-[0.65rem] font-extrabold uppercase tracking-widest text-amber-700">Needs Review</div>
+                                                    <div className="mt-1 text-xl font-black text-amber-700">{uploadSummary.failedRows ?? '-'}</div>
+                                                </div>
                                             </div>
-                                            <div className="rounded-lg bg-amber-100/50 border border-amber-100 px-3 py-2">
-                                                <div className="text-[0.65rem] font-extrabold uppercase tracking-widest text-amber-700">Needs Review</div>
-                                                <div className="mt-1 text-xl font-black text-amber-700">{uploadSummary.failedRows ?? '-'}</div>
-                                            </div>
-                                        </div>
+                                        )
                                     ) : null}
 
                                     {uploadSummary?.batchId ? (
@@ -359,7 +394,7 @@ export default function DailyImport() {
                             ) : null}
 
                             <div className="pt-2 flex justify-end gap-3 border-t border-gray-100">
-                                <Button variant="secondary" onClick={() => navigate('/dashboard')} disabled={uploading}>
+                                <Button variant="secondary" onClick={resetUploadState} disabled={uploading}>
                                     Cancel
                                 </Button>
                                 <Button variant="primary" onClick={handleUpload} disabled={!selectedFile || uploading || uploadSuccess} loading={uploading}>

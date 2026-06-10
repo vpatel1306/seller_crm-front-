@@ -29,7 +29,7 @@ const SETTLEMENT_COLUMNS = [
   {
     key: 'status', label: 'Status', className: 'min-w-[120px]',
     render: (row) => (
-      <span className={`rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] ${row.status === 'Delivered' || row.status === 'DELIVERED' ? 'text-emerald-600' : row.status === 'RETURN' ? 'text-rose-600' : 'text-text'}`}>
+      <span className={`rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] whitespace-nowrap ${row.status === 'Delivered' || row.status === 'DELIVERED' ? 'text-emerald-600' : row.status === 'RETURN' ? 'text-rose-600' : 'text-text'}`}>
         {row.status || '-'}
       </span>
     ),
