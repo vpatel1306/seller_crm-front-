@@ -20,7 +20,7 @@ const TABLE_COLUMNS = [
     key: 'full_address',
     label: 'Full Address',
     className: 'min-w-[260px] whitespace-normal',
-    render: (row) => <div className="min-w-[260px] whitespace-normal text-xs">{row.full_address || '—'}</div>,
+    render: (row) => <div className="min-w-[260px] whitespace-normal text-[11px] leading-3.5">{row.full_address || '—'}</div>,
   },
   { key: 'sku_name', label: 'SKU Name' },
   { key: 'size', label: 'Size' },
@@ -31,7 +31,7 @@ const TABLE_COLUMNS = [
     key: 'order_items_summary',
     label: 'Order Items',
     className: 'min-w-[260px] whitespace-normal',
-    render: (row) => <div className="min-w-[260px] whitespace-normal text-xs">{row.order_items_summary || '—'}</div>,
+    render: (row) => <div className="min-w-[260px] whitespace-normal text-[11px] leading-3.5">{row.order_items_summary || '—'}</div>,
   },
 ];
 
@@ -167,9 +167,10 @@ export default function PickUpEntry() {
             wrapperClassName="rounded-b-default"
             tableClassName="min-w-[1400px]"
             headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
-            headerCellClassName="px-4 py-3 text-[0.68rem] font-extrabold uppercase tracking-[0.16em] whitespace-nowrap border-b border-amber-100"
-            indexHeaderClassName="w-10 border-b border-amber-100 px-3 py-3 text-center text-[0.68rem] font-extrabold"
-            cellClassName="px-4 py-3 whitespace-nowrap text-xs text-text"
+            headerCellClassName="px-2.5 py-2 text-[0.62rem] font-extrabold uppercase tracking-[0.16em] whitespace-nowrap border-b border-amber-100"
+            indexHeaderClassName="w-10 border-b border-amber-100 px-2.5 py-2 text-center text-[0.62rem] font-extrabold"
+            cellClassName="px-2.5 py-2 whitespace-nowrap text-xs text-text"
+            indexCellClassName="px-2.5 py-2 text-xs"
           />
         </Card>
 

@@ -5,8 +5,22 @@ import AppSidebar from '../layout/AppSidebar';
 export default function ProtectedRoute({ children }) {
   const location = useLocation();
   const { token, activeAccount } = useAuth();
+  const isMobileScanner = localStorage.getItem('isMobileScannerSession') === 'true';
 
   if (!token) return <Navigate to="/" replace />;
+
+  if (isMobileScanner) {
+    if (location.pathname !== '/return-entry-account-wise') {
+      return <Navigate to="/return-entry-account-wise" replace />;
+    }
+    return (
+      <div className="flex h-screen overflow-hidden bg-gray-50">
+        <div className="flex-1 overflow-y-auto w-full">
+          {children}
+        </div>
+      </div>
+    );
+  }
 
   if (location.pathname !== '/dashboard' && !activeAccount) {
     return <Navigate to="/dashboard" replace />;

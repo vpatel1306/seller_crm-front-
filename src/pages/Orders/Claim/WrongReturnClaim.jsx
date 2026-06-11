@@ -33,7 +33,7 @@ const COLUMNS = [
     label: 'Order Status',
     className: 'min-w-[150px]',
     render: (row) => (
-      <span className={`rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] whitespace-nowrap ${STATUS_COLOR[row.order_status] || 'text-text'}`}>
+      <span className={`rounded-full bg-surface-alt px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap ${STATUS_COLOR[row.order_status] || 'text-text'}`}>
         {row.order_status || '-'}
       </span>
     ),
@@ -57,7 +57,7 @@ const COLUMNS = [
     label: 'Claim Status',
     className: 'min-w-[130px]',
     render: (row) => (
-      <span className={`rounded-full bg-surface-alt px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] whitespace-nowrap ${STATUS_COLOR[row.claim_status] || 'text-text-muted'}`}>
+      <span className={`rounded-full bg-surface-alt px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap ${STATUS_COLOR[row.claim_status] || 'text-text-muted'}`}>
         {row.claim_status || '-'}
       </span>
     ),
@@ -68,8 +68,8 @@ const summaryTableProps = {
   containerClassName: 'overflow-hidden rounded-default border border-border bg-white shadow-sm',
   titleClassName: 'bg-surface-alt px-4 py-3 text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-text',
   headRowClassName: 'bg-white text-text-muted',
-  headerCellClassName: 'border-b border-border px-4 py-3 text-left text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap',
-  cellClassName: 'px-4 py-3 whitespace-nowrap text-[0.72rem]',
+  headerCellClassName: 'border-b border-border px-1.5 py-1 text-left text-[0.55rem] font-extrabold uppercase tracking-[0.12em] whitespace-nowrap',
+  cellClassName: 'px-1.5 py-1 whitespace-nowrap text-[0.65rem]',
   bodyWrapperClassName: 'max-h-60',
   hoverClass: 'hover:bg-surface-alt',
   rowClassName: (_, i) => (i % 2 === 0 ? 'border-b border-border bg-white' : 'border-b border-border bg-surface-alt/45'),

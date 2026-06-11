@@ -53,8 +53,8 @@ const summaryTableProps = {
 
   titleClassName: 'bg-surface-alt px-4 py-3 text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-text',
   headRowClassName: 'bg-white text-text-muted',
-  headerCellClassName: 'border-b border-border px-4 py-3 text-left text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap',
-  cellClassName: 'px-4 py-3 whitespace-nowrap text-[0.72rem]',
+  headerCellClassName: 'border-b border-border px-1.5 py-1 text-left text-[0.55rem] font-extrabold uppercase tracking-[0.12em] whitespace-nowrap',
+  cellClassName: 'px-1.5 py-1 whitespace-nowrap text-[0.65rem]',
   bodyWrapperClassName: 'max-h-60',
   hoverClass: 'hover:bg-surface-alt',
   rowClassName: (_, i) => (i % 2 === 0 ? 'border-b border-border bg-white' : 'border-b border-border bg-surface-alt/45'),
@@ -473,8 +473,8 @@ export default function CommonOrderPage({
     containerClassName: 'overflow-hidden rounded-default border border-slate-200 bg-white shadow-soft transition-all',
     titleClassName: 'bg-slate-50 px-5 py-3 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-500',
     headRowClassName: 'bg-white',
-    headerCellClassName: 'border-b border-slate-100 px-5 py-3 text-left text-[0.62rem] font-bold uppercase tracking-widest text-slate-400',
-    cellClassName: 'px-5 py-3.5 whitespace-nowrap text-sm font-medium text-slate-700',
+    headerCellClassName: 'border-b border-slate-100 px-2.5 py-1 text-left text-[0.55rem] font-bold uppercase tracking-widest text-slate-400',
+    cellClassName: 'px-2.5 py-1.5 whitespace-nowrap text-xs font-medium text-slate-700',
     bodyWrapperClassName: 'max-h-72 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-slate-200',
     hoverClass: 'hover:bg-slate-50',
     rowClassName: (_, i) => (i % 2 === 0 ? 'bg-white border-b border-slate-50/50' : 'bg-slate-50/20 border-b border-slate-50/50'),
@@ -782,7 +782,16 @@ export default function CommonOrderPage({
                   loadingText={loadingText}
                   emptyText={emptyText}
                   selectedId={selectedId}
-                  onRowClick={(row) => setSelectedId((prev) => (prev === row.id ? null : row.id))}
+                  onRowClick={(row) => {
+                    setSelectedId((prev) => (prev === row.id ? null : row.id));
+                    if (resolvedRowActions && resolvedRowActions.length === 1) {
+                      const action = resolvedRowActions[0];
+                      const isDisabled = typeof action.disabled === 'function' ? action.disabled(row) : Boolean(action.disabled);
+                      if (!isDisabled) {
+                        action.onClick?.(row);
+                      }
+                    }
+                  }}
                   onRowDoubleClick={(row) => setSelectedId(row.id)}
                   onSort={handleSort}
                   sortKey={sortKey}
@@ -791,10 +800,10 @@ export default function CommonOrderPage({
 
                   tableClassName="min-w-[3200px]"
                   headClassName="top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
-                  headerCellClassName="border-b border-border px-2 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap sm:px-4 sm:py-4 sm:text-[0.68rem] sm:tracking-[0.18em]"
-                  indexHeaderClassName="sticky left-0 z-20 w-10 border-b border-r border-border bg-surface-alt/95 px-2 py-3 text-center text-[0.62rem] font-extrabold sm:w-12 sm:px-4 sm:py-4 sm:text-[0.68rem]"
-                  indexCellClassName="sticky left-0 z-10 border-r border-border bg-surface-alt/95 px-2 py-3 text-center font-medium text-text-muted sm:px-4 sm:py-4"
-                  cellClassName="px-2 py-3 text-xs text-text sm:px-4 sm:py-4 sm:text-sm"
+                  headerCellClassName="border-b border-border px-2.5 py-2 text-[0.62rem] font-extrabold uppercase tracking-[0.12em] whitespace-nowrap sm:px-3 sm:py-2 sm:text-[0.65rem] sm:tracking-[0.12em]"
+                  indexHeaderClassName="sticky left-0 z-20 w-8 border-b border-r border-border bg-surface-alt/95 px-2.5 py-2 text-center text-[0.62rem] font-extrabold sm:w-9 sm:px-3 sm:py-2 sm:text-[0.65rem]"
+                  indexCellClassName="sticky left-0 z-10 border-r border-border bg-surface-alt/95 px-2.5 py-2 text-center font-medium text-text-muted sm:px-3 sm:py-2"
+                  cellClassName="px-2.5 py-2 text-xs text-text sm:px-3 sm:py-2 sm:text-xs"
                   selectedClass="bg-primary/10 text-text"
                   hoverClass="hover:bg-surface-alt"
                 />

@@ -451,10 +451,10 @@ export default function AccountSelectModal({ isOpen, onClose }) {
 
                 tableClassName="min-w-[1680px]"
                 headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
-                headerCellClassName="border-b border-border px-3 py-3 text-[0.68rem] font-extrabold uppercase tracking-[0.16em] whitespace-nowrap"
-                indexHeaderClassName="w-[52px] border-b border-border px-3 py-3 text-center text-[0.68rem] font-extrabold md:sticky md:left-0 md:z-30 md:bg-surface-alt/95"
-                indexCellClassName="w-[52px] px-3 py-3 text-center font-medium text-text-muted md:sticky md:left-0 md:z-20 md:bg-white"
-                cellClassName="px-3 py-3 text-sm text-text"
+                headerCellClassName="border-b border-border px-2.5 py-2 text-[0.62rem] font-extrabold uppercase tracking-[0.12em] whitespace-nowrap"
+                indexHeaderClassName="w-[40px] border-b border-border px-2.5 py-2 text-center text-[0.62rem] font-extrabold md:sticky md:left-0 md:z-30 md:bg-surface-alt/95"
+                indexCellClassName="w-[40px] px-2.5 py-2 text-center font-medium text-text-muted md:sticky md:left-0 md:z-20 md:bg-white"
+                cellClassName="px-2.5 py-2 text-xs text-text"
                 selectedClass="bg-primary/10 text-text"
                 hoverClass="hover:bg-surface-alt"
               />

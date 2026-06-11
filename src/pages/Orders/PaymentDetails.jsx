@@ -160,8 +160,8 @@ export default function PaymentDetails() {
             wrapperClassName="rounded-b-default pb-2"
             tableClassName="min-w-[780px]"
             headClassName="top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
-            headerCellClassName="border-b border-border px-4 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap"
-            cellClassName="px-4 py-3 text-sm text-text"
+            headerCellClassName="border-b border-border px-2.5 py-2 text-[0.62rem] font-extrabold uppercase tracking-[0.12em] whitespace-nowrap"
+            cellClassName="px-2.5 py-2 text-xs text-text"
             selectedClass="bg-primary/10 text-text"
             hoverClass="hover:bg-surface-alt"
           />
