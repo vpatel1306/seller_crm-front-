@@ -140,15 +140,25 @@ export default function Navbar() {
             <>
               {/* Scan on Mobile Button */}
               {!isMobileScanner && (
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
                   onClick={() => setMobileModalOpen(true)}
-                  className="h-8 px-2 text-[0.7rem] sm:h-9 sm:px-3 sm:text-xs gap-1 sm:gap-2 shadow-sm border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-primary hover:border-primary/30 transition-all duration-200"
+                  className="h-9 px-4 text-xs font-bold text-white bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-500 hover:from-violet-700 hover:via-indigo-700 hover:to-blue-600 rounded-lg shadow-[0_4px_20px_rgba(99,102,241,0.4)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.6)] flex items-center gap-2 hover:scale-[1.04] active:scale-[0.96] transition-all duration-300 relative overflow-hidden group border-none cursor-pointer"
                 >
-                  <FiSmartphone size={13} className="text-slate-500 group-hover:text-primary transition-colors" />
-                  <span className="hidden sm:inline">Scan on Mobile</span>
-                </Button>
+                  {/* Subtle shining light effect */}
+                  <div className="absolute inset-0 w-1/2 h-full bg-white/10 skew-x-[-20deg] -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-out" />
+                  
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-white animate-pulse">
+                    <FiSmartphone size={13} />
+                  </div>
+                  
+                  <span className="tracking-widest font-black uppercase text-[0.68rem]">Scan on Mobile</span>
+                  
+                  {/* Glowing notification badge */}
+                  <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-pink-500"></span>
+                  </span>
+                </button>
               )}
 
               {/* Account Switcher - Compact on mobile */}

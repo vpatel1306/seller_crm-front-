@@ -22,6 +22,7 @@ import DataTable from '../ui/DataTable';
 import OrdersPageHeader from '../orders/OrdersPageHeader';
 import api from '../../services/api';
 import ReturnScannerModal from './ReturnScannerModal';
+import CommonModal from '../common/CommonModal';
 
 const CONDITION_OPTIONS = [
   { value: 'No Issue In Return', label: 'Healthy', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
@@ -93,6 +94,42 @@ export default function ReturnEntryAccountWise() {
   const [acceptedList, setAcceptedList] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [scannedAwbSession, setScannedAwbSession] = useState([]);
+  const [recentReturnsData, setRecentReturnsData] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+
+  // Reset scanner session when modal opens
+  useEffect(() => {
+    if (isScannerOpen) {
+      setScannedAwbSession([]);
+      setRecentReturnsData(null);
+    }
+  }, [isScannerOpen]);
+
+  const fetchRecentReturns = async (awbNumbers) => {
+    setSummaryLoading(true);
+    setIsSummaryOpen(true);
+    try {
+      const response = await api.post('/get-recent-returns', {
+        awb_numbers: awbNumbers
+      }, {
+        headers: { account: activeAccount?.id || '' },
+      });
+      setRecentReturnsData(response.data);
+    } catch (err) {
+      console.error("Failed to fetch recent returns:", err);
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
+  const handleScannerClose = async () => {
+    setIsScannerOpen(false);
+    if (scannedAwbSession.length > 0) {
+      await fetchRecentReturns(scannedAwbSession);
+    }
+  };
 
   // Auto-focus on mount and auto-open camera scanner on mobile sessions
   useEffect(() => {
@@ -203,9 +240,40 @@ export default function ReturnEntryAccountWise() {
       scan_time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
     };
     setAcceptedList((prev) => [newItem, ...prev]);
+
+    // Track scanned AWB numbers in the session state
+    setScannedAwbSession((prev) => {
+      if (awb && !prev.includes(awb)) {
+        return [...prev, awb];
+      }
+      return prev;
+    });
   };
 
   const hasResults = searchResults.length > 0;
+
+  const returnsList = recentReturnsData?.data || [];
+  const totalScanned = scannedAwbSession.length;
+  const totalFound = returnsList.length;
+  
+  // Find which scanned AWBs were not found in the recent returns API response
+  const foundAwbs = returnsList.map(r => (r.awb_number || '').toLowerCase().trim());
+  const unmatchedAwbs = scannedAwbSession.filter(awb => awb && !foundAwbs.includes(awb.toLowerCase().trim()));
+
+  const totalRto = returnsList.filter(r => (r.return_type || '').toUpperCase() === 'RTO').length;
+  const totalCustReturn = returnsList.filter(r => (r.return_type || '').toUpperCase() !== 'RTO').length;
+  const totalValue = returnsList.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0);
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return dateStr;
+      return date.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
     <AppShell>
@@ -514,9 +582,177 @@ export default function ReturnEntryAccountWise() {
       
       <ReturnScannerModal
         isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
+        onClose={handleScannerClose}
         onScanSuccess={handleScanSuccess}
       />
+
+      <CommonModal
+        isOpen={isSummaryOpen}
+        onClose={() => setIsSummaryOpen(false)}
+        title="Scanned Returns Session Summary"
+        size="xl"
+        headerStyle="gradient"
+        footerButtons={[
+          {
+            label: 'Done',
+            type: 'primary',
+            onClick: () => setIsSummaryOpen(false),
+          }
+        ]}
+      >
+        {summaryLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 space-y-4">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">
+              Fetching return details from API...
+            </p>
+          </div>
+        ) : recentReturnsData ? (
+          <div className="space-y-6">
+            {/* Summary Metrics */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div className="bg-slate-50 border border-slate-100 rounded-xl p-3.5 flex flex-col justify-between shadow-sm">
+                <span className="text-[0.6rem] font-black text-slate-400 uppercase tracking-wider">Total Scanned</span>
+                <span className="text-xl font-black text-slate-800 mt-1">{totalScanned}</span>
+              </div>
+              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 flex flex-col justify-between shadow-sm">
+                <span className="text-[0.6rem] font-black text-emerald-500 uppercase tracking-wider">Matched Returns</span>
+                <span className="text-xl font-black text-emerald-700 mt-1">{totalFound}</span>
+              </div>
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3.5 flex flex-col justify-between shadow-sm">
+                <span className="text-[0.6rem] font-black text-blue-500 uppercase tracking-wider">RTO Count</span>
+                <span className="text-xl font-black text-blue-700 mt-1">{totalRto}</span>
+              </div>
+              <div className="bg-violet-50 border border-violet-100 rounded-xl p-3.5 flex flex-col justify-between shadow-sm">
+                <span className="text-[0.6rem] font-black text-violet-500 uppercase tracking-wider">Cust Returns</span>
+                <span className="text-xl font-black text-violet-700 mt-1">{totalCustReturn}</span>
+              </div>
+              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3.5 flex flex-col justify-between shadow-sm col-span-2 sm:col-span-1">
+                <span className="text-[0.6rem] font-black text-amber-500 uppercase tracking-wider">Total Value</span>
+                <span className="text-xl font-black text-amber-700 mt-1">₹{totalValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+
+            {/* Unmatched Warning Alert */}
+            {unmatchedAwbs.length > 0 && (
+              <div className="p-4 bg-rose-50 border-2 border-rose-100 rounded-xl animate-fade-in">
+                <div className="flex items-center gap-2 text-rose-800 font-bold text-xs uppercase mb-2">
+                  <FiAlertCircle size={16} className="text-rose-500 animate-pulse" />
+                  <span>Unmatched AWB Numbers ({unmatchedAwbs.length}) - Not Found in Database</span>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {unmatchedAwbs.map((awb) => (
+                    <span key={awb} className="px-2.5 py-1 bg-white text-rose-600 font-mono text-[0.7rem] font-bold rounded-lg border border-rose-200 shadow-sm">
+                      {awb}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Details Table */}
+            <div>
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="text-xs font-black uppercase tracking-wider text-slate-500">
+                  Return Order Details
+                </h4>
+                <span className="text-[0.65rem] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                  Showing {totalFound} records
+                </span>
+              </div>
+
+              {returnsList.length === 0 ? (
+                <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-xs font-bold uppercase tracking-wider">
+                  No return parcel details were retrieved.
+                </div>
+              ) : (
+                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                  <div className="overflow-x-auto max-h-[400px] [scrollbar-width:thin]">
+                    <table className="min-w-full divide-y divide-slate-100">
+                      <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
+                        <tr>
+                          <th className="px-4 py-3.5 text-left text-[0.65rem] font-black text-slate-500 uppercase tracking-widest">Order / AWB</th>
+                          <th className="px-4 py-3.5 text-left text-[0.65rem] font-black text-slate-500 uppercase tracking-widest">SKU & Qty</th>
+                          <th className="px-4 py-3.5 text-left text-[0.65rem] font-black text-slate-500 uppercase tracking-widest">Courier</th>
+                          <th className="px-4 py-3.5 text-left text-[0.65rem] font-black text-slate-500 uppercase tracking-widest">Type</th>
+                          <th className="px-4 py-3.5 text-left text-[0.65rem] font-black text-slate-500 uppercase tracking-widest">Status</th>
+                          <th className="px-4 py-3.5 text-right text-[0.65rem] font-black text-slate-500 uppercase tracking-widest">Amount</th>
+                          <th className="px-4 py-3.5 text-left text-[0.65rem] font-black text-slate-500 uppercase tracking-widest">Dates</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 bg-white">
+                        {returnsList.map((item, idx) => {
+                          const isRto = (item.return_type || '').toUpperCase() === 'RTO';
+                          const statusText = item.status || 'Return Received';
+                          const isSuccessStatus = statusText.toLowerCase().includes('received') || statusText.toLowerCase().includes('delivered');
+
+                          return (
+                            <tr key={item.id || idx} className="hover:bg-slate-50/60 transition-colors">
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <div className="flex flex-col">
+                                  <span className="font-extrabold text-slate-800 text-xs">{item.platform_order_id || 'N/A'}</span>
+                                  <span className="font-mono text-[0.65rem] text-slate-400 mt-0.5 select-all">{item.awb_number || 'N/A'}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex flex-col max-w-[160px]">
+                                  <span className="font-bold text-slate-700 text-xs truncate" title={item.sku}>{item.sku || 'N/A'}</span>
+                                  <span className="text-[0.65rem] text-slate-400 mt-0.5">Qty: <span className="font-extrabold text-slate-600">{item.qty || 1}</span></span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <span className="text-[0.65rem] font-black uppercase text-slate-500 bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">
+                                  {item.courier_partner || 'PocketShip'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[0.6rem] font-black uppercase tracking-wider ${
+                                  isRto 
+                                    ? 'bg-blue-50 text-blue-700 border border-blue-100' 
+                                    : 'bg-violet-50 text-violet-700 border border-violet-100'
+                                }`}>
+                                  {item.return_type || 'RTO'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[0.6rem] font-black uppercase tracking-wider ${
+                                  isSuccessStatus 
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' 
+                                    : 'bg-amber-50 text-amber-700 border border-amber-100'
+                                }`}>
+                                  {statusText}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-right">
+                                <div className="flex flex-col items-end">
+                                  <span className="text-xs font-black text-slate-800">₹{Number(item.total_amount || 0).toFixed(2)}</span>
+                                  {Number(item.cost_amount) > 0 && (
+                                    <span className="text-[0.6rem] text-slate-400 mt-0.5">Cost: ₹{Number(item.cost_amount).toFixed(2)}</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <div className="flex flex-col text-[0.65rem] text-slate-500 leading-normal">
+                                  <div>Order: <span className="text-slate-700 font-bold">{formatDate(item.order_date)}</span></div>
+                                  <div>Delivered: <span className="text-slate-700 font-bold">{formatDate(item.return_delivered || item.return_date)}</span></div>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-10 text-slate-400">
+            No return details found.
+          </div>
+        )}
+      </CommonModal>
     </AppShell>
   );
 }
