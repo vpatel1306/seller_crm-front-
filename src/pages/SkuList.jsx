@@ -229,6 +229,7 @@ export default function SkuList() {
   const handleRowClick = (sku) => {
     setSelectedSKU(sku);
     setSelectedRowId(sku.id || sku.sku_id);
+    handleEditSku(sku);
   };
 
   const handleEditSku = (sku) => {
@@ -450,7 +451,7 @@ const handleImportFile = async (event) => {
 
         return (
           <div className="max-w-[220px]">
-            <div className="flex items-center gap-2 font-extrabold text-text">
+            <div className="flex items-center gap-2 font-extrabold text-text text-xs">
               <span className="truncate">{previewText}</span>
               {hasMoreContent ? (
                 <button
@@ -484,7 +485,7 @@ const handleImportFile = async (event) => {
 
         return (
           <div className="max-w-[320px] sm:max-w-[520px]">
-            <div className="flex items-center gap-2 text-sm leading-6 text-text-muted">
+            <div className="flex items-center gap-2 text-xs leading-4 text-text-muted">
               <span className="truncate">{previewText}</span>
               {hasMoreContent ? (
                 <button
@@ -508,49 +509,49 @@ const handleImportFile = async (event) => {
       key: 'box_size',
       label: 'Size',
       className: 'min-w-[92px]',
-      render: (row) => <span className="text-nowrap rounded-full bg-surface-alt px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-text">{row.box_size || 'Free Size'}</span>,
+      render: (row) => <span className="text-nowrap rounded-full bg-surface-alt px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-text">{row.box_size || 'Free Size'}</span>,
     },
     {
       key: 'orders',
       label: 'Orders',
       right: true,
       className: 'min-w-[72px]',
-      render: (row) => <span className="font-bold tabular-nums text-text">{row.orders || 0}</span>,
+      render: (row) => <span className="font-bold tabular-nums text-text text-xs">{row.order_count || 0}</span>,
     },
     {
       key: 'selling',
       label: 'Selling',
       right: true,
       className: 'min-w-[92px]',
-      render: (row) => <span className="font-bold text-text">{formatCurrency(row.selling)}</span>,
+      render: (row) => <span className="font-bold text-text text-xs">{formatCurrency(row.selling)}</span>,
     },
     {
       key: 'basic_cost',
       label: 'Basic Cost',
       right: true,
       className: 'min-w-[96px]',
-      render: (row) => <span className="text-text-muted">{formatCurrency(row.basic_cost)}</span>,
+      render: (row) => <span className="text-text-muted text-xs">{formatCurrency(row.basic_cost)}</span>,
     },
     {
       key: 'gst_percentage',
       label: 'GST %',
       right: true,
       className: 'min-w-[82px]',
-      render: (row) => <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">{row.gst_percentage || 0}%</span>,
+      render: (row) => <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">{row.gst_percentage || 0}%</span>,
     },
     {
       key: 'packing_charge',
       label: 'Packing',
       right: true,
       className: 'min-w-[92px]',
-      render: (row) => <span className="text-text-muted">{formatCurrency(row.packing_charge)}</span>,
+      render: (row) => <span className="text-text-muted text-xs">{formatCurrency(row.packing_charge)}</span>,
     },
     {
       key: 'final_cost',
       label: 'Final Cost',
       right: true,
       className: 'min-w-[100px]',
-      render: (row) => <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{formatCurrency(calculateFinalCost(row))}</span>,
+      render: (row) => <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-extrabold text-primary text-nowrap">{formatCurrency(calculateFinalCost(row))}</span>,
     },
     {
       key: 'actions',
@@ -830,10 +831,10 @@ const handleImportFile = async (event) => {
 
                 tableClassName="min-w-[1160px] xl:min-w-[1260px]"
                 headClassName="top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
-                headerCellClassName="border-b border-border px-2 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap sm:px-4 sm:py-4 sm:text-[0.68rem] sm:tracking-[0.18em]"
-                indexHeaderClassName="sticky left-0 z-20 w-10 border-b border-r border-border bg-surface-alt/95 px-2 py-3 text-center text-[0.62rem] font-extrabold sm:w-12 sm:px-4 sm:py-4 sm:text-[0.68rem]"
-                indexCellClassName="sticky left-0 z-10 border-r border-border bg-surface-alt/95 px-2 py-3 text-center font-medium text-text-muted sm:px-4 sm:py-4"
-                cellClassName="px-2 py-3 text-xs text-text sm:px-4 sm:py-4 sm:text-sm"
+                headerCellClassName="border-b border-border px-2.5 py-2 text-[0.62rem] font-extrabold uppercase tracking-[0.12em] whitespace-nowrap sm:px-3 sm:py-2 sm:text-[0.65rem] sm:tracking-[0.12em]"
+                indexHeaderClassName="sticky left-0 z-20 w-8 border-b border-r border-border bg-surface-alt/95 px-2.5 py-2 text-center text-[0.62rem] font-extrabold sm:w-9 sm:px-3 sm:py-2 sm:text-[0.65rem]"
+                indexCellClassName="sticky left-0 z-10 border-r border-border bg-surface-alt/95 px-2.5 py-2 text-center font-medium text-text-muted sm:px-3 sm:py-2"
+                cellClassName="px-2.5 py-2 text-xs text-text sm:px-3 sm:py-2 sm:text-xs"
                 selectedClass="bg-primary/10 text-text"
                 hoverClass="hover:bg-surface-alt"
               />

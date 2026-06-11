@@ -81,8 +81,8 @@ function CreditTable({ rows, dateField, loading }) {
       wrapperClassName="rounded-b-default"
       tableClassName="min-w-[680px]"
       headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
-      headerCellClassName="px-4 py-2 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap border-b border-border"
-      cellClassName="px-4 py-2 whitespace-nowrap text-xs text-text"
+      headerCellClassName="px-2.5 py-2 text-[0.62rem] font-extrabold uppercase tracking-[0.12em] whitespace-nowrap border-b border-border"
+      cellClassName="px-2.5 py-2 whitespace-nowrap text-xs text-text"
       hoverClass="hover:bg-surface-alt"
       rowClassName={(_, i) => i % 2 === 0 ? 'border-b border-border bg-white' : 'border-b border-border bg-surface-alt/40'}
       totalsRow={totalsRow}
@@ -329,9 +329,9 @@ export default function BankCreditStatement() {
                 wrapperClassName="rounded-b-default"
                 tableClassName="min-w-[860px]"
                 headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
-                headerCellClassName="px-4 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap border-b border-border"
-                indexHeaderClassName="w-10 border-b border-border px-3 py-3 text-center text-[0.62rem] font-extrabold"
-                cellClassName="px-4 py-3 whitespace-nowrap text-xs text-text"
+                headerCellClassName="px-2.5 py-2 text-[0.62rem] font-extrabold uppercase tracking-[0.12em] whitespace-nowrap border-b border-border"
+                indexHeaderClassName="w-8 border-b border-border px-2.5 py-2 text-center text-[0.62rem] font-extrabold"
+                cellClassName="px-2.5 py-2.5 whitespace-nowrap text-xs text-text"
                 selectedClass="bg-primary/10 text-text"
                 hoverClass="hover:bg-surface-alt"
               />

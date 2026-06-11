@@ -78,14 +78,14 @@ const summaryTableProps = {
   containerClassName:
     "overflow-hidden rounded-default border border-slate-200 bg-white shadow-soft transition-all mb-4",
   titleClassName:
-    "bg-slate-50 px-5 py-3 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-500",
+    "bg-slate-50 px-2.5 py-1 text-[0.58rem] font-extrabold uppercase tracking-[0.18em] text-slate-500",
   headRowClassName: "bg-white",
   headerCellClassName:
-    "border-b border-slate-100 px-5 py-3 text-left text-[0.62rem] font-bold uppercase tracking-widest text-slate-400",
+    "border-b border-slate-100 px-2 py-1 text-left text-[0.55rem] font-extrabold uppercase tracking-widest text-slate-400",
   cellClassName:
-    "px-5 py-3.5 whitespace-nowrap text-sm font-medium text-slate-700",
+    "px-2 py-1 whitespace-nowrap text-[11px] font-medium text-slate-700",
   bodyWrapperClassName:
-    "max-h-72 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-slate-200",
+    "max-h-60 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-slate-200",
   hoverClass: "hover:bg-slate-50",
   rowClassName: (_, i) =>
     i % 2 === 0
@@ -1461,20 +1461,20 @@ export default function Dashboard() {
                         <table className="w-full text-left border-collapse min-w-[1000px]">
                           <thead>
                             <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
-                              <th className="py-3 px-4">Order ID</th>
-                              <th className="py-3 px-4">Order Date</th>
-                              <th className="py-3 px-4">SKU</th>
-                              <th className="py-3 px-4 text-right">Qty</th>
-                              <th className="py-3 px-4">Order Status</th>
-                              <th className="py-3 px-4">AWB Number</th>
-                              <th className="py-3 px-4">Courier Partner</th>
-                              <th className="py-3 px-4">Customer Name</th>
-                              <th className="py-3 px-4 text-right">
+                              <th className="py-2 px-3 text-[11px]">Order ID</th>
+                              <th className="py-2 px-3 text-[11px]">Order Date</th>
+                              <th className="py-2 px-3 text-[11px]">SKU</th>
+                              <th className="py-2 px-3 text-[11px] text-right">Qty</th>
+                              <th className="py-2 px-3 text-[11px]">Order Status</th>
+                              <th className="py-2 px-3 text-[11px]">AWB Number</th>
+                              <th className="py-2 px-3 text-[11px]">Courier Partner</th>
+                              <th className="py-2 px-3 text-[11px]">Customer Name</th>
+                              <th className="py-2 px-3 text-[11px] text-right">
                                 Cost Amount
                               </th>
-                              <th className="py-3 px-4">Pickup Date</th>
-                              <th className="py-3 px-4">Dispatch Date</th>
-                              <th className="py-3 px-4">Days</th>
+                              <th className="py-2 px-3 text-[11px]">Pickup Date</th>
+                              <th className="py-2 px-3 text-[11px]">Dispatch Date</th>
+                              <th className="py-2 px-3 text-[11px]">Days</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1505,10 +1505,10 @@ export default function Dashboard() {
                                   key={order.id || i}
                                   className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors text-xs"
                                 >
-                                  <td className="py-4 px-4 font-black text-primary select-all">
+                                  <td className="py-2.5 px-3 text-xs font-black text-primary select-all">
                                     {order.platform_order_id}
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                  <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                     {order.order_date
                                       ? new Date(
                                           order.order_date,
@@ -1519,7 +1519,7 @@ export default function Dashboard() {
                                         })
                                       : "-"}
                                   </td>
-                                  <td className="py-4 px-4 max-w-[200px]">
+                                  <td className="py-2.5 px-3 text-xs max-w-[200px]">
                                     <div
                                       className="font-extrabold text-amber-700 truncate"
                                       title={order.sku}
@@ -1527,28 +1527,28 @@ export default function Dashboard() {
                                       {order.sku}
                                     </div>
                                   </td>
-                                  <td className="py-4 px-4 text-right font-bold text-slate-700">
+                                  <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-700">
                                     {order.qty || "-"}
                                   </td>
 
-                                  <td className="py-4 px-4">
+                                  <td className="py-2.5 px-3 text-xs">
                                     <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600 whitespace-nowrap">
                                       {order.order_status || "-"}
                                     </span>
                                   </td>
-                                  <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">
+                                  <td className="py-2.5 px-3 text-xs font-mono text-slate-600 text-[10px]">
                                     {order.awb_number || "-"}
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-600">
+                                  <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                     {order.courier_partner || "-"}
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-600">
+                                  <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                     {order.customer_name || "-"}
                                   </td>
-                                  <td className="py-4 px-4 text-right font-bold text-slate-700">
+                                  <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-700">
                                     ₹{formatCount(order.cost_amount || 0)}
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                  <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                     {order.pickup_date
                                       ? new Date(
                                           order.pickup_date,
@@ -1559,7 +1559,7 @@ export default function Dashboard() {
                                         })
                                       : "-"}
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                  <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                     {order.dispatch_date
                                       ? new Date(
                                           order.dispatch_date,
@@ -1570,7 +1570,7 @@ export default function Dashboard() {
                                         })
                                       : "-"}
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-700">
+                                  <td className="py-2.5 px-3 text-xs font-bold text-slate-700">
                                     {order.days || "-"}
                                   </td>
                                 </tr>
@@ -2268,46 +2268,46 @@ export default function Dashboard() {
                         <table className="w-full text-left border-collapse min-w-[1200px]">
                           <thead>
                             <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
-                              <th className="py-3 px-4">Platform Order ID</th>
-                              <th className="py-3 px-4">Order Date</th>
-                              <th className="py-3 px-4">SKU</th>
-                              <th className="py-3 px-4 text-right">Qty</th>
+                              <th className="py-2 px-3 text-[11px]">Platform Order ID</th>
+                              <th className="py-2 px-3 text-[11px]">Order Date</th>
+                              <th className="py-2 px-3 text-[11px]">SKU</th>
+                              <th className="py-2 px-3 text-[11px] text-right">Qty</th>
                               {(ordersFilter === "unsettled-pickup" ||
                                 ordersFilter === "sla" ||
                                 ordersFilter === "pending") && (
                                 <>
-                                  <th className="py-3 px-4">Status</th>
-                                  <th className="py-3 px-4">Order Status</th>
-                                  <th className="py-3 px-4">AWB Number</th>
-                                  <th className="py-3 px-4">Courier Partner</th>
-                                  <th className="py-3 px-4">Customer Name</th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px]">Status</th>
+                                  <th className="py-2 px-3 text-[11px]">Order Status</th>
+                                  <th className="py-2 px-3 text-[11px]">AWB Number</th>
+                                  <th className="py-2 px-3 text-[11px]">Courier Partner</th>
+                                  <th className="py-2 px-3 text-[11px]">Customer Name</th>
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Cost Amount
                                   </th>
-                                  <th className="py-3 px-4">Pickup Date</th>
-                                  <th className="py-3 px-4">Dispatch Date</th>
-                                  <th className="py-3 px-4">Days</th>
+                                  <th className="py-2 px-3 text-[11px]">Pickup Date</th>
+                                  <th className="py-2 px-3 text-[11px]">Dispatch Date</th>
+                                  <th className="py-2 px-3 text-[11px]">Days</th>
                                 </>
                               )}
                               {ordersFilter === "cancel-pickup" && (
                                 <>
-                                  <th className="py-3 px-4">Status</th>
-                                  <th className="py-3 px-4">Order Status</th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px]">Status</th>
+                                  <th className="py-2 px-3 text-[11px]">Order Status</th>
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Selling Amount
                                   </th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Cost Amount
                                   </th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Profit / Loss
                                   </th>
-                                  <th className="py-3 px-4">Courier Partner</th>
-                                  <th className="py-3 px-4">AWB Number</th>
-                                  <th className="py-3 px-4">Pickup AWB</th>
-                                  <th className="py-3 px-4">Pickup Date</th>
-                                  <th className="py-3 px-4">Customer Name</th>
-                                  <th className="py-3 px-4">Customer Phone</th>
+                                  <th className="py-2 px-3 text-[11px]">Courier Partner</th>
+                                  <th className="py-2 px-3 text-[11px]">AWB Number</th>
+                                  <th className="py-2 px-3 text-[11px]">Pickup AWB</th>
+                                  <th className="py-2 px-3 text-[11px]">Pickup Date</th>
+                                  <th className="py-2 px-3 text-[11px]">Customer Name</th>
+                                  <th className="py-2 px-3 text-[11px]">Customer Phone</th>
                                 </>
                               )}
                               {ordersFilter !== "unsettled-pickup" &&
@@ -2315,45 +2315,45 @@ export default function Dashboard() {
                                 ordersFilter !== "pending" &&
                                 ordersFilter !== "cancel-pickup" && (
                                   <>
-                                    <th className="py-3 px-4">Courier</th>
-                                    <th className="py-3 px-4">AWB Number</th>
-                                    <th className="py-3 px-4">Pickup AWB</th>
-                                    <th className="py-3 px-4">Order Status</th>
-                                    <th className="py-3 px-4">Dispatch Date</th>
-                                    <th className="py-3 px-4">Pickup Date</th>
-                                    <th className="py-3 px-4 text-right">
+                                    <th className="py-2 px-3 text-[11px]">Courier</th>
+                                    <th className="py-2 px-3 text-[11px]">AWB Number</th>
+                                    <th className="py-2 px-3 text-[11px]">Pickup AWB</th>
+                                    <th className="py-2 px-3 text-[11px]">Order Status</th>
+                                    <th className="py-2 px-3 text-[11px]">Dispatch Date</th>
+                                    <th className="py-2 px-3 text-[11px]">Pickup Date</th>
+                                    <th className="py-2 px-3 text-[11px] text-right">
                                       Total Amount
                                     </th>
-                                    <th className="py-3 px-4 text-right">
+                                    <th className="py-2 px-3 text-[11px] text-right">
                                       Cost Amount
                                     </th>
-                                    <th className="py-3 px-4 text-right">
+                                    <th className="py-2 px-3 text-[11px] text-right">
                                       Shipping Charge
                                     </th>
-                                    <th className="py-3 px-4 text-right">
+                                    <th className="py-2 px-3 text-[11px] text-right">
                                       Settlement Amt
                                     </th>
-                                    <th className="py-3 px-4">
+                                    <th className="py-2 px-3 text-[11px]">
                                       Payment Status
                                     </th>
-                                    <th className="py-3 px-4 text-right">
+                                    <th className="py-2 px-3 text-[11px] text-right">
                                       Profit / Loss
                                     </th>
-                                    <th className="py-3 px-4">Return Type</th>
-                                    <th className="py-3 px-4">Return Date</th>
-                                    <th className="py-3 px-4">
+                                    <th className="py-2 px-3 text-[11px]">Return Type</th>
+                                    <th className="py-2 px-3 text-[11px]">Return Date</th>
+                                    <th className="py-2 px-3 text-[11px]">
                                       Return Delivered
                                     </th>
-                                    <th className="py-3 px-4 text-right">
+                                    <th className="py-2 px-3 text-[11px] text-right">
                                       Return Charge
                                     </th>
-                                    <th className="py-3 px-4">Claim Status</th>
-                                    <th className="py-3 px-4 text-right">
+                                    <th className="py-2 px-3 text-[11px]">Claim Status</th>
+                                    <th className="py-2 px-3 text-[11px] text-right">
                                       Claim Amount
                                     </th>
-                                    <th className="py-3 px-4">Is Lost</th>
-                                    <th className="py-3 px-4">Lost Date</th>
-                                    <th className="py-3 px-4">
+                                    <th className="py-2 px-3 text-[11px]">Is Lost</th>
+                                    <th className="py-2 px-3 text-[11px]">Lost Date</th>
+                                    <th className="py-2 px-3 text-[11px]">
                                       Recovery Reason
                                     </th>
                                   </>
@@ -2388,10 +2388,10 @@ export default function Dashboard() {
                                   key={order.id || i}
                                   className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors text-xs"
                                 >
-                                  <td className="py-4 px-4 font-black text-primary select-all">
+                                  <td className="py-2.5 px-3 text-xs font-black text-primary select-all">
                                     {order.platform_order_id}
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                  <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                     {order.order_date
                                       ? new Date(
                                           order.order_date,
@@ -2402,7 +2402,7 @@ export default function Dashboard() {
                                         })
                                       : "-"}
                                   </td>
-                                  <td className="py-4 px-4 max-w-[200px]">
+                                  <td className="py-2.5 px-3 text-xs max-w-[200px]">
                                     <div
                                       className="font-extrabold text-amber-700 truncate"
                                       title={order.sku}
@@ -2410,7 +2410,7 @@ export default function Dashboard() {
                                       {order.sku}
                                     </div>
                                   </td>
-                                  <td className="py-4 px-4 text-right font-bold text-slate-700">
+                                  <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-700">
                                     {order.qty || "-"}
                                   </td>
 
@@ -2418,29 +2418,29 @@ export default function Dashboard() {
                                     ordersFilter === "sla" ||
                                     ordersFilter === "pending") && (
                                     <>
-                                      <td className="py-4 px-4">
+                                      <td className="py-2.5 px-3 text-xs">
                                         <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-slate-50 text-slate-600 whitespace-nowrap">
                                           {order.status || "-"}
                                         </span>
                                       </td>
-                                      <td className="py-4 px-4">
+                                      <td className="py-2.5 px-3 text-xs">
                                         <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600 whitespace-nowrap">
                                           {order.order_status || "-"}
                                         </span>
                                       </td>
-                                      <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">
+                                      <td className="py-2.5 px-3 text-xs font-mono text-slate-600 text-[10px]">
                                         {order.awb_number || "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                         {order.courier_partner || "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                         {order.customer_name || "-"}
                                       </td>
-                                      <td className="py-4 px-4 text-right font-bold text-slate-700">
+                                      <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-700">
                                         ₹{formatCount(order.cost_amount || 0)}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                         {order.pickup_date
                                           ? new Date(
                                               order.pickup_date,
@@ -2451,7 +2451,7 @@ export default function Dashboard() {
                                             })
                                           : "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                         {order.dispatch_date
                                           ? new Date(
                                               order.dispatch_date,
@@ -2462,7 +2462,7 @@ export default function Dashboard() {
                                             })
                                           : "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-700">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-700">
                                         {order.days || "-"}
                                       </td>
                                     </>
@@ -2470,21 +2470,21 @@ export default function Dashboard() {
 
                                   {ordersFilter === "cancel-pickup" && (
                                     <>
-                                      <td className="py-4 px-4">
+                                      <td className="py-2.5 px-3 text-xs">
                                         <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-slate-50 text-slate-600 whitespace-nowrap">
                                           {order.status || "-"}
                                         </span>
                                       </td>
-                                      <td className="py-4 px-4">
+                                      <td className="py-2.5 px-3 text-xs">
                                         <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600 whitespace-nowrap">
                                           {order.order_status || "-"}
                                         </span>
                                       </td>
-                                      <td className="py-4 px-4 text-right font-black text-slate-700">
+                                      <td className="py-2.5 px-3 text-xs text-right font-black text-slate-700">
                                         ₹
                                         {formatCount(order.selling_amount || 0)}
                                       </td>
-                                      <td className="py-4 px-4 text-right font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-600">
                                         ₹{formatCount(order.cost_amount || 0)}
                                       </td>
                                       <td
@@ -2496,16 +2496,16 @@ export default function Dashboard() {
                                       >
                                         ₹{formatCount(order.profit_loss || 0)}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                         {order.courier_partner || "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">
+                                      <td className="py-2.5 px-3 text-xs font-mono text-slate-600 text-[10px]">
                                         {order.awb_number || "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">
+                                      <td className="py-2.5 px-3 text-xs font-mono text-slate-600 text-[10px]">
                                         {order.pickup_awb_number || "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                         {order.pickup_date
                                           ? new Date(
                                               order.pickup_date,
@@ -2516,10 +2516,10 @@ export default function Dashboard() {
                                             })
                                           : "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                         {order.customer_name || "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                         {order.customer_phone || "-"}
                                       </td>
                                     </>
@@ -2530,21 +2530,21 @@ export default function Dashboard() {
                                     ordersFilter !== "pending" &&
                                     ordersFilter !== "cancel-pickup" && (
                                       <>
-                                        <td className="py-4 px-4 font-bold text-slate-600">
+                                        <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                           {order.courier_partner || "-"}
                                         </td>
-                                        <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">
+                                        <td className="py-2.5 px-3 text-xs font-mono text-slate-600 text-[10px]">
                                           {order.awb_number || "-"}
                                         </td>
-                                        <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">
+                                        <td className="py-2.5 px-3 text-xs font-mono text-slate-600 text-[10px]">
                                           {order.pickup_awb_number || "-"}
                                         </td>
-                                        <td className="py-4 px-4">
+                                        <td className="py-2.5 px-3 text-xs">
                                           <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600 whitespace-nowrap">
                                             {order.order_status || "-"}
                                           </span>
                                         </td>
-                                        <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                           {order.dispatch_date
                                             ? new Date(
                                                 order.dispatch_date,
@@ -2555,7 +2555,7 @@ export default function Dashboard() {
                                               })
                                             : "-"}
                                         </td>
-                                        <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                           {order.pickup_date
                                             ? new Date(
                                                 order.pickup_date,
@@ -2566,26 +2566,26 @@ export default function Dashboard() {
                                               })
                                             : "-"}
                                         </td>
-                                        <td className="py-4 px-4 text-right font-black text-slate-700">
+                                        <td className="py-2.5 px-3 text-xs text-right font-black text-slate-700">
                                           ₹
                                           {formatCount(order.total_amount || 0)}
                                         </td>
-                                        <td className="py-4 px-4 text-right font-bold text-slate-600">
+                                        <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-600">
                                           ₹{formatCount(order.cost_amount || 0)}
                                         </td>
-                                        <td className="py-4 px-4 text-right font-bold text-slate-600">
+                                        <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-600">
                                           ₹
                                           {formatCount(
                                             order.shipping_charge || 0,
                                           )}
                                         </td>
-                                        <td className="py-4 px-4 text-right font-bold text-emerald-600">
+                                        <td className="py-2.5 px-3 text-xs text-right font-bold text-emerald-600">
                                           ₹
                                           {formatCount(
                                             order.settlement_amount || 0,
                                           )}
                                         </td>
-                                        <td className="py-4 px-4">
+                                        <td className="py-2.5 px-3 text-xs">
                                           <span
                                             className={`px-2 py-1 rounded-full text-[10px] font-extrabold uppercase whitespace-nowrap ${
                                               order.payment_status === "Settled"
@@ -2606,10 +2606,10 @@ export default function Dashboard() {
                                         >
                                           ₹{formatCount(order.profit_loss || 0)}
                                         </td>
-                                        <td className="py-4 px-4 font-bold text-slate-600">
+                                        <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                           {order.return_type || "-"}
                                         </td>
-                                        <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                           {order.return_date
                                             ? new Date(
                                                 order.return_date,
@@ -2620,7 +2620,7 @@ export default function Dashboard() {
                                               })
                                             : "-"}
                                         </td>
-                                        <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                           {order.return_delivered
                                             ? new Date(
                                                 order.return_delivered,
@@ -2631,13 +2631,13 @@ export default function Dashboard() {
                                               })
                                             : "-"}
                                         </td>
-                                        <td className="py-4 px-4 text-right font-bold text-rose-600">
+                                        <td className="py-2.5 px-3 text-xs text-right font-bold text-rose-600">
                                           ₹
                                           {formatCount(
                                             order.return_shipping_charge || 0,
                                           )}
                                         </td>
-                                        <td className="py-4 px-4">
+                                        <td className="py-2.5 px-3 text-xs">
                                           <span
                                             className={`px-2 py-1 rounded-full text-[10px] font-extrabold uppercase whitespace-nowrap ${
                                               order.claim_status === "Approved"
@@ -2650,11 +2650,11 @@ export default function Dashboard() {
                                             {order.claim_status || "-"}
                                           </span>
                                         </td>
-                                        <td className="py-4 px-4 text-right font-bold text-slate-600">
+                                        <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-600">
                                           ₹
                                           {formatCount(order.claim_amount || 0)}
                                         </td>
-                                        <td className="py-4 px-4 text-center">
+                                        <td className="py-2.5 px-3 text-xs text-center">
                                           {order.is_lost ? (
                                             <span className="text-red-600 font-black">
                                               Yes
@@ -2665,7 +2665,7 @@ export default function Dashboard() {
                                             </span>
                                           )}
                                         </td>
-                                        <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                        <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                           {order.lost_date
                                             ? new Date(
                                                 order.lost_date,
@@ -2676,7 +2676,7 @@ export default function Dashboard() {
                                               })
                                             : "-"}
                                         </td>
-                                        <td className="py-4 px-4 font-bold text-slate-600">
+                                        <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                           {order.recovery_reason || "-"}
                                         </td>
                                       </>
@@ -3251,72 +3251,72 @@ export default function Dashboard() {
                         <table className="w-full text-left border-collapse min-w-[1200px]">
                           <thead>
                             <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
-                              <th className="py-3 px-4">Platform Order ID</th>
-                              <th className="py-3 px-4">Order Date</th>
-                              <th className="py-3 px-4">SKU</th>
-                              <th className="py-3 px-4 text-right">Qty</th>
+                              <th className="py-2 px-3 text-[11px]">Platform Order ID</th>
+                              <th className="py-2 px-3 text-[11px]">Order Date</th>
+                              <th className="py-2 px-3 text-[11px]">SKU</th>
+                              <th className="py-2 px-3 text-[11px] text-right">Qty</th>
                               {paymentsFilter === "received" && (
                                 <>
-                                  <th className="py-3 px-4">Status</th>
-                                  <th className="py-3 px-4">Order Status</th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px]">Status</th>
+                                  <th className="py-2 px-3 text-[11px]">Order Status</th>
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Selling Amount
                                   </th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Received Payment
                                   </th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Cost Amount
                                   </th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Profit / Loss
                                   </th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Payment Entry Count
                                   </th>
-                                  <th className="py-3 px-4">
+                                  <th className="py-2 px-3 text-[11px]">
                                     First Payment Date
                                   </th>
-                                  <th className="py-3 px-4">
+                                  <th className="py-2 px-3 text-[11px]">
                                     Last Payment Date
                                   </th>
                                 </>
                               )}
                               {paymentsFilter === "pending" && (
                                 <>
-                                  <th className="py-3 px-4">Status</th>
-                                  <th className="py-3 px-4">Order Status</th>
-                                  <th className="py-3 px-4">AWB Number</th>
-                                  <th className="py-3 px-4">Courier Partner</th>
-                                  <th className="py-3 px-4">Customer Name</th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px]">Status</th>
+                                  <th className="py-2 px-3 text-[11px]">Order Status</th>
+                                  <th className="py-2 px-3 text-[11px]">AWB Number</th>
+                                  <th className="py-2 px-3 text-[11px]">Courier Partner</th>
+                                  <th className="py-2 px-3 text-[11px]">Customer Name</th>
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Cost Amount
                                   </th>
-                                  <th className="py-3 px-4">Pickup Date</th>
-                                  <th className="py-3 px-4">Dispatch Date</th>
-                                  <th className="py-3 px-4">Days</th>
+                                  <th className="py-2 px-3 text-[11px]">Pickup Date</th>
+                                  <th className="py-2 px-3 text-[11px]">Dispatch Date</th>
+                                  <th className="py-2 px-3 text-[11px]">Days</th>
                                 </>
                               )}
                               {paymentsFilter === "mismatch" && (
                                 <>
-                                  <th className="py-3 px-4">Status</th>
-                                  <th className="py-3 px-4">Order Status</th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px]">Status</th>
+                                  <th className="py-2 px-3 text-[11px]">Order Status</th>
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Selling Amount
                                   </th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Cost Amount
                                   </th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Profit / Loss
                                   </th>
-                                  <th className="py-3 px-4 text-right">
+                                  <th className="py-2 px-3 text-[11px] text-right">
                                     Settlement Amount
                                   </th>
-                                  <th className="py-3 px-4">Courier Partner</th>
-                                  <th className="py-3 px-4">AWB Number</th>
-                                  <th className="py-3 px-4">Customer Name</th>
-                                  <th className="py-3 px-4">Customer Phone</th>
+                                  <th className="py-2 px-3 text-[11px]">Courier Partner</th>
+                                  <th className="py-2 px-3 text-[11px]">AWB Number</th>
+                                  <th className="py-2 px-3 text-[11px]">Customer Name</th>
+                                  <th className="py-2 px-3 text-[11px]">Customer Phone</th>
                                 </>
                               )}
                             </tr>
@@ -3349,10 +3349,10 @@ export default function Dashboard() {
                                   key={order.id || i}
                                   className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors text-xs"
                                 >
-                                  <td className="py-4 px-4 font-black text-primary select-all">
+                                  <td className="py-2.5 px-3 text-xs font-black text-primary select-all">
                                     {order.platform_order_id}
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                  <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                     {order.order_date
                                       ? new Date(
                                           order.order_date,
@@ -3363,7 +3363,7 @@ export default function Dashboard() {
                                         })
                                       : "-"}
                                   </td>
-                                  <td className="py-4 px-4 max-w-[200px]">
+                                  <td className="py-2.5 px-3 text-xs max-w-[200px]">
                                     <div
                                       className="font-extrabold text-amber-700 truncate"
                                       title={order.sku}
@@ -3371,33 +3371,33 @@ export default function Dashboard() {
                                       {order.sku}
                                     </div>
                                   </td>
-                                  <td className="py-4 px-4 text-right font-bold text-slate-700">
+                                  <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-700">
                                     {order.qty || "-"}
                                   </td>
 
                                   {paymentsFilter === "received" && (
                                     <>
-                                      <td className="py-4 px-4">
+                                      <td className="py-2.5 px-3 text-xs">
                                         <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-slate-50 text-slate-600 whitespace-nowrap">
                                           {order.status || "-"}
                                         </span>
                                       </td>
-                                      <td className="py-4 px-4">
+                                      <td className="py-2.5 px-3 text-xs">
                                         <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600 whitespace-nowrap">
                                           {order.order_status || "-"}
                                         </span>
                                       </td>
-                                      <td className="py-4 px-4 text-right font-black text-slate-700">
+                                      <td className="py-2.5 px-3 text-xs text-right font-black text-slate-700">
                                         ₹
                                         {formatCount(order.selling_amount || 0)}
                                       </td>
-                                      <td className="py-4 px-4 text-right font-black text-emerald-600">
+                                      <td className="py-2.5 px-3 text-xs text-right font-black text-emerald-600">
                                         ₹
                                         {formatCount(
                                           order.received_payment || 0,
                                         )}
                                       </td>
-                                      <td className="py-4 px-4 text-right font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-600">
                                         ₹{formatCount(order.cost_amount || 0)}
                                       </td>
                                       <td
@@ -3409,10 +3409,10 @@ export default function Dashboard() {
                                       >
                                         ₹{formatCount(order.profit_loss || 0)}
                                       </td>
-                                      <td className="py-4 px-4 text-right font-bold text-slate-700">
+                                      <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-700">
                                         {order.payment_entry_count || 0}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                         {order.first_payment_date
                                           ? new Date(
                                               order.first_payment_date,
@@ -3423,7 +3423,7 @@ export default function Dashboard() {
                                             })
                                           : "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                         {order.last_payment_date
                                           ? new Date(
                                               order.last_payment_date,
@@ -3439,29 +3439,29 @@ export default function Dashboard() {
 
                                   {paymentsFilter === "pending" && (
                                     <>
-                                      <td className="py-4 px-4">
+                                      <td className="py-2.5 px-3 text-xs">
                                         <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-slate-50 text-slate-600 whitespace-nowrap">
                                           {order.status || "-"}
                                         </span>
                                       </td>
-                                      <td className="py-4 px-4">
+                                      <td className="py-2.5 px-3 text-xs">
                                         <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600 whitespace-nowrap">
                                           {order.order_status || "-"}
                                         </span>
                                       </td>
-                                      <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">
+                                      <td className="py-2.5 px-3 text-xs font-mono text-slate-600 text-[10px]">
                                         {order.awb_number || "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                         {order.courier_partner || "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                         {order.customer_name || "-"}
                                       </td>
-                                      <td className="py-4 px-4 text-right font-bold text-slate-700">
+                                      <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-700">
                                         ₹{formatCount(order.cost_amount || 0)}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                         {order.pickup_date
                                           ? new Date(
                                               order.pickup_date,
@@ -3472,7 +3472,7 @@ export default function Dashboard() {
                                             })
                                           : "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                         {order.dispatch_date
                                           ? new Date(
                                               order.dispatch_date,
@@ -3483,7 +3483,7 @@ export default function Dashboard() {
                                             })
                                           : "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-700">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-700">
                                         {order.days || "-"}
                                       </td>
                                     </>
@@ -3491,21 +3491,21 @@ export default function Dashboard() {
 
                                   {paymentsFilter === "mismatch" && (
                                     <>
-                                      <td className="py-4 px-4">
+                                      <td className="py-2.5 px-3 text-xs">
                                         <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-slate-50 text-slate-600 whitespace-nowrap">
                                           {order.status || "-"}
                                         </span>
                                       </td>
-                                      <td className="py-4 px-4">
+                                      <td className="py-2.5 px-3 text-xs">
                                         <span className="px-2 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 text-blue-600 whitespace-nowrap">
                                           {order.order_status || "-"}
                                         </span>
                                       </td>
-                                      <td className="py-4 px-4 text-right font-black text-slate-700">
+                                      <td className="py-2.5 px-3 text-xs text-right font-black text-slate-700">
                                         ₹
                                         {formatCount(order.selling_amount || 0)}
                                       </td>
-                                      <td className="py-4 px-4 text-right font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-600">
                                         ₹{formatCount(order.cost_amount || 0)}
                                       </td>
                                       <td
@@ -3530,16 +3530,16 @@ export default function Dashboard() {
                                           order.settlement_amount || 0,
                                         )}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                         {order.courier_partner || "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">
+                                      <td className="py-2.5 px-3 text-xs font-mono text-slate-600 text-[10px]">
                                         {order.awb_number || "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                         {order.customer_name || "-"}
                                       </td>
-                                      <td className="py-4 px-4 font-bold text-slate-600">
+                                      <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                         {order.customer_phone || "-"}
                                       </td>
                                     </>
@@ -3699,10 +3699,10 @@ export default function Dashboard() {
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
-                            <th className="py-3 px-4">Campaign</th>
-                            <th className="py-3 px-4">Views</th>
-                            <th className="py-3 px-4">Clicks</th>
-                            <th className="py-3 px-4">Units</th>
+                            <th className="py-2 px-3 text-[11px]">Campaign</th>
+                            <th className="py-2 px-3 text-[11px]">Views</th>
+                            <th className="py-2 px-3 text-[11px]">Clicks</th>
+                            <th className="py-2 px-3 text-[11px]">Units</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -4102,18 +4102,18 @@ export default function Dashboard() {
                         <table className="w-full text-left border-collapse min-w-[1200px]">
                           <thead>
                             <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
-                              <th className="py-3 px-4">Order ID</th>
-                              <th className="py-3 px-4">Order Date</th>
-                              <th className="py-3 px-4">SKU</th>
-                              <th className="py-3 px-4">Courier Partner</th>
-                              <th className="py-3 px-4">AWB Number</th>
-                              <th className="py-3 px-4 text-right">Valuation</th>
-                              <th className="py-3 px-4 text-right whitespace-nowrap">Cost Amount</th>
-                              <th className="py-3 px-4 whitespace-nowrap">Return Type</th>
-                              <th className="py-3 px-4 whitespace-nowrap">Return Date</th>
-                              <th className="py-3 px-4 whitespace-nowrap">Claim Status</th>
-                              <th className="py-3 px-4 text-right whitespace-nowrap">Claim Amount</th>
-                              <th className="py-3 px-4 text-right whitespace-nowrap">Return Status</th>
+                              <th className="py-2 px-3 text-[11px]">Order ID</th>
+                              <th className="py-2 px-3 text-[11px]">Order Date</th>
+                              <th className="py-2 px-3 text-[11px]">SKU</th>
+                              <th className="py-2 px-3 text-[11px]">Courier Partner</th>
+                              <th className="py-2 px-3 text-[11px]">AWB Number</th>
+                              <th className="py-2 px-3 text-[11px] text-right">Valuation</th>
+                              <th className="py-2 px-3 text-[11px] text-right whitespace-nowrap">Cost Amount</th>
+                              <th className="py-2 px-3 text-[11px] whitespace-nowrap">Return Type</th>
+                              <th className="py-2 px-3 text-[11px] whitespace-nowrap">Return Date</th>
+                              <th className="py-2 px-3 text-[11px] whitespace-nowrap">Claim Status</th>
+                              <th className="py-2 px-3 text-[11px] text-right whitespace-nowrap">Claim Amount</th>
+                              <th className="py-2 px-3 text-[11px] text-right whitespace-nowrap">Return Status</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -4144,10 +4144,10 @@ export default function Dashboard() {
                                   key={order.id || i}
                                   className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors text-xs"
                                 >
-                                  <td className="py-4 px-4 font-black text-primary select-all">
+                                  <td className="py-2.5 px-3 text-xs font-black text-primary select-all">
                                     {order.platform_order_id}
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                  <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                     {order.order_date
                                       ? new Date(
                                           order.order_date,
@@ -4158,7 +4158,7 @@ export default function Dashboard() {
                                         })
                                       : "-"}
                                   </td>
-                                  <td className="py-4 px-4 max-w-[280px]">
+                                  <td className="py-2.5 px-3 text-xs max-w-[280px]">
                                     <div
                                       className="font-extrabold text-amber-700 truncate"
                                       title={order.sku}
@@ -4166,22 +4166,22 @@ export default function Dashboard() {
                                       {order.sku}
                                     </div>
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-600">
+                                  <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                     {order.courier_partner || "-"}
                                   </td>
-                                  <td className="py-4 px-4 font-mono text-slate-600 text-[10px]">
+                                  <td className="py-2.5 px-3 text-xs font-mono text-slate-600 text-[10px]">
                                     {order.awb_number || "-"}
                                   </td>
-                                  <td className="py-4 px-4 text-right font-black text-slate-700">
+                                  <td className="py-2.5 px-3 text-xs text-right font-black text-slate-700">
                                     ₹{formatCount(order.total_amount || 0)}
                                   </td>
-                                  <td className="py-4 px-4 text-right font-bold text-slate-600">
+                                  <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-600">
                                     ₹{formatCount(order.cost_amount || 0)}
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-600">
+                                  <td className="py-2.5 px-3 text-xs font-bold text-slate-600">
                                     {order.return_type || "-"}
                                   </td>
-                                  <td className="py-4 px-4 font-bold text-slate-500 whitespace-nowrap">
+                                  <td className="py-2.5 px-3 text-xs font-bold text-slate-500 whitespace-nowrap">
                                     {order.return_date
                                       ? new Date(
                                           order.return_date,
@@ -4192,7 +4192,7 @@ export default function Dashboard() {
                                         })
                                       : "-"}
                                   </td>
-                                  <td className="py-4 px-4">
+                                  <td className="py-2.5 px-3 text-xs">
                                     {order.claim_status ? (
                                       <span
                                         className={`px-2 py-1 rounded-full text-[10px] font-extrabold uppercase whitespace-nowrap ${
@@ -4207,12 +4207,12 @@ export default function Dashboard() {
                                       "-"
                                     )}
                                   </td>
-                                  <td className="py-4 px-4 text-right font-bold text-slate-600">
+                                  <td className="py-2.5 px-3 text-xs text-right font-bold text-slate-600">
                                     {order.claim_amount
                                       ? `₹${formatCount(order.claim_amount)}`
                                       : "-"}
                                   </td>
-                                  <td className="py-4 px-4 text-right whitespace-nowrap">
+                                  <td className="py-2.5 px-3 text-xs text-right whitespace-nowrap">
                                     <span
                                       className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest whitespace-nowrap ${
                                         returnsFilter === "received"

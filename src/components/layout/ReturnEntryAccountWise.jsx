@@ -77,6 +77,7 @@ export default function ReturnEntryAccountWise() {
   const navigate = useNavigate();
   const { activeAccount } = useAuth();
   const inputRef = useRef(null);
+  const isMobileScanner = localStorage.getItem('isMobileScannerSession') === 'true';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -93,10 +94,13 @@ export default function ReturnEntryAccountWise() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  // Auto-focus on mount
+  // Auto-focus on mount and auto-open camera scanner on mobile sessions
   useEffect(() => {
     inputRef.current?.focus();
-  }, []);
+    if (isMobileScanner) {
+      setIsScannerOpen(true);
+    }
+  }, [isMobileScanner]);
 
   // Debounced search logic (2 seconds)
   useEffect(() => {
@@ -207,7 +211,9 @@ export default function ReturnEntryAccountWise() {
     <AppShell>
       <div className="mx-auto max-w-full space-y-4 px-2 sm:px-0">
         <OrdersPageHeader
-          breadcrumbs={[
+          breadcrumbs={isMobileScanner ? [
+            { label: 'Return Terminal', current: true },
+          ] : [
             { label: 'Dashboard', onClick: () => navigate('/dashboard') },
             { label: 'Return Terminal', current: true },
           ]}
@@ -496,8 +502,8 @@ export default function ReturnEntryAccountWise() {
                   wrapperClassName="rounded-b-default"
                   tableClassName="min-w-full"
                   headClassName="bg-surface-alt/50 sticky top-0 z-10"
-                  headerCellClassName="px-4 py-3 text-[0.6rem] font-black uppercase tracking-widest text-text-muted border-b border-border"
-                  cellClassName="px-4 py-3 border-b border-border/40 text-[0.7rem]"
+                  headerCellClassName="px-2.5 py-2 text-[0.62rem] font-black uppercase tracking-widest text-text-muted border-b border-border"
+                  cellClassName="px-2.5 py-2 border-b border-border/40 text-xs"
                   hoverClass="hover:bg-slate-50"
                 />
               </div>

@@ -1,9 +1,10 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FiCheck, FiChevronDown, FiLogOut, FiRepeat, FiUser, FiMenu } from 'react-icons/fi';
+import { FiCheck, FiChevronDown, FiLogOut, FiRepeat, FiUser, FiMenu, FiSmartphone } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../ui/Button';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import api from '../../services/api';
+import MobileLoginModal from './MobileLoginModal';
 
 let userFetchCalled = false;
 
@@ -49,10 +50,12 @@ export default function Navbar() {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [accounts, setAccounts] = useState([]);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [mobileModalOpen, setMobileModalOpen] = useState(false);
   const menuRef = useRef(null);
   const accountMenuRef = useRef(null);
 
   const pageTitle = ROUTE_TITLES[location.pathname] || 'Seller CRM';
+  const isMobileScanner = localStorage.getItem('isMobileScannerSession') === 'true';
 
   useEffect(() => {
     const handleOutside = (event) => {
@@ -118,13 +121,15 @@ export default function Navbar() {
     <header className="sticky top-0 z-[100] w-full border-b border-slate-100 bg-white/80 backdrop-blur-md">
       <div className="flex h-16 w-full items-center justify-between px-3 sm:px-8">
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent('toggle-sidebar'))}
-            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 lg:hidden shrink-0"
-            aria-label="Toggle Sidebar"
-          >
-            <FiMenu size={18} />
-          </button>
+          {!isMobileScanner && (
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('toggle-sidebar'))}
+              className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 lg:hidden shrink-0"
+              aria-label="Toggle Sidebar"
+            >
+              <FiMenu size={18} />
+            </button>
+          )}
           <h1 className="text-sm font-bold tracking-tight text-slate-900 sm:text-xl truncate max-w-[110px] xs:max-w-[140px] sm:max-w-none">
             {pageTitle}
           </h1>
@@ -133,6 +138,19 @@ export default function Navbar() {
         <div className="flex items-center gap-1.5 sm:gap-3">
           {user ? (
             <>
+              {/* Open in Mobile Button */}
+              {!isMobileScanner && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMobileModalOpen(true)}
+                  className="h-8 px-2 text-[0.7rem] sm:h-9 sm:px-3 sm:text-xs gap-1 sm:gap-2 shadow-sm border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-primary hover:border-primary/30 transition-all duration-200"
+                >
+                  <FiSmartphone size={13} className="text-slate-500 group-hover:text-primary transition-colors" />
+                  <span className="hidden sm:inline">Open in Mobile</span>
+                </Button>
+              )}
+
               {/* Account Switcher - Compact on mobile */}
               <div className="relative" ref={accountMenuRef}>
                 <Button
@@ -238,6 +256,13 @@ export default function Navbar() {
                   </div>
                 ) : null}
               </div>
+
+              {/* Mobile Login QR Sync Modal */}
+              <MobileLoginModal
+                isOpen={mobileModalOpen}
+                onClose={() => setMobileModalOpen(false)}
+                activeAccountId={activeAccount?.id}
+              />
             </>
           ) : null}
         </div>

@@ -447,10 +447,10 @@ export default function SKUReport() {
             wrapperClassName="rounded-b-default pb-2"
             tableClassName={activeTab === 'all' ? 'min-w-[1400px]' : 'min-w-[1000px] w-full'}
             headClassName="sticky top-0 z-10 bg-surface-alt/95 text-slate-700 backdrop-blur"
-            headerCellClassName="px-3 py-3 text-[0.62rem] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap border-b border-border sm:px-4"
-            indexHeaderClassName="sticky left-0 z-20 w-10 border-b border-r border-border bg-surface-alt/95 px-3 py-3 text-center text-[0.62rem] font-extrabold"
-            indexCellClassName="sticky left-0 z-10 border-r border-border bg-surface-alt/95 px-3 py-3 text-center font-medium text-text-muted"
-            cellClassName="px-3 py-3 whitespace-nowrap text-xs text-text sm:px-4 cursor-pointer"
+            headerCellClassName="px-2.5 py-2 text-[0.62rem] font-extrabold uppercase tracking-[0.12em] whitespace-nowrap border-b border-border"
+            indexHeaderClassName="sticky left-0 z-20 w-8 border-b border-r border-border bg-surface-alt/95 px-2.5 py-2 text-center text-[0.62rem] font-extrabold"
+            indexCellClassName="sticky left-0 z-10 border-r border-border bg-surface-alt/95 px-2.5 py-2.5 text-center font-medium text-text-muted"
+            cellClassName="px-2.5 py-2.5 whitespace-nowrap text-xs text-text cursor-pointer"
             selectedClass="bg-primary/5 text-text"
             hoverClass="hover:bg-surface-alt/70"
           />
