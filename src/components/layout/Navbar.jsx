@@ -138,7 +138,7 @@ export default function Navbar() {
         <div className="flex items-center gap-1.5 sm:gap-3">
           {user ? (
             <>
-              {/* Open in Mobile Button */}
+              {/* Scan on Mobile Button */}
               {!isMobileScanner && (
                 <Button
                   variant="outline"
@@ -147,7 +147,7 @@ export default function Navbar() {
                   className="h-8 px-2 text-[0.7rem] sm:h-9 sm:px-3 sm:text-xs gap-1 sm:gap-2 shadow-sm border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-primary hover:border-primary/30 transition-all duration-200"
                 >
                   <FiSmartphone size={13} className="text-slate-500 group-hover:text-primary transition-colors" />
-                  <span className="hidden sm:inline">Open in Mobile</span>
+                  <span className="hidden sm:inline">Scan on Mobile</span>
                 </Button>
               )}
 
